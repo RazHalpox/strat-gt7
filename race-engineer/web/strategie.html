@@ -113,11 +113,16 @@ label[hidden]{display:none}
 
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font-size:15px;-webkit-tap-highlight-color:transparent}
-:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{padding-bottom:env(safe-area-inset-bottom,0px)}
 input[type=number],input[type=text],select{font-size:16px}
 [hidden]{display:none!important}
 img{max-width:100%}
 .back{font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--fg);text-decoration:none;border:1px solid var(--input-line);border-radius:4px;padding:7px 12px;order:3}
+.topnav{background:#07090c;padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:10px;
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));display:flex}
+.topnav nav.tabs3{background:#11161c;border-color:#222b35}
+.topnav nav.tabs3 a{color:#8a96a3}
+.topnav nav.tabs3 a[aria-current=page]{background:#f1f4f7;color:#07090c}
 nav.tabs3{display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px}
 nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
 nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--surface)}
@@ -125,14 +130,16 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header>
-  <h1>Stratégie <span>Endurance</span> GT7</h1>
-  <nav class="tabs3" aria-label="Écrans" style="order:3">
+<div class="topnav">
+  <nav class="tabs3" aria-label="Écrans">
     <a href="course.html">Course</a>
     <a href="./">Complet</a>
     <a href="strategie.html" aria-current="page">Stratégie</a>
   </nav>
+</div>
+<div class="wrap">
+<header>
+  <h1>Stratégie <span>Endurance</span> GT7</h1>
   <div class="meta" id="meta"></div>
 </header>
 <nav class="tabs" role="tablist">

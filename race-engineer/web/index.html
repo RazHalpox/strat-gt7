@@ -30,8 +30,8 @@ html{-webkit-text-size-adjust:100%;background:var(--bg)}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
-.wrap{max-width:1280px;margin:0 auto;padding-block:12px 32px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.wrap{max-width:none;margin:0;padding-block:10px 32px;padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .brand{font:700 24px var(--f-display);text-transform:uppercase;letter-spacing:.03em;display:flex;align-items:center;gap:10px}
 .brand i{width:12px;height:22px;background:var(--accent);transform:skewX(-15deg);display:inline-block}
 .brand span{color:var(--accent)}
@@ -111,7 +111,6 @@ select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);
 <body>
 <div class="wrap">
 <header>
-  <div class="brand"><i></i>GT7 Race <span>Engineer</span></div>
   <nav class="tabs3" aria-label="Écrans">
     <a href="course.html">Course</a>
     <a href="./" aria-current="page">Complet</a>
