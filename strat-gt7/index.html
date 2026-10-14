@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Stratégie Endurance GT7</title>
+<meta name="description" content="Calculateur de stratégie d'endurance pour Gran Turismo 7 : conso, gommes, arrêts au stand.">
+<meta name="theme-color" content="#e9ecef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11151a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Strat GT7">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Mur des stands : deux onglets, Stratégie (lecture) et Paramètres (saisie) */
+:root{
+  --bg:#e9ecef; --surface:#ffffff; --fg:#13171c; --muted:#59626d; --line:#d3d9df;
+  --accent:#c8102e; --accent-soft:#fbe6e9; --flag:#a87a00; --flag-soft:#fff4d6; --ok:#1d7a46; --ok-soft:#e1f3e8;
+  --input:#f3f6f9; --input-line:#b9c3cd;
+  --soft:#d71f30; --med:#e8b100; --hard:#c9d1d9;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11151a; --surface:#1a2027; --fg:#e7ebef; --muted:#97a1ac; --line:#2c343e;
+  --accent:#ff5468; --accent-soft:#3a1d24; --flag:#ffc833; --flag-soft:#3a3118; --ok:#4cc583; --ok-soft:#173226;
+  --input:#11161c; --input-line:#3a4552; --soft:#ff4a5c; --med:#ffc833; --hard:#dfe5ea; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151a; --surface:#1a2027; --fg:#e7ebef; --muted:#97a1ac; --line:#2c343e;
+  --accent:#ff5468; --accent-soft:#3a1d24; --flag:#ffc833; --flag-soft:#3a3118; --ok:#4cc583; --ok-soft:#173226;
+  --input:#11161c; --input-line:#3a4552; --soft:#ff4a5c; --med:#ffc833; --hard:#dfe5ea; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;padding-bottom:12px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,5vw,44px);line-height:1;margin:0;text-transform:uppercase;letter-spacing:.01em}
+h1 span{color:var(--accent)}
+.meta{color:var(--muted);font-size:14px;display:flex;gap:6px 14px;flex-wrap:wrap}
+.meta b{color:var(--fg);font-weight:600;font-family:var(--f-mono)}
+nav.tabs{display:flex;gap:2px;border-bottom:3px solid var(--fg);margin-bottom:20px}
+nav.tabs button{background:transparent;border:0;color:var(--muted);font:600 18px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:10px 16px 8px;cursor:pointer;border-radius:4px 4px 0 0}
+nav.tabs button[aria-selected=true]{background:var(--fg);color:var(--surface)}
+nav.tabs button:hover:not([aria-selected=true]){color:var(--fg)}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+h2{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2::before{content:"";width:10px;height:10px;background:var(--accent);transform:skewX(-15deg)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fields.three{grid-template-columns:1fr 1fr 1fr}
+.fields .full{grid-column:1/-1}
+@media (max-width:420px){.fields,.fields.three{grid-template-columns:1fr 1fr}}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
+input[type=number],input[type=text],select{font-family:var(--f-mono);font-size:15px;color:var(--fg);background:var(--input);border:1px solid var(--input-line);border-radius:4px;padding:8px 10px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,tr:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.unit{display:flex;gap:6px;align-items:center}.unit span{font-size:13px;color:var(--muted);flex:none}
+.hint{font-size:12px;color:var(--muted);font-weight:400}
+.out{margin-top:12px;padding:10px 12px;background:var(--input);border-radius:4px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;align-items:center}
+.out b{font-family:var(--f-mono);font-weight:600}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+@media (max-width:720px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis .k:last-child{grid-column:1/-1}}
+.k{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.k b{font-family:var(--f-display);font-size:32px;line-height:1.05;font-weight:700;font-variant-numeric:tabular-nums}
+.k small{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.k i{font-style:normal;font-size:12px;color:var(--muted)}
+.k.hot b{color:var(--accent)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.05em;font-size:13px;font-weight:600;color:var(--muted);text-align:right;padding:6px 8px;border-bottom:2px solid var(--fg);white-space:nowrap}
+th:first-child,td:first-child,.l{text-align:left}
+td{padding:8px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;vertical-align:middle}
+td.lbl{font-family:var(--f-body);font-weight:500}
+tr.pick{cursor:pointer}
+tr.pick:hover td{background:var(--input)}
+tr.sel td{background:var(--flag-soft)}
+tr.pit td{background:var(--accent-soft);font-size:13px}
+.tag{display:inline-block;font:600 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:var(--ok);color:var(--surface);margin-left:6px;vertical-align:middle}
+.tag.full{background:var(--fg);color:var(--surface);margin:0}
+.tag.tyre{background:transparent;color:var(--fg);border:1px solid var(--fg);margin:0}
+.chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font:700 13px var(--f-display);border:3px solid;background:var(--surface);color:var(--fg);flex:none;vertical-align:middle}
+.chip.S{border-color:var(--soft)}.chip.M{border-color:var(--med)}.chip.H{border-color:var(--hard)}
+.chips{display:inline-flex;gap:3px;vertical-align:middle;flex-wrap:wrap}
+.chips .chip{width:20px;height:20px;font-size:11px;border-width:2.5px}
+.note{font-size:13px;color:var(--muted);margin:10px 0 0;max-width:80ch}
+.warn{border-left:4px solid var(--flag);background:var(--surface);padding:10px 14px;border-radius:4px;font-size:14px}
+.example{display:inline-block;font:600 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--flag);border:1px solid var(--flag);padding:1px 6px;border-radius:3px;margin-right:6px}
+.reset{background:transparent;color:var(--fg);border:1px solid var(--input-line);border-radius:4px;padding:8px 14px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.reset.armed{background:var(--flag);border-color:var(--flag);color:#13171c}
+.tyretbl input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+label[hidden]{display:none}
+.tyretbl td{padding:6px 6px}
+.tyretbl input,.tyretbl select{padding:6px 8px;font-size:14px}
+.tyretbl td:not(:first-child){min-width:84px}
+/* frise */
+.bar{position:relative;height:34px;background:var(--input);border-radius:4px;margin-top:4px}
+.seg{position:absolute;top:4px;bottom:4px;border-radius:2px;display:flex;align-items:center;justify-content:center;font:600 12px var(--f-mono);color:#13171c;overflow:hidden}
+.seg.S{background:var(--soft);color:#fff}.seg.M{background:var(--med)}.seg.H{background:var(--hard)}
+.seg.pit{background:repeating-linear-gradient(135deg,var(--fg) 0 3px,transparent 3px 6px);top:0;bottom:0}
+.flagline{position:absolute;top:-6px;bottom:-6px;width:0;border-left:2px dashed var(--accent);z-index:2}
+.flaglbl{position:absolute;top:-22px;transform:translateX(-50%);font:600 11px var(--f-mono);color:var(--accent);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:10px;border-radius:2px;display:inline-block}
+
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-size:15px;-webkit-tap-highlight-color:transparent}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+input[type=number],input[type=text],select{font-size:16px}
+[hidden]{display:none!important}
+img{max-width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Stratégie <span>Endurance</span> GT7</h1>
+  <div class="meta" id="meta"></div>
+</header>
+<nav class="tabs" role="tablist">
+  <button role="tab" id="tab-strat" data-tab="strat">Stratégie</button>
+  <button role="tab" id="tab-par" data-tab="par">Paramètres</button>
+</nav>
+
+<!-- ============ STRATÉGIE ============ -->
+<section id="v-strat" class="stack">
+  <div id="alert" class="warn" hidden></div>
+  <div class="kpis" id="kpis"></div>
+  <section class="panel">
+    <h2 id="tlTitle">Déroulé de la course</h2>
+    <div style="padding-top:18px"><div class="bar" id="bar"></div></div>
+    <div class="legend"><span><i class="sw" style="background:var(--soft)"></i>Soft</span><span><i class="sw" style="background:var(--med)"></i>Medium</span><span><i class="sw" style="background:var(--hard)"></i>Hard</span><span><i class="sw" style="background:repeating-linear-gradient(135deg,var(--fg) 0 3px,transparent 3px 6px)"></i>Arrêt au stand</span><span><i class="sw" style="border-left:2px dashed var(--accent);width:2px;border-radius:0"></i>Fin du chrono</span></div>
+  </section>
+  <section class="panel">
+    <h2>Comparer les stratégies</h2>
+    <div class="tbl"><table style="min-width:620px">
+      <thead><tr><th>Arrêts</th><th class="l">Gommes</th><th>Tours / relais</th><th>Tours de course</th><th>Temps au stand</th><th>Écart</th></tr></thead>
+      <tbody id="strats"></tbody>
+    </table></div>
+    <p class="note">Pour chaque nombre d'arrêts, l'outil teste toutes les combinaisons de gommes qui respectent tes règles, et garde la plus rapide. Clique sur une ligne pour voir son plan.</p>
+  </section>
+  <section class="panel">
+    <h2 id="planTitle">Plan de relais</h2>
+    <div class="tbl"><table style="min-width:520px">
+      <thead><tr><th>Relais</th><th class="l">Gomme</th><th>Tours</th><th>Durée</th><th>Carbu à mettre</th><th class="l">Arrêt</th><th>Temps</th></tr></thead>
+      <tbody id="plan"></tbody>
+    </table></div>
+    <p class="note">Le carburant indiqué est celui à mettre à l'arrêt <b>avant</b> le relais : juste ce qu'il faut pour le finir. S'il reste assez d'essence, l'arrêt se fait en pneus seuls.</p>
+  </section>
+  <section class="panel">
+    <h2>Combien de tours avec…</h2>
+    <div class="tbl"><table><thead><tr><th>Carburant</th><th>Tours possibles</th><th>Durée de roulage</th></tr></thead><tbody id="auto"></tbody></table></div>
+    <div style="max-width:220px;margin-top:12px"><label>Autre quantité<span class="unit"><input type="number" id="qty" min="1" step="1"><span>L</span></span></label></div>
+  </section>
+</section>
+
+<!-- ============ PARAMÈTRES ============ -->
+<section id="v-par" class="stack" hidden>
+  <p class="note" style="margin:0"><span class="example">Valeurs d'exemple</span>Les chiffres pré-remplis servent à montrer les calculs. Remplace-les par tes propres mesures.</p>
+  <div class="two">
+    <div class="stack">
+      <section class="panel">
+        <h2>Réglages du salon GT7</h2>
+        <div class="fields">
+          <label>Usure des pneus<select id="mTyre"></select></label>
+          <label>Consommation carburant<select id="mFuel"></select></label>
+          <label>Type de course<select id="mode"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select></label>
+          <label id="w-duree">Durée de course<span class="unit"><input type="number" id="duree" min="1" step="1"><span>min</span></span></label>
+          <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" id="laps" min="1" step="1"><span>tours</span></span></label>
+          <label>Refuel rate<span class="unit"><input type="number" id="rate" min="0.1" step="0.1"><span>L/s</span></span><span class="hint">vitesse de ravitaillement du salon</span></label>
+          <span></span>
+          <label>Réservoir<span class="unit"><input type="number" id="tank" min="1" step="1"><span>L</span></span></label>
+          <label>Carburant au départ<span class="unit"><input type="number" id="start" min="0" step="1"><span>L</span></span></label>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Consommation</h2>
+        <div class="fields">
+          <label>Carburant au début<span class="unit"><input type="number" id="mDeb" step="0.1"><span>L</span></span></label>
+          <label>Carburant à la fin<span class="unit"><input type="number" id="mFin" step="0.1"><span>L</span></span></label>
+          <label>Tours mesurés<input type="number" id="mTours" min="1" step="1"></label>
+          <label>Mesuré avec la conso à<select id="mMult"></select></label>
+        </div>
+        <div class="out" id="consoOut"></div>
+        <p class="note">Mesure sur 3 à 5 tours lancés, sans le tour de départ. Avec un réservoir de 100 L, 1 % de jauge = 1 L.</p>
+      </section>
+      <section class="panel">
+        <h2>Stand</h2>
+        <div class="fields">
+          <label class="full">Calcul du temps d'arrêt<select id="pitMode"><option value="rate">Pneus + litres ÷ refuel rate</option><option value="fixed">Temps fixes (arrêt complet ou pneus seuls)</option></select></label>
+          <label>Changement de pneus uniquement<span class="unit"><input type="number" id="pitTyre" min="0" step="1"><span>s</span></span><span class="hint">voie des stands + pneus, sans carburant</span></label>
+          <label id="w-pitFull">Arrêt complet<span class="unit"><input type="number" id="pitFull" min="0" step="1"><span>s</span></span><span class="hint">plein + pneus</span></label>
+        </div>
+        <div class="out" id="pitOut"></div>
+        <p class="note">Mesure le temps perdu par rapport à un tour normal : chronomètre un tour avec l'arrêt, puis retire ton temps au tour habituel.</p>
+      </section>
+    </div>
+    <section class="panel">
+      <h2>Gommes</h2>
+      <div class="tbl"><table class="tyretbl" style="min-width:420px">
+        <thead><tr><th>Gomme</th><th>Temps au tour</th><th>Vie mesurée</th><th>Mesurée à</th><th>Vie en course</th><th class="l">Obligatoire</th></tr></thead>
+        <tbody id="tyres"></tbody>
+      </table></div>
+      <p class="note">Temps au tour moyen sur un relais (pas ton meilleur tour), en m:ss.sss ou en secondes. Vie = nombre de tours avant que l'usure te coûte trop de temps. Vie en course = vie mesurée × usure pendant la mesure ÷ usure du salon.</p>
+      <h2 style="margin-top:20px">Règles de la course</h2>
+      <div class="fields"><label>Gommes différentes requises<select id="nReq"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label></div>
+      <p class="note" id="ruleNote"></p>
+    </section>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button type="button" class="reset" id="reset">Reset</button><span class="hint">Efface tous tes réglages et recharge les valeurs d'exemple.</span></div>
+</section>
+</div>
+
+<script>
+const COMPS=[{k:"S",name:"Soft"},{k:"M",name:"Medium"},{k:"H",name:"Hard"}];
+const CN={S:"Soft",M:"Medium",H:"Hard"};
+const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,mTyre:1,mFuel:1,rate:4,mDeb:100,mFin:86,mTours:5,mMult:1,pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,
+  S:{lap:"1:44.200",life:12,mult:1,req:true},M:{lap:"1:45.000",life:20,mult:1,req:true},H:{lap:"1:45.900",life:30,mult:1,req:true}};
+const clone=o=>JSON.parse(JSON.stringify(o));
+let S=clone(DEF),tab="strat",selN=null;
+try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");if(o&&o.S){const d=clone(DEF);S=Object.assign(d,o.S);COMPS.forEach(c=>S[c.k]=Object.assign(clone(DEF[c.k]),o.S[c.k]||{}));tab=o.tab||tab}}catch(e){}
+const save=()=>{try{localStorage.setItem("gt7-endu-v1",JSON.stringify({S,tab}))}catch(e){}};
+const $=id=>document.getElementById(id);
+const num=v=>v===""||v==null?NaN:typeof v==="number"?v:parseFloat(String(v).replace(",","."));
+function parseLap(s){s=String(s??"").trim().replace(",",".");const m=s.match(/^(\d+):(\d{1,2}(?:\.\d+)?)$/);return m?+m[1]*60+ +m[2]:num(s)}
+const fin=x=>typeof x==="number"&&isFinite(x);
+const f1=x=>fin(x)?(Math.round(x*10)/10).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1}):"–";
+const f2=x=>fin(x)?x.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}):"–";
+const f0=x=>fin(x)?Math.round(x).toLocaleString("fr-FR"):"–";
+function clock(sec){if(!fin(sec))return"–";sec=Math.max(0,Math.round(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?`${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${m}:${String(s).padStart(2,"0")}`}
+const chip=k=>`<span class="chip ${k}" title="${CN[k]}">${k}</span>`;
+const plural=(n,w)=>`${n} ${w}${n>1?"s":""}`;
+const MAX=999;
+
+/* ---- formulaire ---- */
+const mults=(min)=>Array.from({length:51-min},(_,i)=>i+min).map(v=>`<option value="${v}">${v===0?"0× (désactivé)":v+"×"}</option>`).join("");
+$("mTyre").innerHTML=mults(0);$("mFuel").innerHTML=mults(0);$("mMult").innerHTML=mults(1);
+$("tyres").innerHTML=COMPS.map(c=>`<tr><td class="lbl">${chip(c.k)} ${c.name}</td>
+  <td><input type="text" id="${c.k}-lap" inputmode="decimal" aria-label="Temps au tour ${c.name}"></td>
+  <td><input type="number" id="${c.k}-life" min="1" step="1" aria-label="Vie mesurée ${c.name} en tours"></td>
+  <td><select id="${c.k}-mult" aria-label="Usure pendant la mesure ${c.name}">${mults(1)}</select></td>
+  <td><b id="${c.k}-out"></b></td>
+  <td class="l"><input type="checkbox" id="${c.k}-req" aria-label="${c.name} obligatoire"></td></tr>`).join("");
+const FIELDS=["mode","duree","laps","tank","start","mTyre","mFuel","rate","mDeb","mFin","mTours","mMult","pitMode","pitFull","pitTyre","qty","nReq"];
+function fillForm(){FIELDS.forEach(f=>$(f).value=S[f]);COMPS.forEach(c=>{["lap","life","mult"].forEach(f=>$(`${c.k}-${f}`).value=S[c.k][f]);$(`${c.k}-req`).checked=!!S[c.k].req})}
+document.addEventListener("input",e=>{const el=e.target,id=el.id;if(!id)return;
+  if(FIELDS.includes(id))S[id]=el.value;else{const m=id.match(/^([SMH])-(lap|life|mult|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
+  selN=null;save();render()});
+let armed=false;
+$("reset").addEventListener("click",()=>{const b=$("reset");
+  if(!armed){armed=true;b.classList.add("armed");b.textContent="Confirmer le reset";setTimeout(()=>{if(armed){armed=false;b.classList.remove("armed");b.textContent="Reset"}},5000);return}
+  armed=false;b.classList.remove("armed");b.textContent="Reset";S=clone(DEF);selN=null;save();fillForm();render()});
+
+/* ---- calculs ---- */
+function derive(){
+  const P={mode:S.mode,T:num(S.duree)*60,L:Math.floor(num(S.laps)),tank:num(S.tank),start:Math.min(num(S.start),num(S.tank)),mTyre:num(S.mTyre),mFuel:num(S.mFuel),
+    rate:num(S.rate),pitMode:S.pitMode,pitFull:num(S.pitFull),pitTyre:num(S.pitTyre),nReq:+S.nReq};
+  P.c0=(num(S.mDeb)-num(S.mFin))/num(S.mTours);
+  P.c=P.mFuel===0?0:P.c0*P.mFuel/num(S.mMult);
+  P.comps=COMPS.map(c=>{const x=S[c.k],life=num(x.life),mult=num(x.mult);
+    return{k:c.k,lap:parseLap(x.lap),req:!!x.req,life:P.mTyre===0?MAX:Math.min(MAX,Math.floor(life*mult/P.mTyre)),life0:life}});
+  P.fuelCap=x=>P.c>0?Math.min(MAX,Math.floor(x/P.c+1e-9)):MAX;
+  P.stopTime=add=>P.pitMode==="rate"?P.pitTyre+add/P.rate:(add>0?P.pitFull:P.pitTyre);
+  const bad=[];
+  if(P.mode==="time"&&!(P.T>0))bad.push("la durée de course");
+  if(P.mode==="laps"&&!(P.L>0))bad.push("le nombre de tours");
+  if(!(P.tank>0)||!(num(S.start)>=0))bad.push("le réservoir et le carburant au départ");
+  if(!(P.c0>0))bad.push("la mesure de conso (carburant au début plus grand qu'à la fin, au moins 1 tour)");
+  P.comps.forEach(c=>{if(!(c.lap>0))bad.push(`le temps au tour ${CN[c.k]}`);if(!(c.life0>0))bad.push(`la vie mesurée ${CN[c.k]}`);else if(!(c.life>=1))bad.push(`la vie ${CN[c.k]} (moins d'un tour avec cette usure)`)});
+  if(!(P.pitTyre>=0))bad.push("le temps de changement de pneus");
+  if(P.pitMode==="rate"&&!(P.rate>0))bad.push("le refuel rate");
+  if(P.pitMode==="fixed"&&!(P.pitFull>=0))bad.push("le temps d'arrêt complet");
+  P.bad=bad;return P;
+}
+// séquences de k relais qui respectent les règles ; chaque gomme utilisée peut ouvrir, la suite va de la plus rapide à la plus lente
+function sequences(k,P){const out=[],C=P.comps;
+  for(let a=0;a<=k;a++)for(let b=0;a+b<=k;b++){const counts=[a,b,k-a-b];
+    if(C.some((c,j)=>c.req&&counts[j]<1))continue;
+    if(counts.filter(x=>x>0).length<P.nReq)continue;
+    const flat=[];C.forEach((c,j)=>{for(let x=0;x<counts[j];x++)flat.push(c)});flat.sort((p,q)=>p.lap-q.lap);
+    const seen=new Set();flat.forEach((f,fi)=>{if(seen.has(f.k))return;seen.add(f.k);const rest=flat.slice();rest.splice(fi,1);out.push([f,...rest])})}
+  return out}
+// répartit L tours : 1 tour mini par relais, puis on remplit d'abord les gommes les plus rapides
+function simulate(seq,caps,L,P){
+  const k=seq.length,s=caps.map(()=>1);let rem=L-k;
+  const order=seq.map((g,i)=>i).sort((a,b)=>seq[a].lap-seq[b].lap||caps[b]-caps[a]);
+  for(const i of order){const a=Math.min(caps[i]-s[i],rem);s[i]+=a;rem-=a;if(!rem)break}
+  let fuel=P.start,drive=0,pits=0,lapNo=1;const rows=[];
+  for(let i=0;i<k;i++){
+    let stop=null;
+    if(i){const need=s[i]*P.c-fuel;const add=need>1e-9?Math.min(Math.ceil(need*10)/10,P.tank-fuel):0;
+      const t=P.stopTime(add);fuel+=add;pits+=t;stop={add,full:add>0,t}}
+    const d=s[i]*seq[i].lap;rows.push({i,g:seq[i].k,laps:s[i],from:lapNo,to:lapNo+s[i]-1,dur:d,start:drive+pits,stop});
+    lapNo+=s[i];drive+=d;fuel-=s[i]*P.c;
+  }
+  return{seq,s,rows,drive,pits,time:drive+pits,laps:L};
+}
+function bestForSeq(seq,P){
+  const caps=seq.map((g,i)=>Math.min(i?P.fuelCap(P.tank):P.fuelCap(P.start),g.life));
+  if(caps.some(c=>c<1))return null;
+  const k=seq.length,sum=caps.reduce((a,b)=>a+b,0);
+  if(P.mode==="laps")return P.L>=k&&P.L<=sum?simulate(seq,caps,P.L,P):null;
+  // course à la durée : tours de course = premier passage sur la ligne après la fin du chrono
+  if(simulate(seq,caps,sum,P).time<P.T)return null;
+  let lo=k,hi=sum;while(lo<hi){const m=Math.floor((lo+hi)/2);if(simulate(seq,caps,m,P).time>=P.T)hi=m;else lo=m+1}
+  return simulate(seq,caps,lo,P);
+}
+const better=(a,b,P)=>!b||(P.mode==="laps"?a.time<b.time:a.laps>b.laps||a.laps===b.laps&&a.time<b.time);
+function solve(k,P){let best=null;for(const seq of sequences(k,P)){const r=bestForSeq(seq,P);if(r&&better(r,best,P))best=r}return best}
+
+/* ---- affichage ---- */
+function render(){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
+  $("v-strat").hidden=tab!=="strat";$("v-par").hidden=tab!=="par";
+  $("w-duree").hidden=S.mode!=="time";$("w-laps").hidden=S.mode!=="laps";$("w-pitFull").hidden=S.pitMode!=="fixed";
+  const P=derive();
+  $("meta").innerHTML=`<span>${P.mode==="time"?`Durée <b>${f0(num(S.duree))} min</b>`:`Course <b>${f0(P.L)} tours</b>`}</span><span>Usure <b>${S.mTyre}×</b></span><span>Conso <b>${S.mFuel}×</b></span><span>Refuel <b>${f1(P.rate)} L/s</b></span><span>Réservoir <b>${f0(P.tank)} L</b></span>`;
+  // sorties de l'onglet Paramètres
+  $("consoOut").innerHTML=P.c0>0?`<span>Mesuré : <b>${f2(P.c0)} L/tour</b> à ${S.mMult}×</span><span>En course à ${S.mFuel}× : <b>${P.c>0?f2(P.c)+" L/tour":"aucune conso"}</b></span><span>Plein de ${f0(P.tank)} L : <b>${P.c>0?Math.floor(P.tank/P.c+1e-9)+" tours":"illimité"}</b></span>`:`<span>Entre le carburant au début, à la fin et le nombre de tours.</span>`;
+  $("pitOut").innerHTML=P.pitMode==="rate"
+    ?(P.rate>0?`<span>Pneus seuls : <b>${f0(P.pitTyre)} s</b></span><span>+ 50 L : <b>${f1(P.stopTime(50))} s</b></span><span>Plein de ${f0(P.tank)} L : <b>${f1(P.stopTime(P.tank))} s</b></span>`:"<span>Entre le refuel rate dans les réglages du salon.</span>")
+    :`<span>Avec carburant : <b>${f0(P.pitFull)} s</b></span><span>Pneus seuls : <b>${f0(P.pitTyre)} s</b></span><span class="hint">le refuel rate n'est pas utilisé</span>`;
+  P.comps.forEach(c=>$(`${c.k}-out`).textContent=c.life>=MAX?"illimitée":fin(c.life)&&c.life>0?c.life+" tours":"–");
+  const reqs=P.comps.filter(c=>c.req).map(c=>CN[c.k]);
+  const kmin=Math.max(1,reqs.length,P.nReq);
+  $("ruleNote").textContent=`Règle appliquée : ${reqs.length?`au moins un relais en ${reqs.join(", ")}`:"aucune gomme imposée"}${P.nReq>1?`, et ${P.nReq} gommes différentes minimum`:""}. Il faut donc ${plural(kmin-1,"arrêt")} au minimum. Un train neuf est monté à chaque arrêt.`;
+  // autonomie
+  const L=num(S.qty),qs=[100,75,50,25].filter(q=>q<=P.tank);if(L>0&&!qs.includes(L))qs.push(L);qs.sort((a,b)=>b-a);
+  const mid=P.comps.find(c=>c.k==="M");
+  $("auto").innerHTML=qs.map(q=>{const t=P.c>0?Math.floor(q/P.c+1e-9):null;return`<tr${q===L?' class="sel"':""}><td>${q} L</td><td><b>${t===null?"illimité":t}</b></td><td>${t===null?"–":clock(t*mid.lap)} <span class="hint">rythme Medium</span></td></tr>`}).join("");
+  const al=$("alert"),clear=()=>["kpis","strats","plan","bar"].forEach(i=>$(i).innerHTML="");
+  if(P.bad.length){al.hidden=false;al.innerHTML=`Complète dans Paramètres : ${P.bad.join(", ")}.`;clear();return}
+  // stratégies
+  const list=[];let first=null;
+  for(let k=kmin;k<=25;k++){if(first!==null&&k>first+3)break;const r=solve(k,P);if(r){if(first===null)first=k;list.push(r)}}
+  if(!list.length){al.hidden=false;al.textContent=P.mode==="laps"?"Aucune stratégie possible : vérifie la conso, le réservoir et la vie des gommes par rapport au nombre de tours.":"Aucune stratégie possible : un relais ne peut pas tenir assez de tours. Vérifie la conso, le réservoir et la vie des gommes.";clear();return}
+  al.hidden=true;
+  let best=list[0];for(const r of list)if(better(r,best,P))best=r;
+  const nStops=r=>r.seq.length-1;
+  if(selN===null||!list.find(r=>nStops(r)===selN))selN=nStops(best);
+  const sel=list.find(r=>nStops(r)===selN);
+  $("strats").innerHTML=list.map(r=>{const n=nStops(r),mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
+    const gap=r===best?"–":d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:`+${f1(r.time-best.time)} s`;
+    return`<tr class="pick${n===selN?" sel":""}" data-n="${n}" tabindex="0"><td>${plural(n,"arrêt")}${r===best?'<span class="tag">Meilleure</span>':""}</td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`}).join("");
+  $("kpis").innerHTML=[
+    ["Conso / tour",P.c>0?f2(P.c)+" L":"0 L",`en course à ${S.mFuel}×`,0],
+    ["Tours avec un plein",P.c>0?Math.floor(P.tank/P.c+1e-9):"∞",`${f0(P.tank)} L`,0],
+    ["Arrêts",nStops(sel),selN===nStops(best)?"stratégie conseillée":"stratégie choisie",1],
+    ["Tours de course",sel.laps,P.mode==="time"?"drapeau à damier inclus":"fixés",0],
+    ["Arrivée",clock(sel.time),`dont ${f0(sel.pits)} s au stand`,0]
+  ].map(k=>`<div class="k${k[3]?" hot":""}"><small>${k[0]}</small><b>${k[1]}</b><i>${k[2]}</i></div>`).join("");
+  $("planTitle").textContent=`Plan de relais · ${plural(nStops(sel),"arrêt")}`;
+  $("tlTitle").textContent=`Déroulé de la course · ${plural(nStops(sel),"arrêt")}`;
+  $("plan").innerHTML=sel.rows.map(x=>`<tr><td>Relais ${x.i+1} <span class="hint">T${x.from}–T${x.to}</span></td><td class="l">${chip(x.g)} ${CN[x.g]}</td><td><b>${x.laps}</b></td><td>${clock(x.dur)}</td>
+    <td>${x.stop?(x.stop.full?`+${f1(x.stop.add)} L`:"0 L"):'<span class="hint">départ</span>'}</td>
+    <td class="l">${x.stop?(x.stop.full?'<span class="tag full">Pneus + carbu</span>':'<span class="tag tyre">Pneus seuls</span>'):""}</td>
+    <td>${x.stop?f1(x.stop.t)+" s":""}</td></tr>`).join("");
+  // frise
+  const end=P.mode==="time"?P.T:0,scale=Math.max(end,sel.time)*1.02;let segs="";
+  sel.rows.forEach(x=>{if(x.stop)segs+=`<div class="seg pit" style="left:${(x.start-x.stop.t)/scale*100}%;width:${Math.max(.4,x.stop.t/scale*100)}%" title="Arrêt : ${f1(x.stop.t)} s"></div>`;
+    segs+=`<div class="seg ${x.g}" style="left:${x.start/scale*100}%;width:${x.dur/scale*100}%" title="Relais ${x.i+1} : ${x.laps} tours en ${CN[x.g]}">${x.dur/scale>.05?x.laps+" t":""}</div>`});
+  $("bar").innerHTML=segs+(P.mode==="time"?`<div class="flagline" style="left:${P.T/scale*100}%"><span class="flaglbl">${clock(P.T)}</span></div>`:"");
+}
+document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;tab=b.dataset.tab;save();render()});
+$("strats").addEventListener("click",e=>{const tr=e.target.closest("tr[data-n]");if(tr){selN=+tr.dataset.n;render()}});
+$("strats").addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-n]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();selN=+tr.dataset.n;render();$("strats").querySelector(`tr[data-n="${selN}"]`)?.focus()}});
+fillForm();render();
+</script>
+
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
+</script>
+
+</body>
+</html>
