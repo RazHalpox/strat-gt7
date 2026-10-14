@@ -53,7 +53,7 @@ Ouvre `http://IP-DU-PC:8777/course.html`, ou l'onglet **Course**. Il n'affiche q
 
 Sécurité : si le carburant ne tient pas jusqu'à l'arrêt prévu, **BOX BOX — Carburant critique** s'affiche quand même. Sans plan enregistré, la bannière se base sur le carburant seul.
 
-L'ingénieur vocal et le bouton écran allumé y sont aussi. En paysage, les blocs se réorganisent selon la taille de l'écran.
+L'ingénieur vocal y est aussi. En paysage, les blocs se réorganisent selon la taille de l'écran.
 
 ## Le dashboard complet
 
@@ -74,6 +74,12 @@ Après quelques tours sans arrêt :
 Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Règle les multiplicateurs du salon dans Paramètres, et la stratégie se calcule.
 
 ---
+
+## Garder l'écran allumé
+
+Règle la mise en veille de l'appareil pendant tes courses :
+- **iPhone / iPad** : Réglages → Luminosité et affichage → Verrouillage auto → **Jamais** (pense à le remettre après).
+- **Android** : Paramètres → Affichage → Mise en veille de l'écran → la durée la plus longue.
 
 ## En cas de problème
 
