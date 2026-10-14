@@ -34,7 +34,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;fle
 nav{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
 nav a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
 nav a[aria-current=page]{background:var(--fg);color:var(--bg)}
-.tools{display:flex;gap:6px;align-items:center}
+.tools{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.tools>*{flex:none}
 .pill{white-space:nowrap;font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;display:inline-flex;align-items:center;gap:6px}
 .pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
 .pill.live{background:rgba(61,220,132,.14);color:var(--ok)}.pill.demo{background:rgba(255,200,51,.14);color:var(--warn)}.pill.wait{background:rgba(138,150,163,.16);color:var(--muted)}
@@ -57,6 +58,9 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
   grid-template-areas:"fuel lap" "time time" "tyre tyre";--big:clamp(40px,min(16vw,12vh),230px);--time:clamp(34px,min(18.5vw,11vh),210px)}
 @media (orientation:landscape){.tiles{grid-template-columns:1fr 1.45fr 1fr 1fr;grid-template-rows:1fr;grid-template-areas:"fuel time lap tyre";
   --big:clamp(34px,min(7vw,24vh),190px);--time:clamp(30px,min(5.4vw,20vh),170px)}}
+/* tablette en paysage : grille 2 × 2, chiffres plus grands */
+@media (orientation:landscape) and (min-height:600px){.tiles{grid-template-columns:1fr 1.35fr;grid-template-rows:1fr 1fr;
+  grid-template-areas:"fuel time" "lap tyre";--big:clamp(40px,min(13vw,17vh),230px);--time:clamp(34px,min(10.5vw,15vh),210px)}}
 #tFuel{grid-area:fuel}#tTime{grid-area:time}#tLap{grid-area:lap}#tTyre{grid-area:tyre}
 .tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-width:0;min-height:0;overflow:hidden}
 .lbl{font:600 clamp(13px,2.4vw,17px) var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 8px}
@@ -71,8 +75,8 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 .gauge i{display:block;height:100%;background:var(--ok);transition:width .3s}
 .tyres{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;min-height:0}
 .tyre{border-radius:8px;display:flex;align-items:center;justify-content:center;font:700 clamp(26px,6vw,44px) var(--f-mono);color:#07090c;min-height:0;transition:background .4s}
-.wait{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:18px;gap:6px}
-.wait b{font:700 28px var(--f-display);text-transform:uppercase;color:var(--fg)}
+.waitbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:18px;gap:6px}
+.waitbox b{font:700 28px var(--f-display);text-transform:uppercase;color:var(--fg)}
 </style>
 </head>
 <body>
@@ -92,7 +96,7 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 
 <div class="box" id="box" hidden><b id="boxTitle">Box box</b><span id="boxText"></span></div>
 
-<div class="wait" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
+<div class="waitbox" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
 
 <main class="tiles" id="tiles">
   <section class="tile" id="tFuel">
