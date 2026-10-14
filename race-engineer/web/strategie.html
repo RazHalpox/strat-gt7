@@ -349,6 +349,9 @@ function render(){
   const nStops=r=>r.seq.length-1;
   if(selN===null||!list.find(r=>nStops(r)===selN))selN=nStops(best);
   const sel=list.find(r=>nStops(r)===selN);
+  // plan partagé avec l'écran Course (même appareil, même adresse du PC)
+  try{localStorage.setItem("gt7-plan",JSON.stringify({t:Date.now(),stops:nStops(sel),rows:sel.rows.map(x=>({g:x.g,from:x.from,to:x.to,laps:x.laps,
+    stop:x.stop?{add:Math.round(x.stop.add*10)/10,full:x.stop.full}:null}))}))}catch(e){}
   $("strats").innerHTML=list.map(r=>{const n=nStops(r),mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
     const gap=r===best?"–":d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:`+${f1(r.time-best.time)} s`;
     return`<tr class="pick${n===selN?" sel":""}" data-n="${n}" tabindex="0"><td>${plural(n,"arrêt")}${r===best?'<span class="tag">Meilleure</span>':""}</td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`}).join("");

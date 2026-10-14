@@ -52,12 +52,6 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 @keyframes pulse{50%{background:#8f1220}}
 @media (prefers-reduced-motion:reduce){.box.crit{animation:none}}
 
-/* bande radio */
-.radio{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:6px;padding:8px 14px;
-  font:600 clamp(16px,2.6vw,24px)/1.25 var(--f-display);transition:opacity .6s}
-.radio b{color:var(--ok);text-transform:uppercase;letter-spacing:.08em;font-size:.8em;white-space:nowrap}
-.radio.old{opacity:.45}
-
 /* quatre tuiles */
 /* portrait : carburant | course, puis chrono et pneus sur toute la largeur ; paysage : une seule ligne */
 .tiles{flex:1;display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:1.15fr 1fr 1fr;
@@ -101,8 +95,6 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 </header>
 
 <div class="box" id="box" hidden><b id="boxTitle">Box box</b><span id="boxText"></span></div>
-
-<div class="radio" id="radio" hidden><b>📻 Radio</b><span id="radioText"></span></div>
 
 <div class="waitbox" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
 
@@ -154,7 +146,7 @@ function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=ne
 function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
 $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
   $("voiceBtn").textContent=voiceOn?"🎧 On":"🎧 Off";if(voiceOn)say("Radio check. Je suis avec toi.")});
-function engineer(laps,live,lapsLeft){
+function engineer(laps,live,lapsLeft,nx){
   // premier contact : message de liaison, sans relire les tours déjà faits
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
     const L=live||{};radio(`Liaison radio établie.${L.lap?` Tour ${L.lap} en cours.`:""}${fin(lapsLeft)?` Carburant pour ${Math.floor(lapsLeft)} tours.`:""}`);return}
@@ -162,13 +154,31 @@ function engineer(laps,live,lapsLeft){
   const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   let t=`Tour ${last.n}, ${sayLap(last.ms)}.`;
   if(last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
-  if(fin(lapsLeft)){const n=Math.floor(lapsLeft);
-    if(n<=1){t+=" Carburant critique, rentre au stand ce tour-ci.";}
-    else if(n<=3){t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;}
-    else if(last.n%3===0)t+=` Carburant pour ${n} tours.`;}
-  radio(t);say(t);
+  if(nx&&!nx.done){
+    if(nx.inLaps===0)t+=` Box box, ce tour-ci. ${CN[nx.g]}${nx.stop&&nx.stop.full?`, ${Math.round(nx.stop.add)} litres`:", pneus seuls"}.`;
+    else if(nx.inLaps<=3)t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CN[nx.g]}.`;
+  }else if(fin(lapsLeft)){const n=Math.floor(lapsLeft);
+    if(n<=1)t+=" Carburant critique, rentre au stand ce tour-ci.";
+    else if(!nx&&n<=3)t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;}
+  say(t);
 }
 
+
+/* ---- plan de la stratégie (enregistré par la page Stratégie sur cet appareil) ---- */
+const CN={S:"Soft",M:"Medium",H:"Hard"};
+function readPlan(){try{return JSON.parse(localStorage.getItem("gt7-plan")||"null")}catch(e){return null}}
+// prochain arrêt : on rentre à la fin du dernier tour d'un relais
+function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
+  for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,stop:nx.stop,n:i+1}}}
+  return{done:true}}
+function stopTxt(nx){const st=nx.stop||{};return`${CN[nx.g]||nx.g} · ${st.full?"+"+String(st.add).replace(".",",")+" L":"pneus seuls"}`}
+function showBox(nx,left){const box=$("box");
+  if(nx&&!nx.done&&nx.inLaps===0){box.hidden=false;box.className="box crit";$("boxTitle").textContent="Box box";$("boxText").textContent="Ce tour-ci · "+stopTxt(nx)}
+  else if(nx&&!nx.done&&nx.inLaps<=3){box.hidden=false;box.className="box warn";$("boxTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}`;$("boxText").textContent="Prochain relais : "+stopTxt(nx)}
+  // sécurité : le carburant ne tiendra pas jusqu'à l'arrêt prévu
+  else if(fin(left)&&left<1.5&&!(nx&&!nx.done&&nx.inLaps<1)){box.hidden=false;box.className="box crit";$("boxTitle").textContent="Box box";$("boxText").textContent="Carburant critique"}
+  else if(!nx&&fin(left)&&left<4){box.hidden=false;box.className="box warn";$("boxTitle").textContent=`Arrêt dans ${Math.floor(left)} tours`;$("boxText").textContent="D'après le carburant"}
+  else box.hidden=true}
 
 function render(s){
   const L=s.live||{},laps=s.laps||[],mode=s.mode;
@@ -184,11 +194,8 @@ function render(s){
   $("gauge").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";
   $("gauge").style.background=fin(left)&&left<=2?"var(--accent)":fin(left)&&left<=4?"var(--warn)":"var(--ok)";
   $("cons").textContent=fin(cons)?f2(cons)+" L/tour":"– L/tour";
-  // bannière d'arrêt
-  const box=$("box");
-  if(fin(left)&&left<2){box.hidden=false;box.className="box crit";$("boxTitle").textContent="Box box";$("boxText").textContent="Rentre au stand ce tour-ci"}
-  else if(fin(left)&&left<4){box.hidden=false;box.className="box warn";$("boxTitle").textContent=`Arrêt dans ${Math.floor(left)} tours`;$("boxText").textContent="Prépare le stand"}
-  else box.hidden=true;
+  // bannière d'arrêt : d'après les arrêts prévus par ta stratégie, sinon d'après le carburant
+  const nx=nextStop(L.lap);showBox(nx,left);
   // chrono
   $("last").textContent=lapFmt(L.last_ms);$("best").textContent="meilleur "+lapFmt(L.best_ms);
   const d=L.last_ms>0&&L.best_ms>0?L.last_ms-L.best_ms:NaN;
@@ -200,7 +207,7 @@ function render(s){
   $("pos").textContent=L.pos>0?`P${L.pos}${L.cars>0?" / "+L.cars:""}`:"";
   // pneus
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.textContent=fin(t)?Math.round(t):"–"});
-  engineer(laps,L,left);
+  engineer(laps,L,left,nextStop(L.lap));
 }
 
 function connect(){

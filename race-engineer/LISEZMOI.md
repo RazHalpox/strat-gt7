@@ -49,7 +49,11 @@ Ouvre `http://IP-DU-PC:8777/course.html`, ou l'onglet **Course**. Il n'affiche q
 - **tour en cours** et position ;
 - **température des 4 pneus**.
 
-Quand il te reste moins de 4 tours de carburant, une bannière jaune annonce l'arrêt. Sous 2 tours, elle passe au rouge clignotant : **BOX BOX**. L'ingénieur vocal et le bouton écran allumé y sont aussi. En paysage sur un grand écran, les 4 blocs se mettent sur une ligne.
+**La bannière suit ta stratégie.** Ouvre d'abord l'onglet **Stratégie** sur le même appareil et choisis ton plan : l'écran Course le reprend. Trois tours avant chaque arrêt prévu, une bannière jaune affiche « Arrêt dans X tours » avec la gomme du relais suivant et les litres à mettre (ou « pneus seuls »). Au tour de l'arrêt, elle passe au rouge clignotant : **BOX BOX**. L'ingénieur vocal annonce les mêmes infos.
+
+Sécurité : si le carburant ne tient pas jusqu'à l'arrêt prévu, **BOX BOX — Carburant critique** s'affiche quand même. Sans plan enregistré, la bannière se base sur le carburant seul.
+
+L'ingénieur vocal et le bouton écran allumé y sont aussi. En paysage, les blocs se réorganisent selon la taille de l'écran.
 
 ## Le dashboard complet
 
