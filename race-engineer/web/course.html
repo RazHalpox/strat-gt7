@@ -31,9 +31,10 @@ body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);f
   padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
   padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
 header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-nav{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
-nav a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
-nav a[aria-current=page]{background:var(--fg);color:var(--bg)}
+nav.tabs3{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
+nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
+nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--bg)}
+nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .tools{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
 .tools>*{flex:none}
 .pill{white-space:nowrap;font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;display:inline-flex;align-items:center;gap:6px}
@@ -71,6 +72,8 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 .sub{font:600 clamp(18px,3.6vw,28px) var(--f-mono);font-variant-numeric:tabular-nums}
 .unit{font:600 clamp(15px,2.8vw,20px) var(--f-display);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .ok{color:var(--ok)}.bad{color:var(--accent)}.wrn{color:var(--warn)}
+.legend{display:inline-flex;align-items:center;gap:4px;letter-spacing:.04em}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block;margin-left:4px}
 .gauge{height:12px;background:var(--panel-2);border-radius:3px;overflow:hidden}
 .gauge i{display:block;height:100%;background:var(--ok);transition:width .3s}
 .tyres{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;min-height:0}
@@ -82,7 +85,7 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 <body>
 <div class="wrap">
 <header>
-  <nav aria-label="Écrans">
+  <nav class="tabs3" aria-label="Écrans">
     <a href="course.html" aria-current="page">Course</a>
     <a href="./">Complet</a>
     <a href="strategie.html">Stratégie</a>
@@ -101,7 +104,7 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 <main class="tiles" id="tiles">
   <section class="tile" id="tFuel">
     <div class="lbl"><span>Carburant</span><span id="fuelL">– L</span></div>
-    <div class="val"><div class="huge" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
+    <div class="val"><div class="huge" id="fuelLaps">–</div><div class="unit">tours restants · <span id="cons">– L/tour</span></div></div>
     <div class="gauge"><i id="gauge" style="width:0"></i></div>
   </section>
   <section class="tile" id="tTime">
@@ -110,12 +113,12 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
     <div class="sub" id="delta">–</div>
   </section>
   <section class="tile" id="tLap">
-    <div class="lbl"><span>Course</span><span id="cons">– L/tour</span></div>
+    <div class="lbl"><span>Course</span><span id="raceType"></span></div>
     <div class="val"><div class="huge" id="lap" style="font-size:calc(var(--big) * var(--lapk,1))">–</div><div class="unit" id="lapUnit">tour</div></div>
     <div class="sub" id="pos">–</div>
   </section>
   <section class="tile" id="tTyre">
-    <div class="lbl"><span>Pneus</span><span>°C</span></div>
+    <div class="lbl"><span>Pneus °C</span><span class="legend"><i style="background:var(--cold)"></i>froid <i style="background:var(--ok)"></i>bon <i style="background:var(--warn)"></i>chaud <i style="background:var(--accent)"></i>trop</span></div>
     <div class="tyres" id="tyres"></div>
   </section>
 </main>
@@ -194,6 +197,7 @@ function render(s){
   $("gauge").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";
   $("gauge").style.background=fin(left)&&left<=2?"var(--accent)":fin(left)&&left<=4?"var(--warn)":"var(--ok)";
   $("cons").textContent=fin(cons)?f2(cons)+" L/tour":"– L/tour";
+  $("raceType").textContent=L.total_laps>0?L.total_laps+" tours":"Durée";
   // bannière d'arrêt : d'après les arrêts prévus par ta stratégie, sinon d'après le carburant
   const nx=nextStop(L.lap);showBox(nx,left);
   // chrono

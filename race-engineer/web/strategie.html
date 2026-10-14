@@ -118,13 +118,21 @@ input[type=number],input[type=text],select{font-size:16px}
 [hidden]{display:none!important}
 img{max-width:100%}
 .back{font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--fg);text-decoration:none;border:1px solid var(--input-line);border-radius:4px;padding:7px 12px;order:3}
+nav.tabs3{display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px}
+nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
+nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--surface)}
+nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
   <h1>Stratégie <span>Endurance</span> GT7</h1>
-  <span style="display:flex;gap:6px;order:3"><a href="course.html" class="back">← Course</a><a href="./" class="back">Complet</a></span>
+  <nav class="tabs3" aria-label="Écrans" style="order:3">
+    <a href="course.html">Course</a>
+    <a href="./">Complet</a>
+    <a href="strategie.html" aria-current="page">Stratégie</a>
+  </nav>
   <div class="meta" id="meta"></div>
 </header>
 <nav class="tabs" role="tablist">

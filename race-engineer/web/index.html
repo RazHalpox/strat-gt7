@@ -44,6 +44,10 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px;fl
 .btn{background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+nav.tabs3{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
+nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
+nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--bg)}
+nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;min-width:0}
 .c4{grid-column:span 4}.c3{grid-column:span 3}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
@@ -108,12 +112,15 @@ select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);
 <div class="wrap">
 <header>
   <div class="brand"><i></i>GT7 Race <span>Engineer</span></div>
+  <nav class="tabs3" aria-label="Écrans">
+    <a href="course.html">Course</a>
+    <a href="./" aria-current="page">Complet</a>
+    <a href="strategie.html">Stratégie</a>
+  </nav>
   <div class="hdr-right">
     <span class="pill wait" id="status">Connexion…</span>
-    <button class="btn" id="voiceBtn" type="button" aria-pressed="false">🎧 Ingénieur off</button>
-    <button class="btn" id="awakeBtn" type="button" aria-pressed="false">🔆 Écran : veille</button>
-    <a class="btn" href="course.html">Course</a>
-    <a class="btn" href="strategie.html">Stratégie</a>
+    <button class="btn" id="voiceBtn" type="button" aria-pressed="false">🎧 Off</button>
+    <button class="btn" id="awakeBtn" type="button" aria-pressed="false">🔆 Veille</button>
   </div>
 </header>
 
@@ -126,13 +133,13 @@ select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);
     <p class="lbl"><span>Chrono</span><span id="lapNo">Tour –</span></p>
     <div class="big" id="curLap">–:––.–</div>
     <div class="kv">
-      <div><small>Dernier</small><b id="lastLap">–</b></div>
+      <div><small>Dernier tour</small><b id="lastLap">–</b></div>
       <div><small>Meilleur</small><b id="bestLap" class="pos">–</b></div>
-      <div><small>Écart</small><b id="delta">–</b></div>
+      <div><small>Écart au meilleur</small><b id="delta">–</b></div>
     </div>
     <div class="kv">
       <div><small>Position</small><b id="pos">–</b></div>
-      <div><small>Moy. 3 tours</small><b id="avg3">–</b></div>
+      <div><small>Moyenne 3 tours</small><b id="avg3">–</b></div>
       <div><small>Vitesse</small><b id="speed">–</b></div>
     </div>
   </section>
@@ -140,19 +147,19 @@ select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);
   <section class="card c4">
     <p class="lbl"><span>Carburant</span><span id="fuelPct">–</span></p>
     <div class="row"><div><div class="fuel-laps" id="fuelLaps">–</div><div class="sm">tours restants</div></div>
-      <div style="text-align:right"><div class="mid" id="fuelL">–</div><div class="sm">litres</div></div></div>
+      <div style="text-align:right"><div class="mid" id="fuelL">–</div><div class="sm">L</div></div></div>
     <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
     <div class="kv">
       <div><small>Conso / tour</small><b id="cons">–</b></div>
-      <div><small>Dernier tour</small><b id="consLast">–</b></div>
-      <div><small>Pour finir</small><b id="toFinish">–</b></div>
+      <div><small>Conso dernier tour</small><b id="consLast">–</b></div>
+      <div><small id="toFinishLbl">Pour finir</small><b id="toFinish">–</b></div>
     </div>
   </section>
 
   <section class="card c3">
     <p class="lbl"><span>Pneus</span><span>°C</span></p>
     <div class="tyres" id="tyres"></div>
-    <p class="note" style="text-align:center">Bleu : froid · vert : bon · rouge : chaud</p>
+    <p class="note" style="text-align:center">Bleu froid · vert bon · jaune chaud · rouge trop chaud</p>
   </section>
 
   <section class="card c7">
@@ -182,7 +189,7 @@ select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);
 
   <section class="card c12">
     <p class="lbl"><span>Historique des tours</span><span id="lapCount"></span></p>
-    <div class="tbl"><table><thead><tr><th>Tour</th><th>Temps</th><th>Écart meilleur</th><th>Conso</th><th>Carbu fin</th></tr></thead><tbody id="hist"></tbody></table></div>
+    <div class="tbl"><table><thead><tr><th>Tour</th><th>Temps</th><th>Écart au meilleur</th><th>Conso</th><th>Carburant fin</th></tr></thead><tbody id="hist"></tbody></table></div>
   </section>
 </main>
 </div>
@@ -216,7 +223,7 @@ function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=ne
   const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith("fr"));if(v)u.voice=v;speechSynthesis.speak(u)}
 function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
 $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
-  $("voiceBtn").textContent=voiceOn?"🎧 Ingénieur on":"🎧 Ingénieur off";if(voiceOn)say("Radio check. Je suis avec toi.")});
+  $("voiceBtn").textContent=voiceOn?"🎧 On":"🎧 Off";if(voiceOn)say("Radio check. Je suis avec toi.")});
 function engineer(laps,live,lapsLeft){
   // premier contact : message de liaison, sans relire les tours déjà faits
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
@@ -232,20 +239,29 @@ function engineer(laps,live,lapsLeft){
   radio(t);say(t);
 }
 
+/* ---- plan de la stratégie (enregistré par l'onglet Stratégie sur cet appareil) ---- */
+function readPlan(){try{return JSON.parse(localStorage.getItem("gt7-plan")||"null")}catch(e){return null}}
+// tour jusqu'auquel le carburant doit tenir : course au nombre de tours, sinon prochain arrêt ou fin du plan
+function fuelTarget(L){
+  if(L.total_laps>0)return{endLap:L.total_laps,label:"Pour finir"};
+  const p=readPlan();if(!p||!p.rows||!p.rows.length||!fin(L.lap))return null;
+  for(let i=0;i<p.rows.length-1;i++)if(p.rows[i].to>=L.lap)return{endLap:p.rows[i].to,label:"Jusqu'à l'arrêt"};
+  return{endLap:p.rows[p.rows.length-1].to,label:"Pour finir"};
+}
 /* ---- affichage ---- */
 function tyreColor(t){if(!fin(t))return"var(--panel-2)";if(t<55)return"var(--cold)";if(t<=95)return"var(--ok)";if(t<=110)return"var(--warn)";return"var(--accent)"}
 let lastLapsLen=-1;
 function render(s){
   const st=$("status"),mode=s.mode,L=s.live||{},laps=s.laps||[];
   st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
-  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente PS5";
+  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente";
   $("waitBox").hidden=mode!=="attente";$("dash").style.opacity=mode==="attente"?".45":"1";
   if(!L||!fin(L.fuel))return;
   // chrono
   $("lapNo").textContent=L.total_laps>0?`Tour ${L.lap} / ${L.total_laps}`:`Tour ${L.lap}`;
   $("curLap").textContent=lapShort(L.cur_ms);
   $("lastLap").textContent=lapFmt(L.last_ms);$("bestLap").textContent=lapFmt(L.best_ms);
-  const dl=L.last_ms>0&&L.best_ms>0?L.last_ms-L.best_ms:NaN;$("delta").textContent=sgnS(dl);$("delta").className=dl>0?"neg":"pos";
+  const dl=L.last_ms>0&&L.best_ms>0?L.last_ms-L.best_ms:NaN;$("delta").textContent=dl===0?"Meilleur tour":sgnS(dl);$("delta").className=dl>0?"neg":"pos";$("delta").style.fontSize=dl===0?"15px":"";
   $("pos").textContent=L.pos>0?`P${L.pos}${L.cars>0?" / "+L.cars:""}`:"–";
   $("avg3").textContent=lapFmt(avgLap(laps,3));
   $("speed").textContent=Math.round(L.speed)+" km/h";
@@ -256,8 +272,10 @@ function render(s){
   $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";$("gauge").className="gauge"+(fin(left)&&left<=2?" crit":fin(left)&&left<=4?" low":"");
   $("cons").textContent=fin(cons)?f2(cons)+" L":"–";
   const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?f2(lastClean.fuel)+" L":"–";
-  if(L.total_laps>0&&fin(cons)){const need=(L.total_laps-L.lap+1)*cons-L.fuel;$("toFinish").textContent=need>0?"+"+f1(need)+" L":"OK";$("toFinish").className=need>0?"wrn":"pos"}
-  else $("toFinish").textContent="–";
+  // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
+  const tgt=fuelTarget(L);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
+  if(tgt&&fin(cons)){const need=(tgt.endLap-L.lap+1)*cons-L.fuel;$("toFinish").textContent=need>0?"+"+f1(need)+" L":"OK";$("toFinish").className=need>0?"wrn":"pos"}
+  else{$("toFinish").textContent="–";$("toFinish").className=""}
   // pneus
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.querySelector("span").textContent=fin(t)?Math.round(t):"–"});
   // pilotage
@@ -275,7 +293,7 @@ function render(s){
   if(laps.length!==lastLapsLen){lastLapsLen=laps.length;
     const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
     $("hist").innerHTML=laps.slice().reverse().map(l=>`<tr class="${l.pit?"pit":l.ms===best?"best":""}"><td>${l.n}${l.pit?" · stand":""}</td><td>${lapFmt(l.ms)}</td><td>${l.ms===best?"meilleur":sgnS(l.ms-best)}</td><td>${fin(l.fuel)?f2(l.fuel)+" L":"–"}</td><td>${f1(l.fuel_end)} L</td></tr>`).join("");
-    $("lapCount").textContent=laps.length?laps.length+" tours":"";
+    $("lapCount").textContent=laps.length?laps.length+(laps.length>1?" tours":" tour"):"";
     updateSendInfo(laps);
   }
   engineer(laps,L,left);
@@ -323,7 +341,7 @@ async function keepAwake(){
     vid.style.cssText="position:fixed;width:1px;height:1px;opacity:.01;left:0;bottom:0;pointer-events:none";document.body.appendChild(vid)}
   try{await vid.play()}catch(e){}
 }
-function setAwake(on){awake=on;const b=$("awakeBtn");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);b.textContent=on?"🔆 Écran : allumé":"🔆 Écran : veille";
+function setAwake(on){awake=on;const b=$("awakeBtn");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);b.textContent=on?"🔆 Allumé":"🔆 Veille";
   if(on)keepAwake();else{if(vid)vid.pause();if(lock){lock.release();lock=null}}
   try{localStorage.setItem("gt7-awake",on?"1":"0")}catch(e){}}
 $("awakeBtn").addEventListener("click",()=>setAwake(!awake));
