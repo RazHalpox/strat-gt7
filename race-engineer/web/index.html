@@ -164,7 +164,7 @@ select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);
         <div class="flags" id="flags"></div></div>
       <div class="bars"><div class="vbar thr" title="Accélérateur"><i id="thr"></i></div><div class="vbar brk" title="Frein"><i id="brk"></i></div></div>
     </div>
-    <div class="kv"><div><small>Eau</small><b id="water">–</b></div><div><small>Huile</small><b id="oil">–</b></div><div><small>Tours course</small><b id="totLaps">–</b></div></div>
+    <div class="kv"><div><small>Eau</small><b id="water">–</b></div><div><small>Huile</small><b id="oil">–</b></div><div><small>Type de course</small><b id="totLaps">–</b></div></div>
   </section>
 
   <section class="card c5">
@@ -270,7 +270,7 @@ function render(s){
   $("thr").style.height=Math.round(L.throttle)+"%";$("brk").style.height=Math.round(L.brake)+"%";
   $("flags").innerHTML=[["TCS",L.tcs],["ASM",L.asm],["RUPTEUR",L.rev_limit],["PAUSE",L.paused]].map(([n,v])=>`<span class="flag${v?" on":""}">${n}</span>`).join("");
   $("water").textContent=fin(L.water)?Math.round(L.water)+" °C":"–";$("oil").textContent=fin(L.oil)?Math.round(L.oil)+" °C":"–";
-  $("totLaps").textContent=L.total_laps>0?L.total_laps:"durée";
+  $("totLaps").textContent=L.total_laps>0?L.total_laps+" tours":"Durée";
   // historique (redessiné seulement quand un tour se termine)
   if(laps.length!==lastLapsLen){lastLapsLen=laps.length;
     const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
