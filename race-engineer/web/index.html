@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GT7 Race Engineer</title>
+<meta name="theme-color" content="#0c0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GT7 Engineer">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Écran de mur des stands : un seul thème sombre, lisible de loin, cartes en grille qui s'empilent sur téléphone */
+:root{
+  --bg:#0c0f13; --panel:#151a21; --panel-2:#1c232c; --line:#27303b; --fg:#e9edf1; --muted:#8e99a5;
+  --accent:#ff3b4e; --ok:#3ddc84; --warn:#ffc833; --cold:#4fa8ff;
+  --soft:#ff4a5c; --med:#ffc833; --hard:#dfe5ea;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+.wrap{max-width:1280px;margin:0 auto;padding-block:12px 32px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.brand{font:700 24px var(--f-display);text-transform:uppercase;letter-spacing:.03em;display:flex;align-items:center;gap:10px}
+.brand i{width:12px;height:22px;background:var(--accent);transform:skewX(-15deg);display:inline-block}
+.brand span{color:var(--accent)}
+.hdr-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;display:inline-flex;align-items:center;gap:6px}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.live{background:rgba(61,220,132,.14);color:var(--ok)}
+.pill.demo{background:rgba(255,200,51,.14);color:var(--warn)}
+.pill.wait{background:rgba(142,153,165,.16);color:var(--muted)}
+.btn{background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;min-width:0}
+.c4{grid-column:span 4}.c3{grid-column:span 3}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+@media (max-width:1000px){.c3,.c4,.c5{grid-column:span 6}.c7,.c8{grid-column:span 12}}
+@media (max-width:640px){.grid>*{grid-column:span 12!important}}
+.lbl{font:600 12px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;display:flex;justify-content:space-between;gap:8px}
+.big{font:700 54px/1 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.mid{font:600 26px/1.1 var(--f-mono);font-variant-numeric:tabular-nums}
+.sm{font:500 14px var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.kv div{background:var(--panel-2);border-radius:4px;padding:8px}
+.kv small{display:block;font:600 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kv b{font:600 18px var(--f-mono);font-variant-numeric:tabular-nums}
+.pos{color:var(--ok)}.neg{color:var(--accent)}.wrn{color:var(--warn)}
+/* carburant */
+.gauge{height:14px;background:var(--panel-2);border-radius:3px;overflow:hidden;margin:10px 0 4px;position:relative}
+.gauge i{position:absolute;inset:0 auto 0 0;background:var(--ok);border-radius:3px;transition:width .3s}
+.gauge.low i{background:var(--warn)}.gauge.crit i{background:var(--accent)}
+.fuel-laps{font:700 64px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+/* pneus */
+.tyres{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative;max-width:260px;margin:4px auto 0}
+.tyre{border-radius:10px;padding:14px 6px;text-align:center;font:700 26px var(--f-mono);font-variant-numeric:tabular-nums;color:#0c0f13;transition:background .4s}
+.tyre small{display:block;font:600 11px var(--f-display);letter-spacing:.08em;color:rgba(12,15,19,.7)}
+/* pilotage */
+.shift{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-bottom:10px}
+.shift i{height:12px;border-radius:2px;background:var(--panel-2)}
+.drive{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.gear{font:700 84px/1 var(--f-mono);min-width:64px;text-align:center}
+.bars{display:flex;gap:8px;height:110px}
+.vbar{width:22px;background:var(--panel-2);border-radius:3px;position:relative;overflow:hidden}
+.vbar i{position:absolute;left:0;right:0;bottom:0;border-radius:3px}
+.vbar.thr i{background:var(--ok)}.vbar.brk i{background:var(--accent)}
+.flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.flag{font:600 11px var(--f-display);letter-spacing:.08em;padding:2px 6px;border-radius:3px;background:var(--panel-2);color:var(--muted)}
+.flag.on{background:var(--warn);color:#0c0f13}
+/* historique */
+.tbl{overflow:auto;max-height:340px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font:600 12px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+th:first-child,td:first-child{text-align:left}
+td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.best td{color:var(--ok)}
+tr.pit td{color:var(--muted)}
+/* envoi stratégie */
+.send{display:flex;flex-direction:column;gap:10px}
+.send .line{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
+.msg{font-size:13px;color:var(--ok);min-height:1.2em}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:70ch}
+.chip{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font:700 12px var(--f-display);border:3px solid;color:var(--fg)}
+.chip.S{border-color:var(--soft)}.chip.M{border-color:var(--med)}.chip.H{border-color:var(--hard)}
+.wait-box{text-align:center;padding:28px 14px;color:var(--muted)}
+.wait-box b{display:block;font:700 22px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--fg);margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><i></i>GT7 Race <span>Engineer</span></div>
+  <div class="hdr-right">
+    <span class="pill wait" id="status">Connexion…</span>
+    <button class="btn" id="voiceBtn" type="button" aria-pressed="false">🎧 Ingénieur off</button>
+    <button class="btn" id="awakeBtn" type="button" aria-pressed="false">🔆 Écran : veille</button>
+    <a class="btn" href="strategie.html">Stratégie →</a>
+  </div>
+</header>
+
+<div class="card wait-box" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai libre dans GT7. Vérifie que le programme tourne sur le PC et que l'adresse IP de la PS5 est la bonne.</div>
+
+<main class="grid" id="dash">
+  <section class="card c5">
+    <p class="lbl"><span>Chrono</span><span id="lapNo">Tour –</span></p>
+    <div class="big" id="curLap">–:––.–</div>
+    <div class="kv">
+      <div><small>Dernier</small><b id="lastLap">–</b></div>
+      <div><small>Meilleur</small><b id="bestLap" class="pos">–</b></div>
+      <div><small>Écart</small><b id="delta">–</b></div>
+    </div>
+    <div class="kv">
+      <div><small>Position</small><b id="pos">–</b></div>
+      <div><small>Moy. 3 tours</small><b id="avg3">–</b></div>
+      <div><small>Vitesse</small><b id="speed">–</b></div>
+    </div>
+  </section>
+
+  <section class="card c4">
+    <p class="lbl"><span>Carburant</span><span id="fuelPct">–</span></p>
+    <div class="row"><div><div class="fuel-laps" id="fuelLaps">–</div><div class="sm">tours restants</div></div>
+      <div style="text-align:right"><div class="mid" id="fuelL">–</div><div class="sm">litres</div></div></div>
+    <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
+    <div class="kv">
+      <div><small>Conso / tour</small><b id="cons">–</b></div>
+      <div><small>Dernier tour</small><b id="consLast">–</b></div>
+      <div><small>Pour finir</small><b id="toFinish">–</b></div>
+    </div>
+  </section>
+
+  <section class="card c3">
+    <p class="lbl"><span>Pneus</span><span>°C</span></p>
+    <div class="tyres" id="tyres"></div>
+    <p class="note" style="text-align:center">Bleu : froid · vert : bon · rouge : chaud</p>
+  </section>
+
+  <section class="card c7">
+    <p class="lbl"><span>Pilotage</span><span id="rpmTxt">– tr/min</span></p>
+    <div class="shift" id="shift"></div>
+    <div class="drive">
+      <div class="gear" id="gear">N</div>
+      <div><div class="mid" id="speedBig">– km/h</div><div class="sm" id="sugGear"></div>
+        <div class="flags" id="flags"></div></div>
+      <div class="bars"><div class="vbar thr" title="Accélérateur"><i id="thr"></i></div><div class="vbar brk" title="Frein"><i id="brk"></i></div></div>
+    </div>
+    <div class="kv"><div><small>Eau</small><b id="water">–</b></div><div><small>Huile</small><b id="oil">–</b></div><div><small>Tours course</small><b id="totLaps">–</b></div></div>
+  </section>
+
+  <section class="card c5">
+    <p class="lbl"><span>Envoyer vers la stratégie</span></p>
+    <div class="send">
+      <div class="line"><span class="sm">Sur les</span><select id="nLaps" aria-label="Nombre de tours pris en compte"><option>3</option><option selected>5</option><option>10</option></select><span class="sm">derniers tours sans arrêt</span></div>
+      <div class="line"><button class="btn" id="sendFuel" type="button">Utiliser ma conso</button><span class="sm" id="sendFuelInfo"></span></div>
+      <div class="line"><span class="sm">Temps moyen en</span>
+        <select id="comp" aria-label="Gomme utilisée"><option value="S">Soft</option><option value="M" selected>Medium</option><option value="H">Hard</option></select>
+        <button class="btn" id="sendLap" type="button">Enregistrer</button><span class="sm" id="sendLapInfo"></span></div>
+      <div class="msg" id="sendMsg" role="status"></div>
+    </div>
+    <p class="note">La conso est enregistrée au multiplicateur du salon choisi dans la stratégie. Les tours avec un arrêt au stand sont ignorés.</p>
+  </section>
+
+  <section class="card c12">
+    <p class="lbl"><span>Historique des tours</span><span id="lapCount"></span></p>
+    <div class="tbl"><table><thead><tr><th>Tour</th><th>Temps</th><th>Écart meilleur</th><th>Conso</th><th>Carbu fin</th></tr></thead><tbody id="hist"></tbody></table></div>
+  </section>
+</main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fin=x=>typeof x==="number"&&isFinite(x);
+const lapFmt=ms=>{if(!fin(ms)||ms<=0)return"–";const m=Math.floor(ms/60000),s=(ms%60000)/1000;return m+":"+s.toFixed(3).padStart(6,"0")};
+const lapShort=ms=>{if(!fin(ms)||ms<0)return"–:––.–";const m=Math.floor(ms/60000),s=(ms%60000)/1000;return m+":"+s.toFixed(1).padStart(4,"0")};
+const f1=x=>fin(x)?(Math.round(x*10)/10).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1}):"–";
+const f2=x=>fin(x)?x.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}):"–";
+const sgnS=ms=>fin(ms)?(ms>0?"+":ms<0?"−":"±")+(Math.abs(ms)/1000).toFixed(3).replace(".",","):"–";
+$("shift").innerHTML=Array.from({length:10},()=>"<i></i>").join("");
+const TYRE_POS=["AvG","AvD","ArG","ArD"];
+$("tyres").innerHTML=TYRE_POS.map((p,i)=>`<div class="tyre" id="t${i}"><small>${p}</small><span>–</span></div>`).join("");
+
+/* ---- calculs sur l'historique ---- */
+function cleanLaps(laps){return laps.filter(l=>!l.pit&&fin(l.fuel)&&l.fuel>0.05&&l.ms>0)}
+function avgFuel(laps,n){const c=cleanLaps(laps).slice(-n);return c.length?c.reduce((s,l)=>s+l.fuel,0)/c.length:NaN}
+function avgLap(laps,n){const c=laps.filter(l=>!l.pit&&l.ms>0).slice(-n);return c.length?c.reduce((s,l)=>s+l.ms,0)/c.length:NaN}
+
+/* ---- ingénieur vocal ---- */
+let voiceOn=false,lastSpokenLap=null,fuelWarned=0;
+function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=1.05;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith("fr"));if(v)u.voice=v;speechSynthesis.speak(u)}
+function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
+$("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
+  $("voiceBtn").textContent=voiceOn?"🎧 Ingénieur on":"🎧 Ingénieur off";if(voiceOn)say("Radio check. Je suis avec toi.")});
+function engineer(laps,live,lapsLeft){
+  if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;
+  const first=lastSpokenLap===null;lastSpokenLap=last.n;if(first)return;
+  const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
+  let t=`Tour ${last.n}, ${sayLap(last.ms)}.`;
+  if(last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
+  if(fin(lapsLeft)){const n=Math.floor(lapsLeft);
+    if(n<=1){t+=" Carburant critique, rentre au stand ce tour-ci.";}
+    else if(n<=3){t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;}
+    else if(last.n%3===0)t+=` Carburant pour ${n} tours.`;}
+  say(t);
+}
+
+/* ---- affichage ---- */
+function tyreColor(t){if(!fin(t))return"var(--panel-2)";if(t<55)return"var(--cold)";if(t<=95)return"var(--ok)";if(t<=110)return"var(--warn)";return"var(--accent)"}
+let lastLapsLen=-1;
+function render(s){
+  const st=$("status"),mode=s.mode,L=s.live||{},laps=s.laps||[];
+  st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
+  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente PS5";
+  $("waitBox").hidden=mode!=="attente";$("dash").style.opacity=mode==="attente"?".45":"1";
+  if(!L||!fin(L.fuel))return;
+  // chrono
+  $("lapNo").textContent=L.total_laps>0?`Tour ${L.lap} / ${L.total_laps}`:`Tour ${L.lap}`;
+  $("curLap").textContent=lapShort(L.cur_ms);
+  $("lastLap").textContent=lapFmt(L.last_ms);$("bestLap").textContent=lapFmt(L.best_ms);
+  const dl=L.last_ms>0&&L.best_ms>0?L.last_ms-L.best_ms:NaN;$("delta").textContent=sgnS(dl);$("delta").className=dl>0?"neg":"pos";
+  $("pos").textContent=L.pos>0?`P${L.pos}${L.cars>0?" / "+L.cars:""}`:"–";
+  $("avg3").textContent=lapFmt(avgLap(laps,3));
+  $("speed").textContent=Math.round(L.speed)+" km/h";
+  // carburant
+  const cons=avgFuel(laps,5),pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN,left=cons>0?L.fuel/cons:NaN;
+  $("fuelL").textContent=f1(L.fuel);$("fuelPct").textContent=fin(pct)?Math.round(pct)+" %":"–";
+  $("fuelLaps").textContent=fin(left)?f1(left):"–";$("fuelLaps").className="fuel-laps"+(fin(left)&&left<=2?" neg":fin(left)&&left<=4?" wrn":"");
+  $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";$("gauge").className="gauge"+(fin(left)&&left<=2?" crit":fin(left)&&left<=4?" low":"");
+  $("cons").textContent=fin(cons)?f2(cons)+" L":"–";
+  const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?f2(lastClean.fuel)+" L":"–";
+  if(L.total_laps>0&&fin(cons)){const need=(L.total_laps-L.lap+1)*cons-L.fuel;$("toFinish").textContent=need>0?"+"+f1(need)+" L":"OK";$("toFinish").className=need>0?"wrn":"pos"}
+  else $("toFinish").textContent="–";
+  // pneus
+  (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.querySelector("span").textContent=fin(t)?Math.round(t):"–"});
+  // pilotage
+  const lo=L.rpm_lo||0,hi=L.rpm_hi||0,on=hi>lo?Math.max(0,Math.min(10,Math.round((L.rpm-(lo-1500))/((hi-(lo-1500))/10)))):0;
+  [...$("shift").children].forEach((el,i)=>{el.style.background=i<on?(L.rev_limit?"var(--accent)":i<4?"var(--ok)":i<8?"var(--warn)":"var(--accent)"):"var(--panel-2)"});
+  $("rpmTxt").textContent=Math.round(L.rpm).toLocaleString("fr-FR")+" tr/min";
+  $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;
+  $("speedBig").textContent=Math.round(L.speed)+" km/h";
+  $("sugGear").textContent=L.gear_sug>0&&L.gear_sug<15&&L.gear_sug!==L.gear?"Rapport conseillé : "+L.gear_sug:"";
+  $("thr").style.height=Math.round(L.throttle)+"%";$("brk").style.height=Math.round(L.brake)+"%";
+  $("flags").innerHTML=[["TCS",L.tcs],["ASM",L.asm],["RUPTEUR",L.rev_limit],["PAUSE",L.paused]].map(([n,v])=>`<span class="flag${v?" on":""}">${n}</span>`).join("");
+  $("water").textContent=fin(L.water)?Math.round(L.water)+" °C":"–";$("oil").textContent=fin(L.oil)?Math.round(L.oil)+" °C":"–";
+  $("totLaps").textContent=L.total_laps>0?L.total_laps:"durée";
+  // historique (redessiné seulement quand un tour se termine)
+  if(laps.length!==lastLapsLen){lastLapsLen=laps.length;
+    const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
+    $("hist").innerHTML=laps.slice().reverse().map(l=>`<tr class="${l.pit?"pit":l.ms===best?"best":""}"><td>${l.n}${l.pit?" · stand":""}</td><td>${lapFmt(l.ms)}</td><td>${l.ms===best?"meilleur":sgnS(l.ms-best)}</td><td>${fin(l.fuel)?f2(l.fuel)+" L":"–"}</td><td>${f1(l.fuel_end)} L</td></tr>`).join("");
+    $("lapCount").textContent=laps.length?laps.length+" tours":"";
+    updateSendInfo(laps);
+  }
+  engineer(laps,L,left);
+  window.__laps=laps;
+}
+
+/* ---- envoi vers la stratégie (même stockage que la page Stratégie) ---- */
+const KEY="gt7-endu-v1";
+function readStrat(){try{return JSON.parse(localStorage.getItem(KEY)||"null")||{S:{},tab:"par"}}catch(e){return{S:{},tab:"par"}}}
+function writeStrat(o){try{localStorage.setItem(KEY,JSON.stringify(o));return true}catch(e){return false}}
+function updateSendInfo(laps){const n=+$("nLaps").value,c=avgFuel(laps,n),cl=cleanLaps(laps).slice(-n).length,t=avgLap(laps,n);
+  $("sendFuelInfo").textContent=fin(c)?`${f2(c)} L/tour sur ${cl} tour${cl>1?"s":""}`:"pas encore de tour complet";
+  $("sendLapInfo").textContent=fin(t)?lapFmt(t):""}
+$("nLaps").addEventListener("change",()=>updateSendInfo(window.__laps||[]));
+function flash(t){$("sendMsg").textContent=t;clearTimeout(flash._t);flash._t=setTimeout(()=>$("sendMsg").textContent="",4000)}
+$("sendFuel").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,c=cleanLaps(laps).slice(-n);
+  if(!c.length)return flash("Il faut au moins un tour complet sans arrêt.");
+  const used=c.reduce((s,l)=>s+l.fuel,0),o=readStrat();o.S=o.S||{};
+  o.S.mDeb=100;o.S.mFin=Math.round((100-used)*100)/100;o.S.mTours=c.length;o.S.mMult=o.S.mFuel||1;
+  flash(writeStrat(o)?`Conso enregistrée : ${f2(used/c.length)} L/tour.`:"Enregistrement impossible sur ce navigateur.")});
+$("sendLap").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,t=avgLap(laps,n),k=$("comp").value;
+  if(!fin(t))return flash("Il faut au moins un tour complet sans arrêt.");
+  const o=readStrat();o.S=o.S||{};o.S[k]=Object.assign({lap:"",life:20,mult:1,req:true},o.S[k]||{},{lap:lapFmt(t)});
+  flash(writeStrat(o)?`Temps ${({S:"Soft",M:"Medium",H:"Hard"})[k]} enregistré : ${lapFmt(t)}.`:"Enregistrement impossible sur ce navigateur.")});
+
+/* ---- flux en direct depuis le PC ---- */
+function connect(){
+  const es=new EventSource("events");
+  es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(err){}};
+  es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};
+}
+connect();
+// garder l'écran allumé pendant la course
+// Garder l'écran allumé. Le "wake lock" du navigateur n'existe qu'en HTTPS ; la page étant servie
+// par le PC en HTTP, on utilise aussi une mini vidéo noire muette en boucle, qui empêche la mise en veille.
+const BLANK="data:video/mp4;base64,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";
+const BLANK_WEBM="data:video/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAAkfEU2bdLpNu4tTq4QVSalmU6yBoU27i1OrhBZUrmtTrIHYTbuMU6uEElTDZ1OsggGETbuMU6uEHFO7a1OsggkJ7AEAAAAAAABZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmsirXsYMPQkBNgI1MYXZmNjAuMTYuMTAwV0GNTGF2ZjYwLjE2LjEwMESJiECfYAAAAAAAFlSua0CmrgEAAAAAAAA414EBc8WIyzVHbRTleD+cgQAitZyDdW5kiIEAhoVWX1ZQOIOBASPjg4QF9eEA4ImwgRC6gRCagQKuAQAAAAAAAFzXgQJzxYhGbWTAxNgmv5yBACK1nIN1bmSIgQCGhkFfT1BVU1aqg2MuoFa7hATEtACDgQLhkZ+BAbWIQL9AAAAAAABiZIEQY6KTT3B1c0hlYWQBATgBQB8AAAAAABJUw2dA1nNzoGPAgGfImkWjh0VOQ09ERVJEh41MYXZmNjAuMTYuMTAwc3PWY8CLY8WIyzVHbRTleD9nyKFFo4dFTkNPREVSRIeUTGF2YzYwLjMxLjEwMiBsaWJ2cHhnyKFFo4hEVVJBVElPTkSHkzAwOjAwOjAyLjAwMDAwMDAwMABzc9djwItjxYhGbWTAxNgmv2fIokWjh0VOQ09ERVJEh5VMYXZjNjAuMzEuMTAyIGxpYm9wdXNnyKFFo4hEVVJBVElPTkSHkzAwOjAwOjAyLjAwODAwMDAwMAAfQ7Z1RqPngQCji4IAAIAIC+Y7I6tgo6OBAACAEAIAnQEqEAAQAABHCIWFiIWEiAICAAwNYAD+/6tQgKOKggAVgAgIrLMOxqOKggApgAgIrLMOxqOKggA9gAgIrLMOxqOKggBRgAgIrLMOxqOKggBlgAgIrLMOxqOVgQBkALEBAAEQEAAYABhYL/QACAAAo4qCAHmACAissw7Go4qCAI2ACAissw7Go4qCAKGACAissw7Go4qCALWACAissw7Go4qCAMmACAissw7Go5WBAMgAsQEAARAQABgAGFgv9AAIAACjioIA3YAICKyzDsajioIA8YAICKyzDsajioIBBYAICKyzDsajioIBGYAICKyzDsajioIBLYAICKyzDsajlYEBLACxAQABEBAAGAAYWC/0AAgAAKOKggFBgAgIrLMOxqOKggFVgAgIrLMOxqOKggFpgAgIrLMOxqOKggF9gAgIrLMOxqOKggGRgAgIrLMOxqOVgQGQALEBAAEQEAAYABhYL/QACAAAo4qCAaWACAissw7Go4qCAbmACAissw7Go4qCAc2ACAissw7Go4qCAeGACAissw7Go4qCAfWACAissw7Go5WBAfQAsQEAARAQABgAGFgv9AAIAACjioICCYAICKyzDsajioICHYAICKyzDsajioICMYAICKyzDsajioICRYAICKyzDsajioICWYAICKyzDsajlYECWACxAQABEBAAGAAYWC/0AAgAAKOKggJtgAgIrLMOxqOKggKBgAgIrLMOxqOKggKVgAgIrLMOxqOKggKpgAgIrLMOxqOKggK9gAgIrLMOxqOVgQK8ALEBAAEQEBRgAGFgv9AAIAAAo4qCAtGACAissw7Go4qCAuWACAissw7Go4qCAvmACAissw7Go4qCAw2ACAissw7Go4qCAyGACAissw7Go5WBAyAAsQEAARAQABgAGFgv9AAIAACjioIDNYAICKyzDsajioIDSYAICKyzDsajioIDXYAICKyzDsajioIDcYAICKyzDsajioIDhYAICKyzDsajlYEDhACxAQABEBAAGAAYWC/0AAgAAKOKggOZgAgIrLMOxqOKggOtgAgIrLMOxqOKggPBgAgIrLMOxqOKggPVgAgIrLMOxqOKggPpgAgIrLMOxqOVgQPoALEBAAEQEAAYABhYL/QACAAAo4qCA/2ACAissw7Go4qCBBGACAissw7Go4qCBCWACAissw7Go4qCBDmACAissw7Go4qCBE2ACAissw7Go5WBBEwAsQEAARAQABgAGFgv9AAIAACjioIEYYAICKyzDsajioIEdYAICKyzDsajioIEiYAICKyzDsajioIEnYAICKyzDsajioIEsYAICKyzDsajlYEEsACxAQABEBAAGAAYWC/0AAgAAKOKggTFgAgIrLMOxqOKggTZgAgIrLMOxqOKggTtgAgIrLMOxqOKggUBgAgIrLMOxqOKggUVgAgIrLMOxqOVgQUUALEBAAEQEAAYABhYL/QACAAAo4qCBSmACAissw7Go4qCBT2ACAissw7Go4qCBVGACAissw7Go4qCBWWACAissw7Go4qCBXmACAissw7Go5WBBXgAsQEAARAQABgAGFgv9AAIAACjioIFjYAICKyzDsajioIFoYAICKyzDsajioIFtYAICKyzDsajioIFyYAICKyzDsajioIF3YAICKyzDsajlYEF3ACxAQABEBAAGAAYWC/0AAgAAKOKggXxgAgIrLMOxqOKggYFgAgIrLMOxqOKggYZgAgIrLMOxqOKggYtgAgIrLMOxqOKggZBgAgIrLMOxqOVgQZAALEBAAEQEAAYABhYL/QACAAAo4qCBlWACAissw7Go4qCBmmACAissw7Go4qCBn2ACAissw7Go4qCBpGACAissw7Go4qCBqWACAissw7Go5WBBqQAsQEAARAQABgAGFgv9AAIAACjioIGuYAICKyzDsajioIGzYAICKyzDsajioIG4YAICKyzDsajioIG9YAICKyzDsajioIHCYAICKyzDsajlYEHCACxAQABEBAUYABhYL/QACAAAKOKggcdgAgIrLMOxqOKggcxgAgIrLMOxqOKggdFgAgIrLMOxqOKggdZgAgIrLMOxqOKggdtgAgIrLMOxqOVgQdsALEBAAEQEAAYABhYL/QACAAAo4qCB4GACAissw7Go4qCB5WACAissw7Go4qCB6mACAissw7Go4qCB72ACAissw7GoJOhioIH0QAICKyzDsZ1ooQAzf5gHFO7a5G7j7OBALeK94EB8YICYPCBEA==";
+let awake=false,lock=null,vid=null;
+async function keepAwake(){
+  if(!awake||document.visibilityState!=="visible")return;
+  try{if("wakeLock" in navigator&&window.isSecureContext&&!lock){lock=await navigator.wakeLock.request("screen");lock.addEventListener("release",()=>lock=null);return}}catch(e){}
+  if(!vid){vid=document.createElement("video");vid.setAttribute("playsinline","");vid.setAttribute("muted","");vid.muted=true;vid.loop=true;
+    for(const [src,type] of [[BLANK,"video/mp4"],[BLANK_WEBM,"video/webm"]]){const el=document.createElement("source");el.src=src;el.type=type;vid.appendChild(el)}
+   
+    vid.style.cssText="position:fixed;width:1px;height:1px;opacity:.01;left:0;bottom:0;pointer-events:none";document.body.appendChild(vid)}
+  try{await vid.play()}catch(e){}
+}
+function setAwake(on){awake=on;const b=$("awakeBtn");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);b.textContent=on?"🔆 Écran : allumé":"🔆 Écran : veille";
+  if(on)keepAwake();else{if(vid)vid.pause();if(lock){lock.release();lock=null}}
+  try{localStorage.setItem("gt7-awake",on?"1":"0")}catch(e){}}
+$("awakeBtn").addEventListener("click",()=>setAwake(!awake));
+document.addEventListener("visibilitychange",keepAwake);
+// activé par défaut : démarre au premier appui sur l'écran (les téléphones exigent un geste)
+let wantAwake=true;try{wantAwake=localStorage.getItem("gt7-awake")!=="0"}catch(e){}
+if(wantAwake)document.addEventListener("click",e=>{if(e.target.closest("#awakeBtn"))return;if(!awake)setAwake(true)},{once:true});
+</script>
+</body>
+</html>

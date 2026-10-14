@@ -8,6 +8,15 @@ Fonctionne sur iPhone, Android et ordinateur, hors ligne une fois installée. Te
 
 ---
 
+## GT7 Race Engineer (télémétrie en direct)
+
+Le dossier [`race-engineer`](race-engineer/) contient un ingénieur de course pour GT7 : un petit programme pour PC Windows reçoit la télémétrie de la PS5 et l'affiche en direct sur ton téléphone (chrono, carburant et tours restants, pneus, pilotage, historique), avec un ingénieur vocal en français. Ta vraie conso et tes temps par gomme s'envoient en un clic dans la stratégie incluse.
+
+**Télécharger :** bouton vert **Code → Download ZIP** sur cette page, puis garde le dossier `race-engineer`.
+Installation pas à pas : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md).
+
+---
+
 ## Installer sur iPhone
 
 1. Ouvre le lien de l'app dans **Safari**.
