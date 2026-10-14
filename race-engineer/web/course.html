@@ -54,15 +54,16 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 /* quatre tuiles */
 /* portrait : carburant | course, puis chrono et pneus sur toute la largeur ; paysage : une seule ligne */
 .tiles{flex:1;display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:1.15fr 1fr 1fr;
-  grid-template-areas:"fuel lap" "time time" "tyre tyre";--big:clamp(40px,min(14vw,11vh),150px);--time:clamp(34px,min(13vw,9vh),120px)}
+  grid-template-areas:"fuel lap" "time time" "tyre tyre";--big:clamp(40px,min(16vw,12vh),230px);--time:clamp(34px,min(18.5vw,11vh),210px)}
 @media (orientation:landscape){.tiles{grid-template-columns:1fr 1.45fr 1fr 1fr;grid-template-rows:1fr;grid-template-areas:"fuel time lap tyre";
-  --big:clamp(34px,min(7vw,24vh),150px);--time:clamp(30px,min(5.4vw,20vh),120px)}}
+  --big:clamp(34px,min(7vw,24vh),190px);--time:clamp(30px,min(5.4vw,20vh),170px)}}
 #tFuel{grid-area:fuel}#tTime{grid-area:time}#tLap{grid-area:lap}#tTyre{grid-area:tyre}
 .tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-width:0;min-height:0;overflow:hidden}
 .lbl{font:600 clamp(13px,2.4vw,17px) var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 8px}
 .lbl span{white-space:nowrap}
 @media (orientation:landscape) and (max-height:500px){.lbl{font-size:13px;letter-spacing:.06em}}
-.huge{font:700 var(--big)/.95 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap}
+.val{display:flex;flex-direction:column;gap:.35em}
+.huge{font:700 var(--big)/1.05 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap}
 .sub{font:600 clamp(18px,3.6vw,28px) var(--f-mono);font-variant-numeric:tabular-nums}
 .unit{font:600 clamp(15px,2.8vw,20px) var(--f-display);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .ok{color:var(--ok)}.bad{color:var(--accent)}.wrn{color:var(--warn)}
@@ -96,7 +97,7 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 <main class="tiles" id="tiles">
   <section class="tile" id="tFuel">
     <div class="lbl"><span>Carburant</span><span id="fuelL">– L</span></div>
-    <div><div class="huge" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
+    <div class="val"><div class="huge" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
     <div class="gauge"><i id="gauge" style="width:0"></i></div>
   </section>
   <section class="tile" id="tTime">
@@ -106,7 +107,7 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
   </section>
   <section class="tile" id="tLap">
     <div class="lbl"><span>Course</span><span id="cons">– L/tour</span></div>
-    <div><div class="huge" id="lap">–</div><div class="unit" id="lapUnit">tour</div></div>
+    <div class="val"><div class="huge" id="lap" style="font-size:calc(var(--big) * var(--lapk,1))">–</div><div class="unit" id="lapUnit">tour</div></div>
     <div class="sub" id="pos">–</div>
   </section>
   <section class="tile" id="tTyre">
@@ -175,6 +176,7 @@ function render(s){
   // course
   $("lap").textContent=L.total_laps>0?`${L.lap}/${L.total_laps}`:L.lap;
   $("lapUnit").textContent=L.total_laps>0?"tours":"tour";
+  $("lap").style.setProperty("--lapk",Math.min(1,4/Math.max(1,$("lap").textContent.length)));
   $("pos").textContent=L.pos>0?`P${L.pos}${L.cars>0?" / "+L.cars:""}`:"";
   // pneus
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.textContent=fin(t)?Math.round(t):"–"});
