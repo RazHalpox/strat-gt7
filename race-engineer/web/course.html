@@ -52,6 +52,12 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 @keyframes pulse{50%{background:#8f1220}}
 @media (prefers-reduced-motion:reduce){.box.crit{animation:none}}
 
+/* bande radio */
+.radio{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:6px;padding:8px 14px;
+  font:600 clamp(16px,2.6vw,24px)/1.25 var(--f-display);transition:opacity .6s}
+.radio b{color:var(--ok);text-transform:uppercase;letter-spacing:.08em;font-size:.8em;white-space:nowrap}
+.radio.old{opacity:.45}
+
 /* quatre tuiles */
 /* portrait : carburant | course, puis chrono et pneus sur toute la largeur ; paysage : une seule ligne */
 .tiles{flex:1;display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:1.15fr 1fr 1fr;
@@ -96,6 +102,8 @@ a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offse
 
 <div class="box" id="box" hidden><b id="boxTitle">Box box</b><span id="boxText"></span></div>
 
+<div class="radio" id="radio" hidden><b>📻 Radio</b><span id="radioText"></span></div>
+
 <div class="waitbox" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
 
 <main class="tiles" id="tiles">
@@ -133,6 +141,12 @@ const cleanLaps=laps=>laps.filter(l=>!l.pit&&fin(l.fuel)&&l.fuel>0.05&&l.ms>0);
 const avgFuel=(laps,n)=>{const c=cleanLaps(laps).slice(-n);return c.length?c.reduce((s,l)=>s+l.fuel,0)/c.length:NaN};
 const tyreColor=t=>!fin(t)?"var(--panel-2)":t<55?"var(--cold)":t<=95?"var(--ok)":t<=110?"var(--warn)":"var(--accent)";
 
+
+/* ---- bande radio : le dernier message de l'ingénieur, affiché même sans le son ---- */
+let radioT=null;
+function radio(text){const r=document.getElementById("radio");if(!r)return;
+  document.getElementById("radioText").textContent=text;r.hidden=false;r.classList.remove("old");
+  clearTimeout(radioT);radioT=setTimeout(()=>r.classList.add("old"),20000)}
 /* ---- ingénieur vocal ---- */
 let voiceOn=false,lastSpokenLap=null,fuelWarned=0;
 function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=1.05;
@@ -141,8 +155,10 @@ function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=M
 $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
   $("voiceBtn").textContent=voiceOn?"🎧 On":"🎧 Off";if(voiceOn)say("Radio check. Je suis avec toi.")});
 function engineer(laps,live,lapsLeft){
-  if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;
-  const first=lastSpokenLap===null;lastSpokenLap=last.n;if(first)return;
+  // premier contact : message de liaison, sans relire les tours déjà faits
+  if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
+    const L=live||{};radio(`Liaison radio établie.${L.lap?` Tour ${L.lap} en cours.`:""}${fin(lapsLeft)?` Carburant pour ${Math.floor(lapsLeft)} tours.`:""}`);return}
+  if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;lastSpokenLap=last.n;
   const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   let t=`Tour ${last.n}, ${sayLap(last.ms)}.`;
   if(last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
@@ -150,7 +166,7 @@ function engineer(laps,live,lapsLeft){
     if(n<=1){t+=" Carburant critique, rentre au stand ce tour-ci.";}
     else if(n<=3){t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;}
     else if(last.n%3===0)t+=` Carburant pour ${n} tours.`;}
-  say(t);
+  radio(t);say(t);
 }
 
 
