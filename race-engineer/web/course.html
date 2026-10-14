@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GT7 Race Engineer – Course</title>
+<meta name="theme-color" content="#0c0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GT7 Course">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@600;700&display=swap">
+<style>
+/* Jour de course : quatre grands chiffres lisibles d'un coup d'œil, une bannière d'arrêt quand il faut rentrer */
+:root{
+  --bg:#07090c; --panel:#11161c; --panel-2:#1a2129; --line:#222b35; --fg:#f1f4f7; --muted:#8a96a3;
+  --accent:#ff3b4e; --ok:#3ddc84; --warn:#ffc833; --cold:#4fa8ff;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg);height:100%}
+body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--f-display);-webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+.wrap{display:flex;flex-direction:column;gap:10px;height:100vh;height:100dvh;padding-block:10px;
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+nav{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
+nav a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
+nav a[aria-current=page]{background:var(--fg);color:var(--bg)}
+.tools{display:flex;gap:6px;align-items:center}
+.pill{white-space:nowrap;font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;display:inline-flex;align-items:center;gap:6px}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.live{background:rgba(61,220,132,.14);color:var(--ok)}.pill.demo{background:rgba(255,200,51,.14);color:var(--warn)}.pill.wait{background:rgba(138,150,163,.16);color:var(--muted)}
+.btn{background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 10px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+a:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* bannière d'arrêt */
+.box{border-radius:8px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.box b{font:700 clamp(34px,8vw,64px)/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.box span{font:600 clamp(16px,3.6vw,24px) var(--f-display);text-transform:uppercase;letter-spacing:.05em}
+.box.crit{background:var(--accent);color:#fff;animation:pulse 1s steps(2,end) infinite}
+.box.warn{background:var(--warn);color:#07090c}
+@keyframes pulse{50%{background:#8f1220}}
+@media (prefers-reduced-motion:reduce){.box.crit{animation:none}}
+
+/* quatre tuiles */
+/* portrait : carburant | course, puis chrono et pneus sur toute la largeur ; paysage : une seule ligne */
+.tiles{flex:1;display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:1.15fr 1fr 1fr;
+  grid-template-areas:"fuel lap" "time time" "tyre tyre";--big:clamp(40px,min(14vw,11vh),150px);--time:clamp(34px,min(13vw,9vh),120px)}
+@media (orientation:landscape){.tiles{grid-template-columns:1fr 1.45fr 1fr 1fr;grid-template-rows:1fr;grid-template-areas:"fuel time lap tyre";
+  --big:clamp(34px,min(7vw,24vh),150px);--time:clamp(30px,min(5.4vw,20vh),120px)}}
+#tFuel{grid-area:fuel}#tTime{grid-area:time}#tLap{grid-area:lap}#tTyre{grid-area:tyre}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-width:0;min-height:0;overflow:hidden}
+.lbl{font:600 clamp(13px,2.4vw,17px) var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 8px}
+.lbl span{white-space:nowrap}
+@media (orientation:landscape) and (max-height:500px){.lbl{font-size:13px;letter-spacing:.06em}}
+.huge{font:700 var(--big)/.95 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap}
+.sub{font:600 clamp(18px,3.6vw,28px) var(--f-mono);font-variant-numeric:tabular-nums}
+.unit{font:600 clamp(15px,2.8vw,20px) var(--f-display);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ok{color:var(--ok)}.bad{color:var(--accent)}.wrn{color:var(--warn)}
+.gauge{height:12px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+.gauge i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.tyres{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;min-height:0}
+.tyre{border-radius:8px;display:flex;align-items:center;justify-content:center;font:700 clamp(26px,6vw,44px) var(--f-mono);color:#07090c;min-height:0;transition:background .4s}
+.wait{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:18px;gap:6px}
+.wait b{font:700 28px var(--f-display);text-transform:uppercase;color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <nav aria-label="Écrans">
+    <a href="course.html" aria-current="page">Course</a>
+    <a href="./">Complet</a>
+    <a href="strategie.html">Stratégie</a>
+  </nav>
+  <div class="tools">
+    <span class="pill wait" id="status">Connexion…</span>
+    <button class="btn" id="voiceBtn" type="button" aria-pressed="false" aria-label="Ingénieur vocal">🎧 Off</button>
+    <button class="btn" id="awakeBtn" type="button" aria-pressed="false" aria-label="Garder l'écran allumé">🔆 Veille</button>
+  </div>
+</header>
+
+<div class="box" id="box" hidden><b id="boxTitle">Box box</b><span id="boxText"></span></div>
+
+<div class="wait" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
+
+<main class="tiles" id="tiles">
+  <section class="tile" id="tFuel">
+    <div class="lbl"><span>Carburant</span><span id="fuelL">– L</span></div>
+    <div><div class="huge" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
+    <div class="gauge"><i id="gauge" style="width:0"></i></div>
+  </section>
+  <section class="tile" id="tTime">
+    <div class="lbl"><span>Dernier tour</span><span id="best">meilleur –</span></div>
+    <div class="huge" id="last" style="font-size:var(--time)">–</div>
+    <div class="sub" id="delta">–</div>
+  </section>
+  <section class="tile" id="tLap">
+    <div class="lbl"><span>Course</span><span id="cons">– L/tour</span></div>
+    <div><div class="huge" id="lap">–</div><div class="unit" id="lapUnit">tour</div></div>
+    <div class="sub" id="pos">–</div>
+  </section>
+  <section class="tile" id="tTyre">
+    <div class="lbl"><span>Pneus</span><span>°C</span></div>
+    <div class="tyres" id="tyres"></div>
+  </section>
+</main>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fin=x=>typeof x==="number"&&isFinite(x);
+const lapFmt=ms=>{if(!fin(ms)||ms<=0)return"–";const m=Math.floor(ms/60000),s=(ms%60000)/1000;return m+":"+s.toFixed(3).padStart(6,"0")};
+const f1=x=>fin(x)?(Math.round(x*10)/10).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1}):"–";
+const f2=x=>fin(x)?x.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}):"–";
+const sgnS=ms=>fin(ms)?(ms>0?"+":ms<0?"−":"±")+(Math.abs(ms)/1000).toFixed(3).replace(".",","):"–";
+$("tyres").innerHTML=[0,1,2,3].map(i=>`<div class="tyre" id="t${i}">–</div>`).join("");
+const cleanLaps=laps=>laps.filter(l=>!l.pit&&fin(l.fuel)&&l.fuel>0.05&&l.ms>0);
+const avgFuel=(laps,n)=>{const c=cleanLaps(laps).slice(-n);return c.length?c.reduce((s,l)=>s+l.fuel,0)/c.length:NaN};
+const tyreColor=t=>!fin(t)?"var(--panel-2)":t<55?"var(--cold)":t<=95?"var(--ok)":t<=110?"var(--warn)":"var(--accent)";
+
+/* ---- ingénieur vocal ---- */
+let voiceOn=false,lastSpokenLap=null,fuelWarned=0;
+function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=1.05;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith("fr"));if(v)u.voice=v;speechSynthesis.speak(u)}
+function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
+$("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
+  $("voiceBtn").textContent=voiceOn?"🎧 On":"🎧 Off";if(voiceOn)say("Radio check. Je suis avec toi.")});
+function engineer(laps,live,lapsLeft){
+  if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;
+  const first=lastSpokenLap===null;lastSpokenLap=last.n;if(first)return;
+  const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
+  let t=`Tour ${last.n}, ${sayLap(last.ms)}.`;
+  if(last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
+  if(fin(lapsLeft)){const n=Math.floor(lapsLeft);
+    if(n<=1){t+=" Carburant critique, rentre au stand ce tour-ci.";}
+    else if(n<=3){t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;}
+    else if(last.n%3===0)t+=` Carburant pour ${n} tours.`;}
+  say(t);
+}
+
+
+function render(s){
+  const L=s.live||{},laps=s.laps||[],mode=s.mode;
+  const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
+  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente";
+  $("waitBox").hidden=mode!=="attente";$("tiles").hidden=mode==="attente";
+  if(!fin(L.fuel))return;
+  // carburant
+  const cons=avgFuel(laps,5),left=cons>0?L.fuel/cons:NaN,pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN;
+  $("fuelLaps").textContent=fin(left)?f1(left):"–";
+  $("fuelLaps").className="huge"+(fin(left)&&left<=2?" bad":fin(left)&&left<=4?" wrn":"");
+  $("fuelL").textContent=f1(L.fuel)+" L";
+  $("gauge").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";
+  $("gauge").style.background=fin(left)&&left<=2?"var(--accent)":fin(left)&&left<=4?"var(--warn)":"var(--ok)";
+  $("cons").textContent=fin(cons)?f2(cons)+" L/tour":"– L/tour";
+  // bannière d'arrêt
+  const box=$("box");
+  if(fin(left)&&left<2){box.hidden=false;box.className="box crit";$("boxTitle").textContent="Box box";$("boxText").textContent="Rentre au stand ce tour-ci"}
+  else if(fin(left)&&left<4){box.hidden=false;box.className="box warn";$("boxTitle").textContent=`Arrêt dans ${Math.floor(left)} tours`;$("boxText").textContent="Prépare le stand"}
+  else box.hidden=true;
+  // chrono
+  $("last").textContent=lapFmt(L.last_ms);$("best").textContent="meilleur "+lapFmt(L.best_ms);
+  const d=L.last_ms>0&&L.best_ms>0?L.last_ms-L.best_ms:NaN;
+  $("delta").textContent=fin(d)?(d===0?"Meilleur tour":sgnS(d)+" s"):"–";$("delta").className="sub "+(fin(d)&&d<=0?"ok":"bad");
+  // course
+  $("lap").textContent=L.total_laps>0?`${L.lap}/${L.total_laps}`:L.lap;
+  $("lapUnit").textContent=L.total_laps>0?"tours":"tour";
+  $("pos").textContent=L.pos>0?`P${L.pos}${L.cars>0?" / "+L.cars:""}`:"";
+  // pneus
+  (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.textContent=fin(t)?Math.round(t):"–"});
+  engineer(laps,L,left);
+}
+
+function connect(){
+  const es=new EventSource("events");
+  es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(err){}};
+  es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};
+}
+connect();
+
+// garder l'écran allumé pendant la course
+// Garder l'écran allumé. Le "wake lock" du navigateur n'existe qu'en HTTPS ; la page étant servie
+// par le PC en HTTP, on utilise aussi une mini vidéo noire muette en boucle, qui empêche la mise en veille.
+const BLANK="data:video/mp4;base64,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";
+const BLANK_WEBM="data:video/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAAkfEU2bdLpNu4tTq4QVSalmU6yBoU27i1OrhBZUrmtTrIHYTbuMU6uEElTDZ1OsggGETbuMU6uEHFO7a1OsggkJ7AEAAAAAAABZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmsirXsYMPQkBNgI1MYXZmNjAuMTYuMTAwV0GNTGF2ZjYwLjE2LjEwMESJiECfYAAAAAAAFlSua0CmrgEAAAAAAAA414EBc8WIyzVHbRTleD+cgQAitZyDdW5kiIEAhoVWX1ZQOIOBASPjg4QF9eEA4ImwgRC6gRCagQKuAQAAAAAAAFzXgQJzxYhGbWTAxNgmv5yBACK1nIN1bmSIgQCGhkFfT1BVU1aqg2MuoFa7hATEtACDgQLhkZ+BAbWIQL9AAAAAAABiZIEQY6KTT3B1c0hlYWQBATgBQB8AAAAAABJUw2dA1nNzoGPAgGfImkWjh0VOQ09ERVJEh41MYXZmNjAuMTYuMTAwc3PWY8CLY8WIyzVHbRTleD9nyKFFo4dFTkNPREVSRIeUTGF2YzYwLjMxLjEwMiBsaWJ2cHhnyKFFo4hEVVJBVElPTkSHkzAwOjAwOjAyLjAwMDAwMDAwMABzc9djwItjxYhGbWTAxNgmv2fIokWjh0VOQ09ERVJEh5VMYXZjNjAuMzEuMTAyIGxpYm9wdXNnyKFFo4hEVVJBVElPTkSHkzAwOjAwOjAyLjAwODAwMDAwMAAfQ7Z1RqPngQCji4IAAIAIC+Y7I6tgo6OBAACAEAIAnQEqEAAQAABHCIWFiIWEiAICAAwNYAD+/6tQgKOKggAVgAgIrLMOxqOKggApgAgIrLMOxqOKggA9gAgIrLMOxqOKggBRgAgIrLMOxqOKggBlgAgIrLMOxqOVgQBkALEBAAEQEAAYABhYL/QACAAAo4qCAHmACAissw7Go4qCAI2ACAissw7Go4qCAKGACAissw7Go4qCALWACAissw7Go4qCAMmACAissw7Go5WBAMgAsQEAARAQABgAGFgv9AAIAACjioIA3YAICKyzDsajioIA8YAICKyzDsajioIBBYAICKyzDsajioIBGYAICKyzDsajioIBLYAICKyzDsajlYEBLACxAQABEBAAGAAYWC/0AAgAAKOKggFBgAgIrLMOxqOKggFVgAgIrLMOxqOKggFpgAgIrLMOxqOKggF9gAgIrLMOxqOKggGRgAgIrLMOxqOVgQGQALEBAAEQEAAYABhYL/QACAAAo4qCAaWACAissw7Go4qCAbmACAissw7Go4qCAc2ACAissw7Go4qCAeGACAissw7Go4qCAfWACAissw7Go5WBAfQAsQEAARAQABgAGFgv9AAIAACjioICCYAICKyzDsajioICHYAICKyzDsajioICMYAICKyzDsajioICRYAICKyzDsajioICWYAICKyzDsajlYECWACxAQABEBAAGAAYWC/0AAgAAKOKggJtgAgIrLMOxqOKggKBgAgIrLMOxqOKggKVgAgIrLMOxqOKggKpgAgIrLMOxqOKggK9gAgIrLMOxqOVgQK8ALEBAAEQEBRgAGFgv9AAIAAAo4qCAtGACAissw7Go4qCAuWACAissw7Go4qCAvmACAissw7Go4qCAw2ACAissw7Go4qCAyGACAissw7Go5WBAyAAsQEAARAQABgAGFgv9AAIAACjioIDNYAICKyzDsajioIDSYAICKyzDsajioIDXYAICKyzDsajioIDcYAICKyzDsajioIDhYAICKyzDsajlYEDhACxAQABEBAAGAAYWC/0AAgAAKOKggOZgAgIrLMOxqOKggOtgAgIrLMOxqOKggPBgAgIrLMOxqOKggPVgAgIrLMOxqOKggPpgAgIrLMOxqOVgQPoALEBAAEQEAAYABhYL/QACAAAo4qCA/2ACAissw7Go4qCBBGACAissw7Go4qCBCWACAissw7Go4qCBDmACAissw7Go4qCBE2ACAissw7Go5WBBEwAsQEAARAQABgAGFgv9AAIAACjioIEYYAICKyzDsajioIEdYAICKyzDsajioIEiYAICKyzDsajioIEnYAICKyzDsajioIEsYAICKyzDsajlYEEsACxAQABEBAAGAAYWC/0AAgAAKOKggTFgAgIrLMOxqOKggTZgAgIrLMOxqOKggTtgAgIrLMOxqOKggUBgAgIrLMOxqOKggUVgAgIrLMOxqOVgQUUALEBAAEQEAAYABhYL/QACAAAo4qCBSmACAissw7Go4qCBT2ACAissw7Go4qCBVGACAissw7Go4qCBWWACAissw7Go4qCBXmACAissw7Go5WBBXgAsQEAARAQABgAGFgv9AAIAACjioIFjYAICKyzDsajioIFoYAICKyzDsajioIFtYAICKyzDsajioIFyYAICKyzDsajioIF3YAICKyzDsajlYEF3ACxAQABEBAAGAAYWC/0AAgAAKOKggXxgAgIrLMOxqOKggYFgAgIrLMOxqOKggYZgAgIrLMOxqOKggYtgAgIrLMOxqOKggZBgAgIrLMOxqOVgQZAALEBAAEQEAAYABhYL/QACAAAo4qCBlWACAissw7Go4qCBmmACAissw7Go4qCBn2ACAissw7Go4qCBpGACAissw7Go4qCBqWACAissw7Go5WBBqQAsQEAARAQABgAGFgv9AAIAACjioIGuYAICKyzDsajioIGzYAICKyzDsajioIG4YAICKyzDsajioIG9YAICKyzDsajioIHCYAICKyzDsajlYEHCACxAQABEBAUYABhYL/QACAAAKOKggcdgAgIrLMOxqOKggcxgAgIrLMOxqOKggdFgAgIrLMOxqOKggdZgAgIrLMOxqOKggdtgAgIrLMOxqOVgQdsALEBAAEQEAAYABhYL/QACAAAo4qCB4GACAissw7Go4qCB5WACAissw7Go4qCB6mACAissw7Go4qCB72ACAissw7GoJOhioIH0QAICKyzDsZ1ooQAzf5gHFO7a5G7j7OBALeK94EB8YICYPCBEA==";
+let awake=false,lock=null,vid=null;
+async function keepAwake(){
+  if(!awake||document.visibilityState!=="visible")return;
+  try{if("wakeLock" in navigator&&window.isSecureContext&&!lock){lock=await navigator.wakeLock.request("screen");lock.addEventListener("release",()=>lock=null);return}}catch(e){}
+  if(!vid){vid=document.createElement("video");vid.setAttribute("playsinline","");vid.setAttribute("muted","");vid.muted=true;vid.loop=true;
+    for(const [src,type] of [[BLANK,"video/mp4"],[BLANK_WEBM,"video/webm"]]){const el=document.createElement("source");el.src=src;el.type=type;vid.appendChild(el)}
+   
+    vid.style.cssText="position:fixed;width:1px;height:1px;opacity:.01;left:0;bottom:0;pointer-events:none";document.body.appendChild(vid)}
+  try{await vid.play()}catch(e){}
+}
+function setAwake(on){awake=on;const b=$("awakeBtn");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on);b.textContent=on?"🔆 Allumé":"🔆 Veille";
+  if(on)keepAwake();else{if(vid)vid.pause();if(lock){lock.release();lock=null}}
+  try{localStorage.setItem("gt7-awake",on?"1":"0")}catch(e){}}
+$("awakeBtn").addEventListener("click",()=>setAwake(!awake));
+document.addEventListener("visibilitychange",keepAwake);
+// activé par défaut : démarre au premier appui sur l'écran (les téléphones exigent un geste)
+let wantAwake=true;try{wantAwake=localStorage.getItem("gt7-awake")!=="0"}catch(e){}
+if(wantAwake)document.addEventListener("click",e=>{if(e.target.closest("#awakeBtn"))return;if(!awake)setAwake(true)},{once:true});
+</script>
+</body>
+</html>

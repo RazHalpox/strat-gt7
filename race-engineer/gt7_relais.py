@@ -335,7 +335,8 @@ def main():
     print()
     print("  Sur ton telephone (meme Wi-Fi que le PC), ouvre :")
     print()
-    print("      " + url)
+    print("      " + url + "/course.html   (ecran jour de course)")
+    print("      " + url + "               (dashboard complet)")
     print()
     print("  Laisse cette fenetre ouverte pendant la course. Ctrl+C pour quitter.")
     if not demo:

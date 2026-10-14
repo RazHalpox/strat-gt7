@@ -41,7 +41,17 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 
 ---
 
-## Le dashboard
+## L'écran Course (jour de course)
+
+Ouvre `http://IP-DU-PC:8777/course.html`, ou l'onglet **Course**. Il n'affiche que l'essentiel, en très gros :
+- **tours de carburant restants**, avec les litres et la jauge ;
+- **dernier tour** et écart au meilleur ;
+- **tour en cours** et position ;
+- **température des 4 pneus**.
+
+Quand il te reste moins de 4 tours de carburant, une bannière jaune annonce l'arrêt. Sous 2 tours, elle passe au rouge clignotant : **BOX BOX**. L'ingénieur vocal et le bouton écran allumé y sont aussi. En paysage sur un grand écran, les 4 blocs se mettent sur une ligne.
+
+## Le dashboard complet
 
 - **Chrono** : tour en cours, dernier tour, meilleur tour, écart, position, moyenne des 3 derniers tours.
 - **Carburant** : litres, jauge, **tours restants** (calculés avec ta conso réelle), conso par tour, et carburant manquant pour finir si la course est au nombre de tours.
