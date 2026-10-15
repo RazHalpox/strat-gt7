@@ -85,6 +85,29 @@ tr.sel td{background:var(--flag-soft)}
 tr.pit td{background:var(--accent-soft);font-size:13px}
 .tag{display:inline-block;font:600 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:var(--ok);color:var(--surface);margin-left:6px;vertical-align:middle}
 .tag.full{background:var(--fg);color:var(--surface);margin:0}
+/* choix des gommes */
+.modebar{display:inline-flex;border:1px solid var(--input-line);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.modebar button{background:var(--input);color:var(--muted);border:0;padding:9px 16px;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.modebar button[aria-pressed=true]{background:var(--fg);color:var(--surface)}
+.relays{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.relay{display:flex;align-items:center;gap:6px;background:var(--input);border:1px solid var(--input-line);border-radius:6px;padding:5px 6px 5px 10px}
+.relay .rl{font:600 13px var(--f-display);letter-spacing:.06em;color:var(--muted);min-width:22px}
+.relay .pick3{display:flex;gap:3px}
+.relay .pick3 button{background:transparent;border:2px solid transparent;border-radius:50%;padding:0;cursor:pointer;opacity:.35;line-height:0}
+.relay .pick3 button[aria-pressed=true]{opacity:1;border-color:var(--fg)}
+.relay .pick3 .chip{width:28px;height:28px;font-size:14px}
+.relay .x{background:transparent;border:0;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px}
+.relay .x:hover{color:var(--accent)}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.mini{background:var(--input);color:var(--fg);border:1px solid var(--input-line);border-radius:4px;padding:7px 12px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.mini.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.mini.armed{background:var(--flag);border-color:var(--flag);color:#13171c}
+.note.bad{color:var(--accent)}
+.saveline{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.saveline input{flex:1;min-width:200px}
+.sv-acts{display:flex;gap:6px;justify-content:flex-end}
+.sv-sub{display:block;font:400 12px var(--f-body);color:var(--muted)}
+.modebar button:focus-visible,.relay button:focus-visible,.mini:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .tag.tyre{background:transparent;color:var(--fg);border:1px solid var(--fg);margin:0}
 .chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font:700 13px var(--f-display);border:3px solid;background:var(--surface);color:var(--fg);flex:none;vertical-align:middle}
 .chip.S{border-color:var(--soft)}.chip.M{border-color:var(--med)}.chip.H{border-color:var(--hard)}
@@ -134,6 +157,24 @@ img{max-width:100%}
 <section id="v-strat" class="stack">
   <div id="alert" class="warn" hidden></div>
   <div class="kpis" id="kpis"></div>
+  <section class="panel" id="tyrePanel">
+    <h2>Choix des gommes</h2>
+    <div class="modebar" role="group" aria-label="Choix des gommes">
+      <button type="button" data-mode="auto">Automatique</button>
+      <button type="button" data-mode="manual">Je choisis</button>
+    </div>
+    <div id="manualBox" hidden>
+      <div class="relays" id="relays"></div>
+      <div class="btnrow">
+        <button type="button" class="mini" data-act="add">+ Ajouter un relais</button>
+        <button type="button" class="mini" data-act="hms">Dur → Medium → Soft</button>
+        <button type="button" class="mini" data-act="smh">Soft → Medium → Dur</button>
+        <button type="button" class="mini" data-act="best">Copier la conseillée</button>
+      </div>
+      <p class="note" id="manualNote"></p>
+    </div>
+    <p class="note" id="autoNote" style="margin-top:0">L'outil choisit l'ordre des gommes le plus rapide. Passe en « Je choisis » pour décider toi-même de la gomme de chaque relais : les tours sont alors répartis de façon équilibrée entre tes relais.</p>
+  </section>
   <section class="panel">
     <h2 id="tlTitle">Déroulé de la course</h2>
     <div style="padding-top:18px"><div class="bar" id="bar"></div></div>
@@ -154,6 +195,18 @@ img{max-width:100%}
       <tbody id="plan"></tbody>
     </table></div>
     <p class="note">Le carburant indiqué est celui à mettre à l'arrêt <b>avant</b> le relais : juste ce qu'il faut pour le finir. S'il reste assez d'essence, l'arrêt se fait en pneus seuls.</p>
+  </section>
+  <section class="panel">
+    <h2>Stratégies sauvegardées</h2>
+    <div class="saveline">
+      <input type="text" id="saveName" maxlength="40" placeholder="Nom (ex. Spa – départ en Dur)" aria-label="Nom de la stratégie">
+      <button type="button" class="mini on" id="saveBtn">Sauvegarder la stratégie affichée</button>
+    </div>
+    <div class="tbl"><table style="min-width:760px">
+      <thead><tr><th class="l">Nom</th><th class="l">Gommes · tours par relais</th><th>Course</th><th>Conso</th><th>Arrêts</th><th>Tours</th><th>Arrivée</th><th>Stand</th><th>Écart</th><th></th></tr></thead>
+      <tbody id="saved"></tbody>
+    </table></div>
+    <p class="note" id="savedNote">Sauvegarde la stratégie affichée pour la comparer plus tard. « Afficher » recharge ses réglages et ses gommes. Les stratégies restent enregistrées sur cet appareil, même après un Reset.</p>
   </section>
   <section class="panel">
     <h2>Combien de tours avec…</h2>
@@ -221,7 +274,7 @@ img{max-width:100%}
 <script>
 const COMPS=[{k:"S",name:"Soft"},{k:"M",name:"Medium"},{k:"H",name:"Hard"}];
 const CN={S:"Soft",M:"Medium",H:"Hard"};
-const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,mTyre:1,mFuel:1,rate:4,mDeb:100,mFin:86,mTours:5,pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,
+const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,mTyre:1,mFuel:1,rate:4,mDeb:100,mFin:86,mTours:5,pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,manual:false,seq:[],
   S:{lap:"1:44.200",life:12,req:true},M:{lap:"1:45.000",life:20,req:true},H:{lap:"1:45.900",life:30,req:true}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 let S=clone(DEF),tab="strat",selN=null;
@@ -287,10 +340,12 @@ function sequences(k,P){const out=[],C=P.comps;
     const seen=new Set();flat.forEach((f,fi)=>{if(seen.has(f.k))return;seen.add(f.k);const rest=flat.slice();rest.splice(fi,1);out.push([f,...rest])})}
   return out}
 // répartit L tours : 1 tour mini par relais, puis on remplit d'abord les gommes les plus rapides
-function simulate(seq,caps,L,P){
+function simulate(seq,caps,L,P,bal){
   const k=seq.length,s=caps.map(()=>1);let rem=L-k;
-  const order=seq.map((g,i)=>i).sort((a,b)=>seq[a].lap-seq[b].lap||caps[b]-caps[a]);
-  for(const i of order){const a=Math.min(caps[i]-s[i],rem);s[i]+=a;rem-=a;if(!rem)break}
+  if(bal){// gommes choisies : tours répartis au plus égal entre les relais
+    while(rem>0){let j=-1;for(let i=0;i<k;i++)if(s[i]<caps[i]&&(j<0||s[i]<s[j]))j=i;if(j<0)break;s[j]++;rem--}}
+  else{const order=seq.map((g,i)=>i).sort((a,b)=>seq[a].lap-seq[b].lap||caps[b]-caps[a]);
+    for(const i of order){const a=Math.min(caps[i]-s[i],rem);s[i]+=a;rem-=a;if(!rem)break}}
   let fuel=P.start,drive=0,pits=0,lapNo=1;const rows=[];
   for(let i=0;i<k;i++){
     let stop=null;
@@ -301,15 +356,15 @@ function simulate(seq,caps,L,P){
   }
   return{seq,s,rows,drive,pits,time:drive+pits,laps:L};
 }
-function bestForSeq(seq,P){
+function bestForSeq(seq,P,bal){
   const caps=seq.map((g,i)=>Math.min(i?P.fuelCap(P.tank):P.fuelCap(P.start),g.life));
   if(caps.some(c=>c<1))return null;
   const k=seq.length,sum=caps.reduce((a,b)=>a+b,0);
-  if(P.mode==="laps")return P.L>=k&&P.L<=sum?simulate(seq,caps,P.L,P):null;
+  if(P.mode==="laps")return P.L>=k&&P.L<=sum?simulate(seq,caps,P.L,P,bal):null;
   // course à la durée : tours de course = premier passage sur la ligne après la fin du chrono
-  if(simulate(seq,caps,sum,P).time<P.T)return null;
-  let lo=k,hi=sum;while(lo<hi){const m=Math.floor((lo+hi)/2);if(simulate(seq,caps,m,P).time>=P.T)hi=m;else lo=m+1}
-  return simulate(seq,caps,lo,P);
+  if(simulate(seq,caps,sum,P,bal).time<P.T)return null;
+  let lo=k,hi=sum;while(lo<hi){const m=Math.floor((lo+hi)/2);if(simulate(seq,caps,m,P,bal).time>=P.T)hi=m;else lo=m+1}
+  return simulate(seq,caps,lo,P,bal);
 }
 const better=(a,b,P)=>!b||(P.mode==="laps"?a.time<b.time:a.laps>b.laps||a.laps===b.laps&&a.time<b.time);
 function solve(k,P){let best=null;for(const seq of sequences(k,P)){const r=bestForSeq(seq,P);if(r&&better(r,best,P))best=r}return best}
@@ -338,19 +393,32 @@ function render(){
   // stratégies
   const list=[];let first=null;
   for(let k=kmin;k<=25;k++){if(first!==null&&k>first+3)break;const r=solve(k,P);if(r){if(first===null)first=k;list.push(r)}}
-  if(!list.length){al.hidden=false;al.textContent=P.mode==="laps"?"Aucune stratégie possible : vérifie la conso, le réservoir et la vie des gommes par rapport au nombre de tours.":"Aucune stratégie possible : un relais ne peut pas tenir assez de tours. Vérifie la conso, le réservoir et la vie des gommes.";clear();return}
+  // gommes choisies à la main
+  document.querySelectorAll("#tyrePanel .modebar button").forEach(b=>b.setAttribute("aria-pressed",(b.dataset.mode==="manual")===!!S.manual));
+  $("manualBox").hidden=!S.manual;$("autoNote").hidden=!!S.manual;
+  let manualR=null;
+  if(S.manual){renderRelays();const seq=(S.seq||[]).map(k=>P.comps.find(c=>c.k===k)).filter(Boolean);
+    manualR=seq.length?bestForSeq(seq,P,true):null;const warn=manualCheck(P),mn=$("manualNote");
+    if(!manualR){mn.className="note bad";mn.textContent=(P.mode==="laps"&&seq.length>P.L)?"Trop de relais pour le nombre de tours de la course.":`Ces ${seq.length} relais ne suffisent pas : la vie des gommes ou le carburant ne tiennent pas assez de tours. Ajoute un relais ou change les gommes. En attendant, la stratégie conseillée est affichée.`}
+    else{mn.className="note"+(warn.length?" bad":"");mn.textContent=(warn.length?"Attention, ne respecte pas tes règles : "+warn.join(", ")+". ":"")+`Tours répartis au plus égal entre tes ${seq.length} relais.`}}
+  if(!list.length&&!manualR){al.hidden=false;al.textContent=P.mode==="laps"?"Aucune stratégie possible : vérifie la conso, le réservoir et la vie des gommes par rapport au nombre de tours.":"Aucune stratégie possible : un relais ne peut pas tenir assez de tours. Vérifie la conso, le réservoir et la vie des gommes.";clear();return}
   al.hidden=true;
   let best=list[0];for(const r of list)if(better(r,best,P))best=r;
+  if(!best)best=manualR;lastBest=best;
   const nStops=r=>r.seq.length-1;
   if(selN===null||!list.find(r=>nStops(r)===selN))selN=nStops(best);
-  const sel=list.find(r=>nStops(r)===selN);
-  $("strats").innerHTML=list.map(r=>{const n=nStops(r),mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
+  const useManual=!!(S.manual&&manualR);
+  const sel=useManual?manualR:list.find(r=>nStops(r)===selN)||best;lastSel=sel;lastP=P;
+  const manualRow=manualR?(()=>{const r=manualR,mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
+    const gap=d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:r.time>best.time+0.05?`+${f1(r.time-best.time)} s`:"–";
+    return`<tr class="pick${useManual?" sel":""}" data-n="m" tabindex="0"><td>${plural(nStops(r),"arrêt")}<span class="tag" style="background:var(--fg)">Mon choix</span></td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`})():"";
+  $("strats").innerHTML=manualRow+list.map(r=>{const n=nStops(r),mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
     const gap=r===best?"–":d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:`+${f1(r.time-best.time)} s`;
-    return`<tr class="pick${n===selN?" sel":""}" data-n="${n}" tabindex="0"><td>${plural(n,"arrêt")}${r===best?'<span class="tag">Meilleure</span>':""}</td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`}).join("");
+    return`<tr class="pick${!useManual&&n===selN?" sel":""}" data-n="${n}" tabindex="0"><td>${plural(n,"arrêt")}${r===best?'<span class="tag">Meilleure</span>':""}</td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`}).join("");
   $("kpis").innerHTML=[
     ["Conso / tour",f2(P.c)+" L",`salon : conso ${S.mFuel}×`,0],
     ["Tours avec un plein",P.c>0?Math.floor(P.tank/P.c+1e-9):"∞",`${f0(P.tank)} L`,0],
-    ["Arrêts",nStops(sel),selN===nStops(best)?"stratégie conseillée":"stratégie choisie",1],
+    ["Arrêts",nStops(sel),useManual?"mon choix de gommes":selN===nStops(best)?"stratégie conseillée":"stratégie choisie",1],
     ["Tours de course",sel.laps,P.mode==="time"?"drapeau à damier inclus":"fixés",0],
     ["Arrivée",clock(sel.time),`dont ${f0(sel.pits)} s au stand`,0]
   ].map(k=>`<div class="k${k[3]?" hot":""}"><small>${k[0]}</small><b>${k[1]}</b><i>${k[2]}</i></div>`).join("");
@@ -367,9 +435,60 @@ function render(){
   $("bar").innerHTML=segs+(P.mode==="time"?`<div class="flagline" style="left:${P.T/scale*100}%"><span class="flaglbl">${clock(P.T)}</span></div>`:"");
 }
 document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;tab=b.dataset.tab;save();render()});
-$("strats").addEventListener("click",e=>{const tr=e.target.closest("tr[data-n]");if(tr){selN=+tr.dataset.n;render()}});
-$("strats").addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-n]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();selN=+tr.dataset.n;render();$("strats").querySelector(`tr[data-n="${selN}"]`)?.focus()}});
-fillForm();render();
+function pickRow(tr){if(tr.dataset.n==="m"){S.manual=true}else{S.manual=false;selN=+tr.dataset.n}save();render()}
+$("strats").addEventListener("click",e=>{const tr=e.target.closest("tr[data-n]");if(tr)pickRow(tr)});
+$("strats").addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-n]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();const n=tr.dataset.n;pickRow(tr);$("strats").querySelector(`tr[data-n="${n}"]`)?.focus()}});
+/* ---- choix des gommes à la main ---- */
+const ORDER={hms:["H","M","S"],smh:["S","M","H"]};
+function presetSeq(order,k){k=Math.max(3,k);const out=[],base=Math.floor(k/3),extra=k%3;
+  order.forEach((g,i)=>{for(let x=0;x<base+(i<extra?1:0);x++)out.push(g)});return out}
+function manualCheck(P){const seq=S.seq||[];const msgs=[];
+  const used=new Set(seq);P.comps.forEach(c=>{if(c.req&&!used.has(c.k))msgs.push(`${CN[c.k]} obligatoire absent`)});
+  if(used.size<P.nReq)msgs.push(`${P.nReq} gommes différentes demandées`);return msgs}
+function renderRelays(){
+  $("relays").innerHTML=(S.seq||[]).map((g,i)=>`<div class="relay"><span class="rl">R${i+1}</span><div class="pick3">${COMPS.map(c=>`<button type="button" data-i="${i}" data-g="${c.k}" aria-pressed="${g===c.k}" aria-label="Relais ${i+1} en ${c.name}">${chip(c.k)}</button>`).join("")}</div>${S.seq.length>1?`<button type="button" class="x" data-act="del" data-i="${i}" aria-label="Retirer le relais ${i+1}">✕</button>`:""}</div>`).join("")}
+let lastBest=null,lastSel=null,lastP=null;
+$("tyrePanel").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.mode){S.manual=b.dataset.mode==="manual";if(S.manual&&!(S.seq&&S.seq.length))S.seq=lastBest?lastBest.seq.map(g=>g.k):["H","M","S"];}
+  else if(b.dataset.g){S.seq[+b.dataset.i]=b.dataset.g}
+  else if(b.dataset.act==="del"){S.seq.splice(+b.dataset.i,1)}
+  else if(b.dataset.act==="add"){S.seq.push(S.seq.length?S.seq[S.seq.length-1]:"M")}
+  else if(ORDER[b.dataset.act]){S.seq=presetSeq(ORDER[b.dataset.act],Math.max(S.seq.length,lastBest?lastBest.seq.length:3))}
+  else if(b.dataset.act==="best"&&lastBest){S.seq=lastBest.seq.map(g=>g.k)}
+  else return;
+  save();render()});
+
+/* ---- stratégies sauvegardées (gardées à part : un Reset ne les efface pas) ---- */
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function readSaved(){try{return JSON.parse(localStorage.getItem("gt7-saved")||"[]")}catch(e){return[]}}
+function writeSaved(a){try{localStorage.setItem("gt7-saved",JSON.stringify(a));return true}catch(e){return false}}
+function raceKey(x){return x.mode==="laps"?"L"+x.target:"T"+x.target}
+function renderSaved(){const a=readSaved();
+  if(!a.length){$("saved").innerHTML=`<tr><td colspan="10" class="l" style="color:var(--muted);font-family:var(--f-body)">Aucune stratégie sauvegardée pour l'instant.</td></tr>`;return}
+  // meilleure par type de course (même durée ou même nombre de tours)
+  const bestBy={};a.forEach(x=>{const k=raceKey(x),b=bestBy[k];if(!b||(x.mode==="laps"?x.time<b.time:x.laps>b.laps||x.laps===b.laps&&x.time<b.time))bestBy[k]=x});
+  const multi=k=>a.filter(x=>raceKey(x)===k).length>1;
+  $("saved").innerHTML=a.map(x=>{const b=bestBy[raceKey(x)],d=x.laps-b.laps;
+    const gap=!multi(raceKey(x))?"–":x===b?'<span class="tag" style="margin:0">Meilleure</span>':d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:`+${f1(x.time-b.time)} s`;
+    return`<tr><td class="l" style="font-family:var(--f-body);white-space:normal"><b>${esc(x.name)}</b><span class="sv-sub">${esc(x.date)}${x.manual?" · gommes choisies":""}</span></td>
+      <td class="l"><span class="chips">${x.seq.map(g=>chip(g)).join("")}</span><span class="sv-sub">${x.s.join(" · ")}</span></td>
+      <td>${x.mode==="laps"?x.target+" t":x.target+" min"}</td><td>${f2(x.c)} L</td><td>${x.stops}</td><td><b>${x.laps}</b></td><td>${clock(x.time)}</td><td>${f0(x.pits)} s</td><td>${gap}</td>
+      <td><span class="sv-acts"><button type="button" class="mini" data-load="${x.id}">Afficher</button><button type="button" class="mini" data-del="${x.id}" aria-label="Supprimer ${esc(x.name)}">✕</button></span></td></tr>`}).join("")}
+$("saveBtn").addEventListener("click",()=>{if(!lastSel)return;const P=lastP,r=lastSel,a=readSaved(),d=new Date();
+  const name=($("saveName").value.trim()||`Stratégie ${a.length+1}`).slice(0,40);
+  a.push({id:Date.now().toString(36),name,date:d.toLocaleDateString("fr-FR")+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),
+    manual:!!S.manual,mode:P.mode,target:P.mode==="laps"?P.L:Math.round(P.T/60),c:P.c,seq:r.seq.map(g=>g.k),s:r.s.slice(),stops:r.seq.length-1,laps:r.laps,time:r.time,pits:r.pits,snap:clone(S)});
+  writeSaved(a);$("saveName").value="";renderSaved();
+  const btn=$("saveBtn");btn.textContent="✓ Sauvegardée";setTimeout(()=>btn.textContent="Sauvegarder la stratégie affichée",1600)});
+let delArmed=null;
+$("saved").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const a=readSaved();
+  if(b.dataset.load){const x=a.find(y=>y.id===b.dataset.load);if(!x)return;
+    S=Object.assign(clone(DEF),clone(x.snap));COMPS.forEach(c=>S[c.k]=Object.assign(clone(DEF[c.k]),x.snap[c.k]||{}));
+    S.manual=true;S.seq=x.seq.slice();selN=null;save();fillForm();render();window.scrollTo({top:0,behavior:"smooth"});return}
+  if(b.dataset.del){if(delArmed!==b.dataset.del){delArmed=b.dataset.del;b.classList.add("armed");b.textContent="Supprimer ?";setTimeout(()=>{if(delArmed===b.dataset.del){delArmed=null;renderSaved()}},4000);return}
+    delArmed=null;writeSaved(a.filter(y=>y.id!==b.dataset.del));renderSaved()}});
+
+fillForm();render();renderSaved();
 </script>
 
 <script>
