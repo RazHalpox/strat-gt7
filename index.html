@@ -170,8 +170,8 @@ img{max-width:100%}
       <section class="panel">
         <h2>Réglages du salon GT7</h2>
         <div class="fields">
-          <label>Usure des pneus<select id="mTyre"></select></label>
-          <label>Consommation carburant<select id="mFuel"></select></label>
+          <label>Usure des pneus<select id="mTyre"></select><span class="hint">pour info</span></label>
+          <label>Consommation carburant<select id="mFuel"></select><span class="hint">pour info</span></label>
           <label>Type de course<select id="mode"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select></label>
           <label id="w-duree">Durée de course<span class="unit"><input type="number" id="duree" min="1" step="1"><span>min</span></span></label>
           <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" id="laps" min="1" step="1"><span>tours</span></span></label>
@@ -187,10 +187,9 @@ img{max-width:100%}
           <label>Carburant au début<span class="unit"><input type="number" id="mDeb" step="0.1"><span>L</span></span></label>
           <label>Carburant à la fin<span class="unit"><input type="number" id="mFin" step="0.1"><span>L</span></span></label>
           <label>Tours mesurés<input type="number" id="mTours" min="1" step="1"></label>
-          <label>Mesuré avec la conso à<select id="mMult"></select></label>
         </div>
         <div class="out" id="consoOut"></div>
-        <p class="note">Mesure sur 3 à 5 tours lancés, sans le tour de départ. Avec un réservoir de 100 L, 1 % de jauge = 1 L.</p>
+        <p class="note">Mesure sur 3 à 5 tours lancés, sans le tour de départ, avec les réglages du salon de ta course. Avec un réservoir de 100 L, 1 % de jauge = 1 L.</p>
       </section>
       <section class="panel">
         <h2>Stand</h2>
@@ -206,10 +205,10 @@ img{max-width:100%}
     <section class="panel">
       <h2>Gommes</h2>
       <div class="tbl"><table class="tyretbl" style="min-width:420px">
-        <thead><tr><th>Gomme</th><th>Temps au tour</th><th>Vie mesurée</th><th>Mesurée à</th><th>Vie en course</th><th class="l">Obligatoire</th></tr></thead>
+        <thead><tr><th>Gomme</th><th>Temps au tour</th><th>Vie (tours)</th><th class="l">Obligatoire</th></tr></thead>
         <tbody id="tyres"></tbody>
       </table></div>
-      <p class="note">Temps au tour moyen sur un relais (pas ton meilleur tour), en m:ss.sss ou en secondes. Vie = nombre de tours avant que l'usure te coûte trop de temps. Vie en course = vie mesurée × usure pendant la mesure ÷ usure du salon.</p>
+      <p class="note">Temps au tour moyen sur un relais (pas ton meilleur tour), en m:ss.sss ou en secondes. Vie = nombre de tours que tu peux faire avec cette gomme dans les conditions de ta course, avant que l'usure te coûte trop de temps.</p>
       <h2 style="margin-top:20px">Règles de la course</h2>
       <div class="fields"><label>Gommes différentes requises<select id="nReq"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label></div>
       <p class="note" id="ruleNote"></p>
@@ -222,11 +221,12 @@ img{max-width:100%}
 <script>
 const COMPS=[{k:"S",name:"Soft"},{k:"M",name:"Medium"},{k:"H",name:"Hard"}];
 const CN={S:"Soft",M:"Medium",H:"Hard"};
-const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,mTyre:1,mFuel:1,rate:4,mDeb:100,mFin:86,mTours:5,mMult:1,pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,
-  S:{lap:"1:44.200",life:12,mult:1,req:true},M:{lap:"1:45.000",life:20,mult:1,req:true},H:{lap:"1:45.900",life:30,mult:1,req:true}};
+const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,mTyre:1,mFuel:1,rate:4,mDeb:100,mFin:86,mTours:5,pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,
+  S:{lap:"1:44.200",life:12,req:true},M:{lap:"1:45.000",life:20,req:true},H:{lap:"1:45.900",life:30,req:true}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 let S=clone(DEF),tab="strat",selN=null;
 try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");if(o&&o.S){const d=clone(DEF);S=Object.assign(d,o.S);COMPS.forEach(c=>S[c.k]=Object.assign(clone(DEF[c.k]),o.S[c.k]||{}));tab=o.tab||tab}}catch(e){}
+if(!(+S.mTyre>=1&&+S.mTyre<=10))S.mTyre=1;if(!(+S.mFuel>=1&&+S.mFuel<=10))S.mFuel=1;
 const save=()=>{try{localStorage.setItem("gt7-endu-v1",JSON.stringify({S,tab}))}catch(e){}};
 const $=id=>document.getElementById(id);
 const num=v=>v===""||v==null?NaN:typeof v==="number"?v:parseFloat(String(v).replace(",","."));
@@ -241,18 +241,16 @@ const plural=(n,w)=>`${n} ${w}${n>1?"s":""}`;
 const MAX=999;
 
 /* ---- formulaire ---- */
-const mults=(min)=>Array.from({length:51-min},(_,i)=>i+min).map(v=>`<option value="${v}">${v===0?"0× (désactivé)":v+"×"}</option>`).join("");
-$("mTyre").innerHTML=mults(0);$("mFuel").innerHTML=mults(0);$("mMult").innerHTML=mults(1);
+const mults=()=>Array.from({length:10},(_,i)=>i+1).map(v=>`<option value="${v}">${v}×</option>`).join("");
+$("mTyre").innerHTML=mults();$("mFuel").innerHTML=mults();
 $("tyres").innerHTML=COMPS.map(c=>`<tr><td class="lbl">${chip(c.k)} ${c.name}</td>
   <td><input type="text" id="${c.k}-lap" inputmode="decimal" aria-label="Temps au tour ${c.name}"></td>
-  <td><input type="number" id="${c.k}-life" min="1" step="1" aria-label="Vie mesurée ${c.name} en tours"></td>
-  <td><select id="${c.k}-mult" aria-label="Usure pendant la mesure ${c.name}">${mults(1)}</select></td>
-  <td><b id="${c.k}-out"></b></td>
+  <td><input type="number" id="${c.k}-life" min="1" step="1" aria-label="Vie ${c.name} en tours"></td>
   <td class="l"><input type="checkbox" id="${c.k}-req" aria-label="${c.name} obligatoire"></td></tr>`).join("");
-const FIELDS=["mode","duree","laps","tank","start","mTyre","mFuel","rate","mDeb","mFin","mTours","mMult","pitMode","pitFull","pitTyre","qty","nReq"];
-function fillForm(){FIELDS.forEach(f=>$(f).value=S[f]);COMPS.forEach(c=>{["lap","life","mult"].forEach(f=>$(`${c.k}-${f}`).value=S[c.k][f]);$(`${c.k}-req`).checked=!!S[c.k].req})}
+const FIELDS=["mode","duree","laps","tank","start","mTyre","mFuel","rate","mDeb","mFin","mTours","pitMode","pitFull","pitTyre","qty","nReq"];
+function fillForm(){FIELDS.forEach(f=>$(f).value=S[f]);COMPS.forEach(c=>{["lap","life"].forEach(f=>$(`${c.k}-${f}`).value=S[c.k][f]);$(`${c.k}-req`).checked=!!S[c.k].req})}
 document.addEventListener("input",e=>{const el=e.target,id=el.id;if(!id)return;
-  if(FIELDS.includes(id))S[id]=el.value;else{const m=id.match(/^([SMH])-(lap|life|mult|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
+  if(FIELDS.includes(id))S[id]=el.value;else{const m=id.match(/^([SMH])-(lap|life|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
   selN=null;save();render()});
 let armed=false;
 $("reset").addEventListener("click",()=>{const b=$("reset");
@@ -264,9 +262,9 @@ function derive(){
   const P={mode:S.mode,T:num(S.duree)*60,L:Math.floor(num(S.laps)),tank:num(S.tank),start:Math.min(num(S.start),num(S.tank)),mTyre:num(S.mTyre),mFuel:num(S.mFuel),
     rate:num(S.rate),pitMode:S.pitMode,pitFull:num(S.pitFull),pitTyre:num(S.pitTyre),nReq:+S.nReq};
   P.c0=(num(S.mDeb)-num(S.mFin))/num(S.mTours);
-  P.c=P.mFuel===0?0:P.c0*P.mFuel/num(S.mMult);
-  P.comps=COMPS.map(c=>{const x=S[c.k],life=num(x.life),mult=num(x.mult);
-    return{k:c.k,lap:parseLap(x.lap),req:!!x.req,life:P.mTyre===0?MAX:Math.min(MAX,Math.floor(life*mult/P.mTyre)),life0:life}});
+  P.c=P.c0;   // conso mesurée = conso de course : le multiplicateur est seulement affiché
+  P.comps=COMPS.map(c=>{const x=S[c.k],life=Math.floor(num(x.life));
+    return{k:c.k,lap:parseLap(x.lap),req:!!x.req,life:Math.min(MAX,life),life0:life}});
   P.fuelCap=x=>P.c>0?Math.min(MAX,Math.floor(x/P.c+1e-9)):MAX;
   P.stopTime=add=>P.pitMode==="rate"?P.pitTyre+add/P.rate:(add>0?P.pitFull:P.pitTyre);
   const bad=[];
@@ -274,7 +272,7 @@ function derive(){
   if(P.mode==="laps"&&!(P.L>0))bad.push("le nombre de tours");
   if(!(P.tank>0)||!(num(S.start)>=0))bad.push("le réservoir et le carburant au départ");
   if(!(P.c0>0))bad.push("la mesure de conso (carburant au début plus grand qu'à la fin, au moins 1 tour)");
-  P.comps.forEach(c=>{if(!(c.lap>0))bad.push(`le temps au tour ${CN[c.k]}`);if(!(c.life0>0))bad.push(`la vie mesurée ${CN[c.k]}`);else if(!(c.life>=1))bad.push(`la vie ${CN[c.k]} (moins d'un tour avec cette usure)`)});
+  P.comps.forEach(c=>{if(!(c.lap>0))bad.push(`le temps au tour ${CN[c.k]}`);if(!(c.life0>=1))bad.push(`la vie ${CN[c.k]} (au moins 1 tour)`)});
   if(!(P.pitTyre>=0))bad.push("le temps de changement de pneus");
   if(P.pitMode==="rate"&&!(P.rate>0))bad.push("le refuel rate");
   if(P.pitMode==="fixed"&&!(P.pitFull>=0))bad.push("le temps d'arrêt complet");
@@ -324,11 +322,10 @@ function render(){
   const P=derive();
   $("meta").innerHTML=`<span>${P.mode==="time"?`Durée <b>${f0(num(S.duree))} min</b>`:`Course <b>${f0(P.L)} tours</b>`}</span><span>Usure <b>${S.mTyre}×</b></span><span>Conso <b>${S.mFuel}×</b></span><span>Refuel <b>${f1(P.rate)} L/s</b></span><span>Réservoir <b>${f0(P.tank)} L</b></span>`;
   // sorties de l'onglet Paramètres
-  $("consoOut").innerHTML=P.c0>0?`<span>Mesuré : <b>${f2(P.c0)} L/tour</b> à ${S.mMult}×</span><span>En course à ${S.mFuel}× : <b>${P.c>0?f2(P.c)+" L/tour":"aucune conso"}</b></span><span>Plein de ${f0(P.tank)} L : <b>${P.c>0?Math.floor(P.tank/P.c+1e-9)+" tours":"illimité"}</b></span>`:`<span>Entre le carburant au début, à la fin et le nombre de tours.</span>`;
+  $("consoOut").innerHTML=P.c0>0?`<span>Conso : <b>${f2(P.c)} L/tour</b></span><span>Plein de ${f0(P.tank)} L : <b>${P.c>0?Math.floor(P.tank/P.c+1e-9)+" tours":"illimité"}</b></span>`:`<span>Entre le carburant au début, à la fin et le nombre de tours.</span>`;
   $("pitOut").innerHTML=P.pitMode==="rate"
     ?(P.rate>0?`<span>Pneus seuls : <b>${f0(P.pitTyre)} s</b></span><span>+ 50 L : <b>${f1(P.stopTime(50))} s</b></span><span>Plein de ${f0(P.tank)} L : <b>${f1(P.stopTime(P.tank))} s</b></span>`:"<span>Entre le refuel rate dans les réglages du salon.</span>")
     :`<span>Avec carburant : <b>${f0(P.pitFull)} s</b></span><span>Pneus seuls : <b>${f0(P.pitTyre)} s</b></span><span class="hint">le refuel rate n'est pas utilisé</span>`;
-  P.comps.forEach(c=>$(`${c.k}-out`).textContent=c.life>=MAX?"illimitée":fin(c.life)&&c.life>0?c.life+" tours":"–");
   const reqs=P.comps.filter(c=>c.req).map(c=>CN[c.k]);
   const kmin=Math.max(1,reqs.length,P.nReq);
   $("ruleNote").textContent=`Règle appliquée : ${reqs.length?`au moins un relais en ${reqs.join(", ")}`:"aucune gomme imposée"}${P.nReq>1?`, et ${P.nReq} gommes différentes minimum`:""}. Il faut donc ${plural(kmin-1,"arrêt")} au minimum. Un train neuf est monté à chaque arrêt.`;
@@ -351,7 +348,7 @@ function render(){
     const gap=r===best?"–":d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:`+${f1(r.time-best.time)} s`;
     return`<tr class="pick${n===selN?" sel":""}" data-n="${n}" tabindex="0"><td>${plural(n,"arrêt")}${r===best?'<span class="tag">Meilleure</span>':""}</td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`}).join("");
   $("kpis").innerHTML=[
-    ["Conso / tour",P.c>0?f2(P.c)+" L":"0 L",`en course à ${S.mFuel}×`,0],
+    ["Conso / tour",f2(P.c)+" L",`salon : conso ${S.mFuel}×`,0],
     ["Tours avec un plein",P.c>0?Math.floor(P.tank/P.c+1e-9):"∞",`${f0(P.tank)} L`,0],
     ["Arrêts",nStops(sel),selN===nStops(best)?"stratégie conseillée":"stratégie choisie",1],
     ["Tours de course",sel.laps,P.mode==="time"?"drapeau à damier inclus":"fixés",0],

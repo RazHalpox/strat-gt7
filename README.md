@@ -31,22 +31,19 @@ Sur Android, ouvre le lien dans Chrome, puis **⋮ → Ajouter à l'écran d'acc
 
 ### 1. Régler le salon (onglet Paramètres)
 - **Type de course** : à la durée (ex. 60 min) ou au nombre de tours.
-- **Usure des pneus** et **Consommation carburant** : les multiplicateurs du salon GT7 (0× à 50×).
+- **Usure des pneus** et **Consommation carburant** : les multiplicateurs du salon GT7 (1× à 10×), pour mémoire : ils ne changent pas les calculs.
 - **Refuel rate** : la vitesse de ravitaillement du salon, en litres par seconde.
 - **Réservoir** et **carburant au départ**, en litres.
 
 ### 2. Mesurer ta conso
-En jeu, note ton carburant au début et à la fin de 3 à 5 tours lancés, sans le tour de départ. Entre ces deux valeurs, le nombre de tours et le multiplicateur de conso actif pendant ta mesure. L'app calcule ta conso par tour en course et le nombre de tours avec un plein.
+En jeu, note ton carburant au début et à la fin de 3 à 5 tours lancés, sans le tour de départ. Fais ta mesure avec les réglages du salon de ta course, puis entre ces deux valeurs et le nombre de tours. L'app calcule ta conso par tour en course et le nombre de tours avec un plein.
 
 Avec un réservoir de 100 L, 1 % de jauge = 1 L.
 
 ### 3. Renseigner tes gommes
 Pour Soft, Medium et Hard :
 - **Temps au tour** moyen sur un relais (pas ton meilleur tour), en m:ss.sss ou en secondes ;
-- **Vie mesurée** : nombre de tours avant que l'usure te coûte trop de temps ;
-- **Mesurée à** : le multiplicateur d'usure pendant ta mesure.
-
-L'app recalcule la vie de chaque gomme avec l'usure du salon.
+- **Vie (tours)** : nombre de tours que tu peux faire avec cette gomme dans les conditions de ta course, avant que l'usure te coûte trop de temps.
 
 ### 4. Régler le stand
 - **Changement de pneus uniquement** : chronomètre un tour avec un arrêt pneus seuls, puis retire ton temps au tour normal.

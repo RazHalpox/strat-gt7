@@ -71,7 +71,7 @@ Après quelques tours sans arrêt :
 - **Utiliser ma conso** : enregistre ta conso moyenne réelle dans la stratégie ;
 - **Temps moyen en [gomme] → Enregistrer** : enregistre ton temps moyen pour la gomme que tu as montée. Fais-le pour Soft, Medium et Hard.
 
-Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Règle les multiplicateurs du salon dans Paramètres, et la stratégie se calcule.
+Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète la vie de tes gommes dans Paramètres, et la stratégie se calcule.
 
 ---
 

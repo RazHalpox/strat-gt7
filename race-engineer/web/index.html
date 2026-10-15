@@ -187,7 +187,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
         <button class="btn" id="sendLap" type="button">Enregistrer</button><span class="sm" id="sendLapInfo"></span></div>
       <div class="msg" id="sendMsg" role="status"></div>
     </div>
-    <p class="note">La conso est enregistrée au multiplicateur du salon choisi dans la stratégie. Les tours avec un arrêt au stand sont ignorés.</p>
+    <p class="note">Ta conso et tes temps sont enregistrés tels quels dans la stratégie. Les tours avec un arrêt au stand sont ignorés.</p>
   </section>
 
   <section class="card c12">
@@ -315,11 +315,11 @@ function flash(t){$("sendMsg").textContent=t;clearTimeout(flash._t);flash._t=set
 $("sendFuel").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,c=cleanLaps(laps).slice(-n);
   if(!c.length)return flash("Il faut au moins un tour complet sans arrêt.");
   const used=c.reduce((s,l)=>s+l.fuel,0),o=readStrat();o.S=o.S||{};
-  o.S.mDeb=100;o.S.mFin=Math.round((100-used)*100)/100;o.S.mTours=c.length;o.S.mMult=o.S.mFuel||1;
+  o.S.mDeb=100;o.S.mFin=Math.round((100-used)*100)/100;o.S.mTours=c.length;
   flash(writeStrat(o)?`Conso enregistrée : ${f2(used/c.length)} L/tour.`:"Enregistrement impossible sur ce navigateur.")});
 $("sendLap").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,t=avgLap(laps,n),k=$("comp").value;
   if(!fin(t))return flash("Il faut au moins un tour complet sans arrêt.");
-  const o=readStrat();o.S=o.S||{};o.S[k]=Object.assign({lap:"",life:20,mult:1,req:true},o.S[k]||{},{lap:lapFmt(t)});
+  const o=readStrat();o.S=o.S||{};o.S[k]=Object.assign({lap:"",life:20,req:true},o.S[k]||{},{lap:lapFmt(t)});
   flash(writeStrat(o)?`Temps ${({S:"Soft",M:"Medium",H:"Hard"})[k]} enregistré : ${lapFmt(t)}.`:"Enregistrement impossible sur ce navigateur.")});
 
 /* ---- flux en direct depuis le PC ---- */
