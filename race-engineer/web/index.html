@@ -112,6 +112,50 @@ header{display:grid!important;grid-template-columns:1fr auto 1fr;grid-template-a
 header nav.tabs3{grid-area:nav}
 header .tools,header .hdr-right{grid-area:tools;justify-self:end}
 @media (max-width:760px){header{grid-template-columns:1fr;grid-template-areas:"nav" "tools"}header nav.tabs3,header .tools,header .hdr-right{justify-self:center}}
+
+/* ---- téléphone en paysage : 3 colonnes compactes, l'essentiel sur le premier écran ---- */
+@media (orientation:landscape) and (max-height:540px){
+  .wrap{padding-block:10px 16px}
+  header{margin-bottom:6px}
+  .radio{padding:4px 10px;margin-bottom:6px;font-size:14px;gap:8px}.radio b{font-size:11px}
+  .grid{gap:6px}
+  .c5{grid-column:span 5}.c4{grid-column:span 4}.c3{grid-column:span 3}.c7{grid-column:span 7}.c8{grid-column:span 8}.c6{grid-column:span 6}
+  .card{padding:7px 10px}
+  .lbl{font-size:10px;margin-bottom:3px}
+  .big{font-size:clamp(28px,9vh,40px)}
+  .fuel-laps{font-size:clamp(30px,10vh,44px)}
+  .mid{font-size:18px}.sm{font-size:11px}
+  .kv{gap:5px;margin-top:6px}.kv div{padding:4px 6px}
+  .kv small{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kv b{font-size:14px;white-space:nowrap}
+  .gauge{height:10px;margin:6px 0 2px}
+  .tyres{gap:5px;max-width:200px;margin-top:2px}
+  .tyre{padding:7px 4px;font-size:19px;border-radius:7px}.tyre small{font-size:9px}
+  #tyreLegend{font-size:10px;margin-top:4px}
+  .shift{margin-bottom:6px}.shift i{height:8px}
+  .gear{font-size:58px;min-width:44px}
+  .bars{height:74px}.vbar{width:16px}
+  .flag{font-size:9px}
+  .send{gap:6px}
+  select,input[type=number]{font-size:14px;padding:5px 7px}
+  .btn{padding:6px 9px;font-size:12px}
+  .tbl{max-height:220px}
+  table{font-size:12px}th{font-size:10px;padding:4px 6px}td{padding:4px 6px}
+  .note{font-size:11px}
+}
+/* ---- téléphone en portrait : une colonne compacte ---- */
+@media (orientation:portrait) and (max-width:600px){
+  .card{padding:10px 12px}
+  .big{font-size:46px}
+  .fuel-laps{font-size:54px}
+  .kv{gap:6px}.kv div{padding:6px}
+  .kv small{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kv b{font-size:16px;white-space:nowrap}
+  .radio{font-size:15px;padding:6px 10px}
+  .tyres{max-width:320px}
+  .gear{font-size:72px}
+  .bars{height:96px}
+  .tbl{max-height:300px}
+  table{font-size:13px}td,th{padding:5px 6px}
+}
 </style>
 </head>
 <body>
@@ -140,11 +184,11 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
     <div class="kv">
       <div><small>Dernier tour</small><b id="lastLap">–</b></div>
       <div><small>Meilleur</small><b id="bestLap" class="pos">–</b></div>
-      <div><small>Écart au meilleur</small><b id="delta">–</b></div>
+      <div><small>Écart</small><b id="delta">–</b></div>
     </div>
     <div class="kv">
       <div><small>Position</small><b id="pos">–</b></div>
-      <div><small>Moyenne 3 tours</small><b id="avg3">–</b></div>
+      <div><small>Moy. 3 tours</small><b id="avg3">–</b></div>
       <div><small>Vitesse</small><b id="speed">–</b></div>
     </div>
   </section>
@@ -156,7 +200,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
     <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
     <div class="kv">
       <div><small>Conso / tour</small><b id="cons">–</b></div>
-      <div><small>Conso dernier tour</small><b id="consLast">–</b></div>
+      <div><small>Dernier tour</small><b id="consLast">–</b></div>
       <div><small id="toFinishLbl">Pour finir</small><b id="toFinish">–</b></div>
     </div>
   </section>
