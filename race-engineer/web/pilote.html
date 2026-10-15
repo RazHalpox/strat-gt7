@@ -130,6 +130,50 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
 .waitbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:18px;gap:6px}
 .waitbox b{font:700 28px var(--f-display);text-transform:uppercase;color:var(--fg)}
+
+/* ---- téléphone en paysage (écran bas) : tout tient sur un écran ---- */
+@media (orientation:landscape) and (max-height:540px){
+  .wrap{gap:5px;padding-bottom:calc(5px + env(safe-area-inset-bottom,0px))}
+  .rpm{height:10px;gap:2px}
+  .grid{gap:5px;grid-template-columns:1.15fr 1fr 1.05fr;grid-template-rows:1.1fr .9fr}
+  .card{padding:5px 9px;gap:3px;border-radius:6px}
+  .lbl{font-size:11px}
+  .big{font-size:clamp(30px,15vh,76px);line-height:1}
+  .unit{font-size:11px;margin-top:2px}
+  .liters b{font-size:clamp(18px,6.5vh,30px)}
+  .gauge{height:10px;margin:2px 0 3px}
+  .kv{gap:4px}.kv div{padding:2px 6px}.kv small{font-size:10px}.kv b{font-size:16px}
+  .stop{font-size:13px;padding:3px 8px}.stop small{font-size:11px}
+  .hist,.histLbl{display:none}
+  .relays{gap:3px}.relays>div{padding:2px 8px;gap:6px}.relays>div:nth-last-child(n+3){display:none}
+  .relays .chip{width:20px;height:20px;font-size:11px;border-width:2px}
+  .relays .who{font-size:11px}.relays b{font-size:15px}
+  .gear{font-size:clamp(56px,30vh,150px)}
+  .speed{font-size:clamp(18px,7vh,32px)}.speed small{font-size:12px}
+  .coreRow{font-size:12px;gap:10px}
+  .chronos{gap:3px}.chronos div{padding:2px 8px}.chronos small{font-size:10px}.chronos b{font-size:clamp(14px,5.5vh,24px)}
+  .stint{gap:6px}.chip{width:22px;height:22px;font-size:12px;border-width:2.5px}
+  .stint .mono{font-size:14px!important}
+  .car{gap:5px 26px;padding:2px 0}.car::before{width:20px;border-radius:10px}
+  .tyre{border-radius:6px}.tyre .t{font-size:clamp(20px,9vh,40px)}.tyre small{font-size:10px}
+  .tyre .slip{height:12px;font-size:9px;bottom:3px}
+  .legend{font-size:9px;gap:2px 8px}.legend i{width:8px;height:8px}
+}
+/* ---- téléphone en portrait : une colonne, on fait défiler ---- */
+@media (orientation:portrait) and (max-width:600px){
+  header{grid-template-columns:1fr;justify-items:center;gap:6px}
+  header nav.tabs3,.tools{grid-column:1}
+  .tools{justify-self:center}
+  nav.tabs3 a{font-size:14px;padding:6px 10px}
+  .rpm{height:14px}
+  .grid{grid-template-columns:1fr;grid-template-areas:"core" "fuel" "tyre" "time"}
+  .gear{font-size:120px}
+  .coreRow{flex-wrap:wrap;gap:6px 14px}
+  .big{font-size:clamp(54px,18vw,90px)}
+  .hist{flex:none;height:90px}
+  .car{flex:none;height:240px}
+  .tyre .t{font-size:42px}
+}
 </style>
 </head>
 <body>
@@ -163,9 +207,9 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
       <div><small>Dernier tour</small><b id="consLast">–</b></div>
     </div>
     <div class="stop" id="stop"><span id="stopTitle">Pas de plan</span><small id="stopText">Choisis un plan dans Stratégie</small></div>
-    <div class="lbl" style="font-size:12px"><span>Conso des derniers tours (L)</span></div>
+    <div class="lbl histLbl" style="font-size:12px"><span>Conso des derniers tours (L)</span></div>
     <div class="hist" id="hist"></div>
-    <div class="lbl" style="font-size:12px"><span>Conso moyenne par relais</span><span id="raceAvg"></span></div>
+    <div class="lbl" style="font-size:12px"><span>Conso par relais</span><span id="raceAvg"></span></div>
     <div class="relays" id="relays"><div><span class="chip X">–</span><span class="who">Après le 1er tour</span><b>–</b></div></div>
   </section>
 

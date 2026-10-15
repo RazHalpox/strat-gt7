@@ -64,6 +64,7 @@ public class DashActivity extends Activity {
         s.setDatabaseEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        s.setTextZoom(100); // la taille de police du téléphone ne doit pas déformer les écrans
         web.addJavascriptInterface(new Voice(), "AndroidTTS");
         web.setWebViewClient(new WebViewClient() {
             @Override
