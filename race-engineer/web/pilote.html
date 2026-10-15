@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GT7 Race Engineer – Pilote</title>
+<meta name="theme-color" content="#07090c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GT7 Engineer">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap">
+<style>
+/* Écran pilote, iPad en paysage : carburant à gauche et pneus à droite en grand, rapport et chrono au centre,
+   compte-tours en bandeau, courbe accélérateur/frein en bas. Un seul écran, sans défilement. */
+:root{
+  --bg:#07090c; --panel:#10151b; --panel-2:#19202a; --line:#232c37; --fg:#f1f4f7; --muted:#8a96a3;
+  --accent:#ff3b4e; --ok:#3ddc84; --warn:#ffc833; --cold:#4fa8ff; --spin:#ff9a3c;
+  --soft:#ff4a5c; --med:#ffc833; --hard:#dfe5ea;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg);height:100%}
+body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--f-display);-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+.wrap{display:flex;flex-direction:column;gap:8px;height:100vh;height:100dvh;
+  padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+header nav.tabs3{grid-column:2}
+.tools{grid-column:3;justify-self:end;display:flex;gap:6px;align-items:center}
+nav.tabs3{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
+nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
+nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--bg)}
+nav.tabs3 a.cog{display:flex;align-items:center;padding:6px 10px}
+nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pill{white-space:nowrap;font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;display:inline-flex;align-items:center;gap:6px}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.live{background:rgba(61,220,132,.14);color:var(--ok)}.pill.demo{background:rgba(255,200,51,.14);color:var(--warn)}.pill.wait{background:rgba(138,150,163,.16);color:var(--muted)}
+.btn{background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 10px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* compte-tours : barre segmentée sur toute la largeur */
+.rpm{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;height:22px}
+.rpm i{border-radius:2px;background:var(--panel-2);transition:background .05s}
+.rpm.flash i{animation:fl .12s steps(2,end) infinite}
+@keyframes fl{50%{background:var(--panel-2)}}
+@media (prefers-reduced-motion:reduce){.rpm.flash i{animation:none}}
+
+/* grille principale */
+.grid{flex:1;min-height:0;display:grid;gap:8px;grid-template-columns:1.2fr 1.1fr 1.2fr;grid-template-rows:1.15fr .85fr;
+  grid-template-areas:"fuel core tyre" "fuel time tyre"}
+@media (orientation:portrait){body{overflow:auto}.wrap{height:auto;min-height:100dvh}
+  .grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;grid-template-areas:"core time" "fuel fuel" "tyre tyre"}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:0;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden;position:relative}
+.lbl{font:600 15px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.lbl b{color:var(--fg);font-weight:600;letter-spacing:.04em}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.ok{color:var(--ok)}.bad{color:var(--accent)}.wrn{color:var(--warn)}
+
+/* carburant */
+#cFuel{grid-area:fuel}
+.fuelTop{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.big{font:700 clamp(54px,8.6vw,120px)/1.05 var(--f-mono);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.unit{display:block;margin-top:4px;font:600 16px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.liters{text-align:right}
+.liters b{display:block;font:700 34px var(--f-mono);font-variant-numeric:tabular-nums}
+.gauge{position:relative;height:26px;background:var(--panel-2);border-radius:4px;overflow:visible;margin:4px 0 16px}
+.gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--ok);transition:width .3s}
+.gauge .need{position:absolute;top:-6px;bottom:-6px;width:0;border-left:3px solid var(--fg)}
+.gauge .need span{position:absolute;top:30px;left:-2px;width:60px;text-align:left;font:600 11px var(--f-display);letter-spacing:.06em;color:var(--fg);text-transform:uppercase}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.kv div{background:var(--panel-2);border-radius:5px;padding:6px 8px;min-width:0}
+.kv small{display:block;font:600 12px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kv b{font:600 22px var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stop{border-radius:6px;padding:8px 12px;background:var(--panel-2);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:2px 10px;font:600 18px var(--f-display);text-transform:uppercase;letter-spacing:.04em}
+.stop small{font-size:14px;color:var(--muted);letter-spacing:.04em}
+.stop.warn{background:var(--warn);color:#07090c}.stop.warn small{color:#07090c}
+.stop.crit{background:var(--accent);color:#fff;animation:pulse 1s steps(2,end) infinite}.stop.crit small{color:#fff}
+@keyframes pulse{50%{background:#8f1220}}
+@media (prefers-reduced-motion:reduce){.stop.crit{animation:none}}
+.hist{flex:1;min-height:34px;max-height:120px;display:flex;align-items:flex-end;gap:4px;padding-top:4px}
+.hist div{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end}
+.hist i{width:100%;border-top:3px solid var(--ok);border-radius:2px 2px 0 0;opacity:.85}
+.hist span{font:500 10px var(--f-mono);color:var(--muted)}
+
+/* centre */
+#cCore{grid-area:core;align-items:center;justify-content:center;text-align:center}
+.gear{font:700 clamp(110px,15vw,210px)/.85 var(--f-mono)}
+.speed{font:700 38px var(--f-mono);font-variant-numeric:tabular-nums}
+.speed small{font:600 16px var(--f-display);color:var(--muted);margin-left:4px}
+.coreRow{display:flex;gap:16px;justify-content:center;font:600 18px var(--f-display);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.coreRow b{color:var(--fg);font-family:var(--f-mono)}
+#cTime{grid-area:time}
+#cTime .kv b{font-size:clamp(15px,1.6vw,20px)}
+#cTime .kv div{padding:6px}
+.delta{font:700 clamp(40px,5.4vw,64px)/1 var(--f-mono);font-variant-numeric:tabular-nums;text-align:center}
+.trace{flex:1;min-height:40px;width:100%;display:block}
+
+/* pneus */
+#cTyre{grid-area:tyre}
+.stint{display:flex;align-items:center;gap:10px}
+.chip{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font:700 15px var(--f-display);border:3.5px solid;color:var(--fg);flex:none}
+.chip.S{border-color:var(--soft)}.chip.M{border-color:var(--med)}.chip.H{border-color:var(--hard)}
+.stint .wear{flex:1;height:12px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+.stint .wear i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.car{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px 44px;position:relative;padding:4px 0}
+.car::before{content:"";position:absolute;left:50%;top:6%;bottom:6%;width:34px;transform:translateX(-50%);border:2px solid var(--line);border-radius:16px 16px 10px 10px}
+.tyre{border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#07090c;position:relative;transition:background .4s;min-height:0}
+.tyre .t{font:700 clamp(30px,4.2vw,52px)/1 var(--f-mono)}
+.tyre small{font:600 12px var(--f-display);letter-spacing:.08em;opacity:.75}
+.tyre .slip{position:absolute;left:6px;right:6px;bottom:6px;height:16px;border-radius:3px;font:700 12px var(--f-display);letter-spacing:.08em;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
+.tyre .slip.lock{opacity:1;background:var(--accent);color:#fff}
+.tyre .slip.spin{opacity:1;background:var(--spin);color:#07090c}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font:600 12px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.waitbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:18px;gap:6px}
+.waitbox b{font:700 28px var(--f-display);text-transform:uppercase;color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <nav class="tabs3" aria-label="Écrans">
+    <a href="course.html">Course</a>
+    <a href="pilote.html" aria-current="page">Pilote</a>
+    <a href="./">Complet</a>
+    <a href="strategie.html">Stratégie</a>
+    <a href="reglages.html" class="cog" aria-label="Réglages" title="Réglages"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path fill="currentColor" d="M18.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L14 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L5.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></a>
+  </nav>
+  <div class="tools">
+    <span class="pill wait" id="status">Connexion…</span>
+    <button class="btn" id="voiceBtn" type="button" aria-pressed="false" aria-label="Ingénieur vocal">🎧 Off</button>
+  </div>
+</header>
+
+<div class="rpm" id="rpm" aria-hidden="true"></div>
+<div class="waitbox" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
+
+<main class="grid" id="grid">
+  <section class="card" id="cFuel">
+    <div class="lbl"><span>Carburant</span><span id="fuelPct">–</span></div>
+    <div class="fuelTop">
+      <div><div class="big" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
+      <div class="liters"><b id="fuelL">–</b><span class="unit">litres</span></div>
+    </div>
+    <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i><div class="need" id="need" hidden><span>arrêt</span></div></div>
+    <div class="kv">
+      <div><small>Conso moy.</small><b id="cons">–</b></div>
+      <div><small>Dernier tour</small><b id="consLast">–</b></div>
+      <div><small id="marginLbl">Marge arrêt</small><b id="margin">–</b></div>
+    </div>
+    <div class="stop" id="stop"><span id="stopTitle">Pas de plan</span><small id="stopText">Choisis un plan dans Stratégie</small></div>
+    <div class="lbl" style="font-size:12px"><span>Conso des derniers tours (L)</span></div>
+    <div class="hist" id="hist"></div>
+  </section>
+
+  <section class="card" id="cCore">
+    <div class="gear" id="gear">N</div>
+    <div class="speed"><span id="speed">0</span><small>km/h</small></div>
+    <div class="coreRow"><span>Tour <b id="lap">–</b></span><span>Pos <b id="pos">–</b></span><span>Turbo <b id="boost">–</b></span></div>
+  </section>
+
+  <section class="card" id="cTime">
+    <div class="lbl"><span>Delta</span><span id="deltaRef">en direct</span></div>
+    <div class="delta" id="delta">–</div>
+    <div class="kv">
+      <div><small>En cours</small><b id="cur">–</b></div>
+      <div><small>Dernier</small><b id="last">–</b></div>
+      <div><small>Meilleur</small><b id="best" class="ok">–</b></div>
+    </div>
+    <canvas class="trace" id="trace" aria-label="Accélérateur et frein des dernières secondes"></canvas>
+  </section>
+
+  <section class="card" id="cTyre">
+    <div class="lbl"><span>Pneus</span><span id="tyreRelay">–</span></div>
+    <div class="stint"><span class="chip M" id="tyreChip">M</span><div class="wear"><i id="wear" style="width:0"></i></div><span class="mono" id="stintTxt" style="font-size:20px">–</span></div>
+    <div class="car" id="car"></div>
+    <div class="legend"><span><i style="background:var(--cold)"></i>froid</span><span><i style="background:var(--ok)"></i>bon</span><span><i style="background:var(--warn)"></i>chaud</span><span><i style="background:var(--accent)"></i>trop chaud</span><span><i style="background:var(--accent)"></i>bloque</span><span><i style="background:var(--spin)"></i>patine</span></div>
+  </section>
+</main>
+</div>
+
+<script>
+// Réglages du Race Engineer, partagés par tous les écrans de cet appareil.
+// L'onglet ⚙ Réglages les modifie ; les écrans les relisent à chaque mise à jour, donc ça s'applique tout de suite.
+const OPTS_DEF = {
+  // Écran Course
+  warnLaps: 3,        // bannière « Arrêt dans X tours » : combien de tours avant l'arrêt prévu
+  boxFlash: true,     // BOX BOX clignotant
+  fuelSafety: true,   // BOX BOX « Carburant critique » si l'essence ne tient pas jusqu'à l'arrêt prévu
+  // Écran Complet
+  radio: true,        // bande radio avec les messages de l'ingénieur
+  // Ingénieur vocal
+  voiceLapTime: true, // annoncer le temps de chaque tour
+  voiceBest: true,    // annoncer les meilleurs tours
+  voiceFuelEvery: 3,  // annoncer le carburant restant tous les N tours (0 = jamais)
+  voiceRate: 1.05,    // vitesse de la voix
+  // Carburant
+  consAvg: 5,         // conso moyenne calculée sur les N derniers tours sans arrêt
+  fuelWarn: 4,        // jauge jaune sous N tours de carburant
+  fuelCrit: 2,        // jauge rouge sous N tours de carburant
+  // Pneus (°C)
+  tCold: 55,          // en dessous : froid (bleu)
+  tHot: 95,           // au-dessus : chaud (jaune)
+  tOver: 110,         // au-dessus : trop chaud (rouge)
+  slipPct: 15         // blocage / patinage affiché au-delà de ce % (écran Pilote)
+};
+function opts() {
+  try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
+  catch (e) { return Object.assign({}, OPTS_DEF); }
+}
+function saveOpts(o) {
+  try { localStorage.setItem("gt7-opts", JSON.stringify(o)); return true; } catch (e) { return false; }
+}
+function tyreColorOpt(t) {
+  const O = opts();
+  if (typeof t !== "number" || !isFinite(t)) return "var(--panel-2)";
+  return t < O.tCold ? "var(--cold)" : t <= O.tHot ? "var(--ok)" : t <= O.tOver ? "var(--warn)" : "var(--accent)";
+}
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const fin=x=>typeof x==="number"&&isFinite(x);
+const lapFmt=ms=>{if(!fin(ms)||ms<=0)return"–";const m=Math.floor(ms/60000),s=(ms%60000)/1000;return m+":"+s.toFixed(3).padStart(6,"0")};
+const lapShort=ms=>{if(!fin(ms)||ms<0)return"–";const m=Math.floor(ms/60000),s=(ms%60000)/1000;return m+":"+s.toFixed(1).padStart(4,"0")};
+const f1=x=>fin(x)?(Math.round(x*10)/10).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1}):"–";
+const f2=x=>fin(x)?x.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}):"–";
+const sgn=(ms,d=2)=>fin(ms)?(ms>0?"+":ms<0?"−":"±")+(Math.abs(ms)/1000).toFixed(d).replace(".",","):"–";
+const cleanLaps=laps=>laps.filter(l=>!l.pit&&fin(l.fuel)&&l.fuel>0.05&&l.ms>0);
+const avgFuel=(laps,n)=>{const c=cleanLaps(laps).slice(-n);return c.length?c.reduce((s,l)=>s+l.fuel,0)/c.length:NaN};
+
+$("rpm").innerHTML=Array.from({length:24},()=>"<i></i>").join("");
+const POS=["AvG","AvD","ArG","ArD"];
+$("car").innerHTML=POS.map((p,i)=>`<div class="tyre" id="t${i}"><small>${p}</small><span class="t">–</span><span class="slip" id="s${i}"></span></div>`).join("");
+
+/* ---- bande radio : le dernier message de l'ingénieur, affiché même sans le son ---- */
+let radioT=null;
+function radio(text){const r=document.getElementById("radio");if(!r)return;
+  document.getElementById("radioText").textContent=text;r.hidden=false;r.classList.remove("old");
+  clearTimeout(radioT);radioT=setTimeout(()=>r.classList.add("old"),20000)}
+/* ---- ingénieur vocal ---- */
+let voiceOn=false,lastSpokenLap=null,fuelWarned=0;
+function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=+opts().voiceRate||1.05;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith("fr"));if(v)u.voice=v;speechSynthesis.speak(u)}
+function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
+$("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
+  $("voiceBtn").textContent=voiceOn?"🎧 On":"🎧 Off";if(voiceOn)say("Radio check. Je suis avec toi.")});
+function engineer(laps,live,lapsLeft,nx){
+  // premier contact : message de liaison, sans relire les tours déjà faits
+  if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
+    const L=live||{};radio(`Liaison radio établie.${L.lap?` Tour ${L.lap} en cours.`:""}${fin(lapsLeft)?` Carburant pour ${Math.floor(lapsLeft)} tours.`:""}`);return}
+  if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;lastSpokenLap=last.n;
+  const O=opts(),best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
+  let t=O.voiceLapTime?`Tour ${last.n}, ${sayLap(last.ms)}.`:"",alert=false;
+  if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
+  if(nx&&!nx.done&&nx.inLaps===0){t+=` Box box, ce tour-ci. ${CN[nx.g]}${nx.stop&&nx.stop.full?`, ${Math.round(nx.stop.add)} litres`:", pneus seuls"}.`;alert=true}
+  else if(nx&&!nx.done&&O.warnLaps>0&&nx.inLaps<=O.warnLaps){t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CN[nx.g]}.`;alert=true}
+  if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft);
+    if(n<=1&&O.fuelSafety)t+=" Carburant critique, rentre au stand ce tour-ci.";
+    else if(!nx&&n<O.fuelWarn)t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;
+    else if(O.voiceFuelEvery>0&&last.n%O.voiceFuelEvery===0)t+=` Carburant pour ${n} tours.`;}
+  if(t.trim())say(t.trim());
+}
+
+
+/* ---- plan de la stratégie (enregistré par la page Stratégie sur cet appareil) ---- */
+const CN={S:"Soft",M:"Medium",H:"Hard"};
+function readPlan(){try{return JSON.parse(localStorage.getItem("gt7-plan")||"null")}catch(e){return null}}
+// prochain arrêt : on rentre à la fin du dernier tour d'un relais
+function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
+  for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,stop:nx.stop,n:i+1}}}
+  return{done:true}}
+function stopTxt(nx){const st=nx.stop||{};return`${CN[nx.g]||nx.g} · ${st.full?"+"+String(st.add).replace(".",",")+" L":"pneus seuls"}`}
+
+
+/* ---- delta en direct : on compare la position sur la piste avec la trace du meilleur tour ---- */
+let trace=[],bestTrace=null,bestTraceMs=Infinity,traceLap=null,idx=0;
+function updateDelta(L){
+  if(!fin(L.x)||!fin(L.cur_ms))return NaN;
+  if(traceLap!==L.lap){ // tour terminé : on garde la trace s'il devient la référence
+    if(traceLap!==null&&trace.length>40&&L.last_ms>0&&L.last_ms<=bestTraceMs&&L.last_ms<=L.best_ms+1){bestTrace=trace;bestTraceMs=L.last_ms}
+    trace=[];traceLap=L.lap;idx=0}
+  const pt={x:L.x,z:L.z,t:L.cur_ms};const lastPt=trace[trace.length-1];
+  if(!lastPt||Math.hypot(pt.x-lastPt.x,pt.z-lastPt.z)>2)trace.push(pt);
+  if(!bestTrace)return NaN;
+  // point le plus proche de la trace de référence, en avançant le long du tour
+  let bi=-1,bd=Infinity;const n=bestTrace.length;
+  for(let k=-10;k<=80;k++){const j=(idx+k+n)%n,q=bestTrace[j],d=(q.x-pt.x)**2+(q.z-pt.z)**2;if(d<bd){bd=d;bi=j}}
+  if(bd>40*40){for(let j=0;j<n;j++){const q=bestTrace[j],d=(q.x-pt.x)**2+(q.z-pt.z)**2;if(d<bd){bd=d;bi=j}}}
+  if(bd>60*60)return NaN;idx=bi;
+  return pt.t-bestTrace[bi].t;
+}
+
+/* ---- courbe accélérateur / frein ---- */
+const TR=[];const cv=$("trace"),cx=cv.getContext("2d");
+function drawTrace(L){TR.push([L.throttle||0,L.brake||0]);if(TR.length>120)TR.shift();
+  const w=cv.clientWidth,h=cv.clientHeight,dpr=window.devicePixelRatio||1;if(!w||!h)return;
+  if(cv.width!==w*dpr||cv.height!==h*dpr){cv.width=w*dpr;cv.height=h*dpr}
+  cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,w,h);
+  cx.strokeStyle="#232c37";cx.lineWidth=1;cx.beginPath();cx.moveTo(0,h-.5);cx.lineTo(w,h-.5);cx.moveTo(0,.5);cx.lineTo(w,.5);cx.stroke();
+  [[0,"#3ddc84"],[1,"#ff3b4e"]].forEach(([k,c])=>{cx.strokeStyle=c;cx.lineWidth=2.5;cx.beginPath();
+    TR.forEach((v,i)=>{const X=w*(i/(120-1)),Y=h-2-(h-4)*v[k]/100;i?cx.lineTo(X,Y):cx.moveTo(X,Y)});cx.stroke()});
+}
+
+/* ---- relais en cours d'après le plan de la stratégie ---- */
+function currentRelay(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
+  const i=p.rows.findIndex(r=>lap>=r.from&&lap<=r.to);if(i<0)return null;return{i,row:p.rows[i],n:p.rows.length}}
+function readStratLife(g){try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");const v=o&&o.S&&o.S[g]&&parseFloat(o.S[g].life);return v>0?v:NaN}catch(e){return NaN}}
+
+function render(s){
+  const O=opts(),L=s.live||{},laps=s.laps||[],mode=s.mode;
+  const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
+  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente";
+  $("waitBox").hidden=mode!=="attente";$("grid").hidden=mode==="attente";
+  if(!fin(L.fuel))return;
+
+  // compte-tours
+  const hi=L.rpm_hi>1000?L.rpm_hi:8000,lo=Math.max(0,hi-4000),seg=$("rpm").children,on=Math.max(0,Math.min(24,Math.round((L.rpm-lo)/(hi-lo)*24)));
+  for(let i=0;i<24;i++)seg[i].style.background=i<on?(i<12?"var(--ok)":i<20?"var(--warn)":"var(--accent)"):"var(--panel-2)";
+  $("rpm").classList.toggle("flash",L.rpm>=hi||!!L.rev_limit);
+
+  // carburant
+  const cons=avgFuel(laps,O.consAvg),left=cons>0?L.fuel/cons:NaN,pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN;
+  $("fuelLaps").textContent=fin(left)?f1(left):"–";
+  $("fuelLaps").className="big"+(fin(left)&&left<=O.fuelCrit?" bad":fin(left)&&left<=O.fuelWarn?" wrn":"");
+  $("fuelL").textContent=f1(L.fuel);$("fuelPct").textContent=fin(pct)?Math.round(pct)+" %":"–";
+  $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";
+  $("gaugeFill").style.background=fin(left)&&left<=O.fuelCrit?"var(--accent)":fin(left)&&left<=O.fuelWarn?"var(--warn)":"var(--ok)";
+  $("cons").textContent=fin(cons)?f2(cons):"–";
+  const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?f2(lc.fuel):"–";
+  // prochain arrêt prévu et marge de carburant
+  const nx=nextStop(L.lap),stop=$("stop");let endLap=null,label="Marge arrêt";
+  if(nx&&!nx.done){endLap=nx.endLap}else if(L.total_laps>0){endLap=L.total_laps;label="Marge arrivée"}
+  else{const p=readPlan();if(p&&p.rows&&p.rows.length){endLap=p.rows[p.rows.length-1].to;label="Marge arrivée"}}
+  $("marginLbl").textContent=label;
+  if(endLap&&fin(cons)){const need=(endLap-L.lap+1)*cons,m=L.fuel-need;
+    $("margin").textContent=(m>=0?"+":"−")+f1(Math.abs(m))+" L";$("margin").className=m>=0?"ok":"bad";
+    const np=L.fuel_cap>0?Math.min(100,need/L.fuel_cap*100):NaN;$("need").hidden=!fin(np);if(fin(np))$("need").style.left=np+"%"}
+  else{$("margin").textContent="–";$("margin").className="";$("need").hidden=true}
+  if(nx&&!nx.done){const txt=`${CN[nx.g]} · ${nx.stop&&nx.stop.full?"+"+f1(nx.stop.add)+" L":"pneus seuls"}`;
+    if(nx.inLaps===0){stop.className="stop crit";$("stopTitle").textContent="Box box · ce tour-ci";$("stopText").textContent=txt}
+    else{stop.className="stop"+(O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}
+  else if(O.fuelSafety&&fin(left)&&left<1.5){stop.className="stop crit";$("stopTitle").textContent="Box box";$("stopText").textContent="Carburant critique"}
+  else{stop.className="stop";$("stopTitle").textContent=nx&&nx.done?"Dernier relais":"Pas de plan";$("stopText").textContent=nx&&nx.done?"Plus d'arrêt prévu":"Choisis un plan dans Stratégie"}
+  // conso des derniers tours
+  const hl=laps.filter(l=>fin(l.fuel)&&!l.pit).slice(-10);
+  if(hl.length!==render._hl||(hl.length&&hl[hl.length-1].n!==render._hn)){render._hl=hl.length;render._hn=hl.length?hl[hl.length-1].n:null;
+    const mx=Math.max(...hl.map(l=>l.fuel),0.1),mn=Math.min(...hl.map(l=>l.fuel),mx);
+    $("hist").innerHTML=hl.map(l=>{const h=20+80*((l.fuel-mn*0.9)/(mx-mn*0.9||1));const c=fin(cons)&&l.fuel>cons*1.03?"#ffc833":fin(cons)&&l.fuel<cons*0.97?"#4fa8ff":"#3ddc84";
+      return`<div><i style="height:${Math.max(8,Math.min(100,h))}%;border-top-color:${c};background:linear-gradient(${c}55,${c}11)"></i><span>${f2(l.fuel)}</span></div>`}).join("")}
+
+  // centre
+  $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;
+  $("speed").textContent=Math.round(L.speed);
+  $("lap").textContent=L.total_laps>0?`${L.lap}/${L.total_laps}`:L.lap;
+  $("pos").textContent=L.pos>0?`${L.pos}/${L.cars}`:"–";
+  $("boost").textContent=fin(L.boost)&&L.boost>-0.95?(L.boost>=0?"+":"")+f1(L.boost):"–";
+
+  // chrono et delta
+  const d=updateDelta(L);
+  $("delta").textContent=fin(d)?sgn(d):"–";$("delta").className="delta"+(fin(d)?(d<=0?" ok":" bad"):"");
+  $("deltaRef").textContent=bestTrace?"réf. "+lapFmt(bestTraceMs):"après 1 tour";
+  $("cur").textContent=lapShort(L.cur_ms);$("last").textContent=lapFmt(L.last_ms);$("best").textContent=lapFmt(L.best_ms);
+  drawTrace(L);
+
+  // pneus : températures, blocage et patinage, usure du relais
+  (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColorOpt(t);el.querySelector(".t").textContent=fin(t)?Math.round(t):"–"});
+  const sl=L.slip||[],thr=+O.slipPct||15;
+  for(let i=0;i<4;i++){const v=sl[i],b=$("s"+i);
+    if(fin(v)&&v<=-thr&&(L.brake||0)>5){b.className="slip lock";b.textContent="BLOQUE "+Math.round(-v)+" %"}
+    else if(fin(v)&&v>=thr&&(L.throttle||0)>5){b.className="slip spin";b.textContent="PATINE "+Math.round(v)+" %"}
+    else{b.className="slip";b.textContent=""}}
+  const cr=currentRelay(L.lap);
+  if(cr){const g=cr.row.g,life=readStratLife(g),done=L.lap-cr.row.from+1,ratio=fin(life)?done/life:NaN;
+    $("tyreChip").className="chip "+g;$("tyreChip").textContent=g;$("tyreRelay").textContent=`Relais ${cr.i+1}/${cr.n} · ${CN[g]}`;
+    $("stintTxt").textContent=fin(life)?`${done}/${life} t`:`${done} t`;
+    $("wear").style.width=(fin(ratio)?Math.min(100,ratio*100):0)+"%";$("wear").style.background=ratio>=1?"var(--accent)":ratio>=.8?"var(--warn)":"var(--ok)"}
+  else{$("tyreRelay").textContent="sans plan";$("stintTxt").textContent="–";$("wear").style.width="0"}
+
+  engineer(laps,L,left,nx);
+}
+
+function connect(){
+  const es=new EventSource("events");
+  es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(err){}};
+  es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};
+}
+connect();
+</script>
+</body>
+</html>

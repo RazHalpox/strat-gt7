@@ -85,7 +85,14 @@ def parse_gt7(p):
     i16 = lambda off: struct.unpack_from("<h", p, off)[0]
     flags = struct.unpack_from("<H", p, 0x8E)[0]
     gear = p[0x90]
+    v = f(0x4C)                                   # vitesse de la voiture, m/s
+    radius = [f(0xB4), f(0xB8), f(0xBC), f(0xC0)]  # rayon des pneus, m
+    wheel = [abs(f(0xA4)), abs(f(0xA8)), abs(f(0xAC)), abs(f(0xB0))]  # rotation des roues, rad/s
     return {
+        "x": f(0x04), "z": f(0x0C),
+        "slip": wheel_slip(wheel, radius, v),
+        "boost": f(0x50) - 1.0,
+        "oil_p": f(0x54),
         "pkt": i32(0x70),
         "rpm": f(0x3C),
         "fuel": f(0x44),
@@ -114,6 +121,18 @@ def parse_gt7(p):
         "tcs": bool(flags & 2048),
         "car": i32(0x124),
     }
+
+
+def wheel_slip(wheel, radius, v):
+    """Glissement de chaque roue en % : negatif = blocage (roue plus lente que la voiture),
+    positif = patinage (roue plus rapide). 0 a l'arret ou a tres basse vitesse."""
+    out = []
+    for w, r in zip(wheel, radius):
+        if v < 3 or not (0.1 < r < 1.0):
+            out.append(0.0)
+        else:
+            out.append(round(max(-100.0, min(100.0, (w * r - v) / v * 100)), 1))
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -222,6 +241,10 @@ def demo_loop():
         fuel = max(0.0, fuel - 2.8 * (0.05 / lap_len))
         x = math.sin(ph * 2 * math.pi * 6)
         speed = 150 + 90 * x
+        ang = ph * 2 * math.pi
+        posx, posz = 600 * math.cos(ang), 250 * math.sin(ang * 2) * 0.6 + 300 * math.sin(ang)
+        lock = -random.uniform(18, 35) if (x < -0.85 and random.random() < 0.35) else -random.uniform(0, 4) if x < -0.6 else 0.0
+        spin = random.uniform(16, 30) if (0.1 < x < 0.4 and random.random() < 0.25) else random.uniform(0, 5) if x > 0 else 0.0
         rpm = 5200 + 2300 * x
         pkt += 1
         STATE.update({
@@ -234,6 +257,9 @@ def demo_loop():
             "throttle": max(0, min(100, 60 + 45 * x)), "brake": max(0, min(100, -80 * x)) if x < -0.6 else 0,
             "on_track": True, "paused": False, "loading": False,
             "rev_limit": rpm > 7400, "asm": False, "tcs": x > 0.9, "car": 0,
+            "x": posx, "z": posz,
+            "slip": [round(lock, 1), round(lock * 0.8, 1), round(spin * 0.4, 1), round(spin, 1)],
+            "boost": max(-0.6, 1.4 * x), "oil_p": 4.5 + x,
         }, now)
         time.sleep(0.05)
 
@@ -335,6 +361,7 @@ def main():
     print()
     print("  Sur ton telephone (meme Wi-Fi que le PC), ouvre :")
     print()
+    print("      " + url + "/pilote.html   (ecran pilote, iPad en paysage)")
     print("      " + url + "/course.html   (ecran jour de course)")
     print("      " + url + "               (dashboard complet)")
     print()

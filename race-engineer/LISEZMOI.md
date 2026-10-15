@@ -55,6 +55,16 @@ Sécurité : si le carburant ne tient pas jusqu'à l'arrêt prévu, **BOX BOX �
 
 L'ingénieur vocal y est aussi. En paysage, les blocs se réorganisent selon la taille de l'écran.
 
+## L'écran Pilote (iPad en paysage)
+
+Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Pense à tourner l'iPad en paysage.
+- **Carburant** (à gauche) : tours restants en gros, litres, jauge avec le repère du carburant nécessaire jusqu'au prochain arrêt, conso moyenne et du dernier tour, **marge** à l'arrêt (ou à l'arrivée), bandeau du prochain arrêt de ta stratégie (gomme et litres à remettre), et la conso de tes 10 derniers tours.
+- **Pneus** (à droite) : gomme et relais en cours selon ta stratégie, usure du relais (tours faits / vie de la gomme), température des 4 pneus en couleur, et alertes **BLOQUE** (roue bloquée au freinage) ou **PATINE** (roue qui patine à l'accélération).
+- **Au centre** : rapport engagé, vitesse, tour, position, turbo, **delta** en direct sur ton meilleur tour (à partir du 2e tour), chronos, et la trace accélérateur / frein.
+- En haut, la barre de régime clignote au rupteur.
+
+**Attention :** SimHub et le Race Engineer utilisent le même port. Ferme SimHub avant de lancer le relais.
+
 ## Le dashboard complet
 
 - **Chrono** : tour en cours, dernier tour, meilleur tour, écart, position, moyenne des 3 derniers tours.
@@ -82,7 +92,7 @@ L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. E
 - **Écran Complet** : afficher ou masquer la bande radio ;
 - **Ingénieur vocal** : temps de chaque tour, meilleurs tours, point carburant (tous les N tours), vitesse de la voix ;
 - **Carburant** : nombre de tours pour la conso moyenne, seuils jaune et rouge de la jauge ;
-- **Pneus** : températures froid / chaud / trop chaud.
+- **Pneus** : températures froid / chaud / trop chaud, seuil de blocage / patinage (en %).
 
 Les réglages sont enregistrés sur l'appareil (iPad, téléphone) où tu les modifies.
 

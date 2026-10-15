@@ -119,6 +119,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
 <header>
   <nav class="tabs3" aria-label="Écrans">
     <a href="course.html">Course</a>
+    <a href="pilote.html">Pilote</a>
     <a href="./" aria-current="page">Complet</a>
     <a href="strategie.html">Stratégie</a>
     <a href="reglages.html" class="cog" aria-label="Réglages" title="Réglages"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path fill="currentColor" d="M18.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L14 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L5.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></a>
@@ -221,7 +222,8 @@ const OPTS_DEF = {
   // Pneus (°C)
   tCold: 55,          // en dessous : froid (bleu)
   tHot: 95,           // au-dessus : chaud (jaune)
-  tOver: 110          // au-dessus : trop chaud (rouge)
+  tOver: 110,         // au-dessus : trop chaud (rouge)
+  slipPct: 15         // blocage / patinage affiché au-delà de ce % (écran Pilote)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
