@@ -248,8 +248,8 @@ img{max-width:100%}
         <h2>Stand</h2>
         <div class="fields">
           <label class="full">Calcul du temps d'arrêt<select id="pitMode"><option value="rate">Pneus + litres ÷ refuel rate</option><option value="fixed">Temps fixes (arrêt complet ou pneus seuls)</option></select></label>
-          <label>Changement de pneus uniquement<span class="unit"><input type="number" id="pitTyre" min="0" step="1"><span>s</span></span><span class="hint">voie des stands + pneus, sans carburant</span></label>
-          <label id="w-pitFull">Arrêt complet<span class="unit"><input type="number" id="pitFull" min="0" step="1"><span>s</span></span><span class="hint">plein + pneus</span></label>
+          <label>Changement de pneus uniquement<span class="unit"><input type="number" id="pitTyre" min="1" step="1"><span>s</span></span><span class="hint">voie des stands + pneus, sans carburant</span></label>
+          <label id="w-pitFull">Arrêt complet<span class="unit"><input type="number" id="pitFull" min="1" step="1"><span>s</span></span><span class="hint">plein + pneus</span></label>
         </div>
         <div class="out" id="pitOut"></div>
         <p class="note">Mesure le temps perdu par rapport à un tour normal : chronomètre un tour avec l'arrêt, puis retire ton temps au tour habituel.</p>
@@ -326,9 +326,9 @@ function derive(){
   if(!(P.tank>0)||!(num(S.start)>=0))bad.push("le réservoir et le carburant au départ");
   if(!(P.c0>0))bad.push("la mesure de conso (carburant au début plus grand qu'à la fin, au moins 1 tour)");
   P.comps.forEach(c=>{if(!(c.lap>0))bad.push(`le temps au tour ${CN[c.k]}`);if(!(c.life0>=1))bad.push(`la vie ${CN[c.k]} (au moins 1 tour)`)});
-  if(!(P.pitTyre>=0))bad.push("le temps de changement de pneus");
+  if(!(P.pitTyre>0))bad.push("le temps de changement de pneus uniquement (Stand) : il ne peut pas être à 0 s, sinon les arrêts pneus seuls deviennent gratuits");
   if(P.pitMode==="rate"&&!(P.rate>0))bad.push("le refuel rate");
-  if(P.pitMode==="fixed"&&!(P.pitFull>=0))bad.push("le temps d'arrêt complet");
+  if(P.pitMode==="fixed"&&!(P.pitFull>0))bad.push("le temps d'arrêt complet (Stand) : il ne peut pas être à 0 s");
   P.bad=bad;return P;
 }
 // séquences de k relais qui respectent les règles ; chaque gomme utilisée peut ouvrir, la suite va de la plus rapide à la plus lente
