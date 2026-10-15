@@ -102,8 +102,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 #cTime .kv{grid-template-columns:repeat(3,minmax(0,1fr))}
 #cTime .kv b{font-size:clamp(15px,1.6vw,20px)}
 #cTime .kv div{padding:6px}
-.delta{font:700 clamp(40px,5.4vw,64px)/1 var(--f-mono);font-variant-numeric:tabular-nums;text-align:center}
-.trace{flex:1;min-height:40px;width:100%;display:block}
+.delta{flex:1;display:flex;align-items:center;justify-content:center;font:700 clamp(48px,7vw,88px)/1 var(--f-mono);font-variant-numeric:tabular-nums}
 
 /* pneus */
 #cTyre{grid-area:tyre}
@@ -175,7 +174,6 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
       <div><small>Dernier</small><b id="last">–</b></div>
       <div><small>Meilleur</small><b id="best" class="ok">–</b></div>
     </div>
-    <canvas class="trace" id="trace" aria-label="Accélérateur et frein des dernières secondes"></canvas>
   </section>
 
   <section class="card" id="cTyre">
@@ -298,17 +296,6 @@ function updateDelta(L){
   return pt.t-bestTrace[bi].t;
 }
 
-/* ---- courbe accélérateur / frein ---- */
-const TR=[];const cv=$("trace"),cx=cv.getContext("2d");
-function drawTrace(L){TR.push([L.throttle||0,L.brake||0]);if(TR.length>120)TR.shift();
-  const w=cv.clientWidth,h=cv.clientHeight,dpr=window.devicePixelRatio||1;if(!w||!h)return;
-  if(cv.width!==w*dpr||cv.height!==h*dpr){cv.width=w*dpr;cv.height=h*dpr}
-  cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,w,h);
-  cx.strokeStyle="#232c37";cx.lineWidth=1;cx.beginPath();cx.moveTo(0,h-.5);cx.lineTo(w,h-.5);cx.moveTo(0,.5);cx.lineTo(w,.5);cx.stroke();
-  [[0,"#3ddc84"],[1,"#ff3b4e"]].forEach(([k,c])=>{cx.strokeStyle=c;cx.lineWidth=2.5;cx.beginPath();
-    TR.forEach((v,i)=>{const X=w*(i/(120-1)),Y=h-2-(h-4)*v[k]/100;i?cx.lineTo(X,Y):cx.moveTo(X,Y)});cx.stroke()});
-}
-
 /* ---- relais en cours d'après le plan de la stratégie ---- */
 function currentRelay(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
   const i=p.rows.findIndex(r=>lap>=r.from&&lap<=r.to);if(i<0)return null;return{i,row:p.rows[i],n:p.rows.length}}
@@ -366,7 +353,6 @@ function render(s){
   $("delta").textContent=fin(d)?sgn(d):"–";$("delta").className="delta"+(fin(d)?(d<-0.005?" ok":d>0.005?" bad":""):"");
   $("deltaRef").textContent=bestTrace?"réf. "+lapFmt(bestTraceMs):"après 1 tour";
   $("cur").textContent=lapShort(L.cur_ms);$("last").textContent=lapFmt(L.last_ms);$("best").textContent=lapFmt(L.best_ms);
-  drawTrace(L);
 
   // pneus : températures, blocage et patinage, usure du relais
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColorOpt(t);el.querySelector(".t").textContent=fin(t)?Math.round(t):"–"});

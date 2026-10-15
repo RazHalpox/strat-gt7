@@ -46,7 +46,7 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Pense à tourner l'iPad en paysage.
 - **Carburant** (à gauche) : tours restants en gros, litres, jauge avec le repère du carburant nécessaire jusqu'au prochain arrêt, conso moyenne et du dernier tour, bandeau du prochain arrêt de ta stratégie (gomme et litres à remettre), et la conso de tes 10 derniers tours.
 - **Pneus** (à droite) : gomme et relais en cours selon ta stratégie, usure du relais (tours faits / vie de la gomme), température des 4 pneus en couleur, et alertes **BLOQUE** (roue bloquée au freinage) ou **PATINE** (roue qui patine à l'accélération).
-- **Au centre** : rapport engagé, vitesse, tour, position, turbo, **delta** en direct sur ton meilleur tour (à partir du 2e tour), chronos, et la trace accélérateur / frein.
+- **Au centre** : rapport engagé, vitesse, tour, position, turbo, **delta** en direct sur ton meilleur tour (à partir du 2e tour), et chronos.
 - En haut, la barre de régime clignote au rupteur.
 
 **Attention :** SimHub et le Race Engineer utilisent le même port. Ferme SimHub avant de lancer le relais.
