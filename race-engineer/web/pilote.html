@@ -99,10 +99,10 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .coreRow{display:flex;gap:16px;justify-content:center;font:600 18px var(--f-display);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .coreRow b{color:var(--fg);font-family:var(--f-mono)}
 #cTime{grid-area:time}
-#cTime .kv{grid-template-columns:repeat(3,minmax(0,1fr))}
-#cTime .kv b{font-size:clamp(15px,1.6vw,20px)}
-#cTime .kv div{padding:6px}
-.delta{flex:1;display:flex;align-items:center;justify-content:center;font:700 clamp(48px,7vw,88px)/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.chronos{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.chronos div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;background:var(--panel-2);border-radius:5px;padding:8px 12px}
+.chronos small{font:600 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chronos b{font:600 clamp(22px,2.6vw,32px) var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* pneus */
 #cTyre{grid-area:tyre}
@@ -167,9 +167,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   </section>
 
   <section class="card" id="cTime">
-    <div class="lbl"><span>Delta</span><span id="deltaRef">en direct</span></div>
-    <div class="delta" id="delta">–</div>
-    <div class="kv">
+    <div class="lbl"><span>Chronos</span></div>
+    <div class="chronos">
       <div><small>En cours</small><b id="cur">–</b></div>
       <div><small>Dernier</small><b id="last">–</b></div>
       <div><small>Meilleur</small><b id="best" class="ok">–</b></div>
@@ -278,24 +277,6 @@ function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
 function stopTxt(nx){const st=nx.stop||{};return`${CN[nx.g]||nx.g} · ${st.full?"+"+String(st.add).replace(".",",")+" L":"pneus seuls"}`}
 
 
-/* ---- delta en direct : on compare la position sur la piste avec la trace du meilleur tour ---- */
-let trace=[],bestTrace=null,bestTraceMs=Infinity,traceLap=null,idx=0;
-function updateDelta(L){
-  if(!fin(L.x)||!fin(L.cur_ms))return NaN;
-  if(traceLap!==L.lap){ // tour terminé : on garde la trace s'il devient la référence
-    if(traceLap!==null&&trace.length>40&&L.last_ms>0&&L.last_ms<=bestTraceMs&&L.last_ms<=L.best_ms+1){bestTrace=trace;bestTraceMs=L.last_ms}
-    trace=[];traceLap=L.lap;idx=0}
-  const pt={x:L.x,z:L.z,t:L.cur_ms};const lastPt=trace[trace.length-1];
-  if(!lastPt||Math.hypot(pt.x-lastPt.x,pt.z-lastPt.z)>2)trace.push(pt);
-  if(!bestTrace)return NaN;
-  // point le plus proche de la trace de référence, en avançant le long du tour
-  let bi=-1,bd=Infinity;const n=bestTrace.length;
-  for(let k=-10;k<=80;k++){const j=(idx+k+n)%n,q=bestTrace[j],d=(q.x-pt.x)**2+(q.z-pt.z)**2;if(d<bd){bd=d;bi=j}}
-  if(bd>40*40){for(let j=0;j<n;j++){const q=bestTrace[j],d=(q.x-pt.x)**2+(q.z-pt.z)**2;if(d<bd){bd=d;bi=j}}}
-  if(bd>60*60)return NaN;idx=bi;
-  return pt.t-bestTrace[bi].t;
-}
-
 /* ---- relais en cours d'après le plan de la stratégie ---- */
 function currentRelay(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
   const i=p.rows.findIndex(r=>lap>=r.from&&lap<=r.to);if(i<0)return null;return{i,row:p.rows[i],n:p.rows.length}}
@@ -327,7 +308,7 @@ function render(s){
   if(nx&&!nx.done){endLap=nx.endLap}else if(L.total_laps>0){endLap=L.total_laps}
   else{const p=readPlan();if(p&&p.rows&&p.rows.length){endLap=p.rows[p.rows.length-1].to}}
   if(endLap&&fin(cons)){const need=(endLap-L.lap+1)*cons;
-    const np=L.fuel_cap>0?Math.min(100,need/L.fuel_cap*100):NaN;$("need").hidden=!fin(np);if(fin(np))$("need").style.left=np+"%"}
+    const np=L.fuel_cap>0&&need>0?Math.min(100,need/L.fuel_cap*100):NaN;$("need").hidden=!fin(np);if(fin(np))$("need").style.left=np+"%"}
   else{$("need").hidden=true}
   if(nx&&!nx.done){const txt=`${CN[nx.g]} · ${nx.stop&&nx.stop.full?"+"+f1(nx.stop.add)+" L":"pneus seuls"}`;
     if(nx.inLaps===0){stop.className="stop crit";$("stopTitle").textContent="Box box · ce tour-ci";$("stopText").textContent=txt}
@@ -348,10 +329,7 @@ function render(s){
   $("pos").textContent=L.pos>0?`${L.pos}/${L.cars}`:"–";
   $("boost").textContent=fin(L.boost)&&L.boost>-0.95?(L.boost>=0?"+":"")+f1(L.boost):"–";
 
-  // chrono et delta
-  const d=updateDelta(L);
-  $("delta").textContent=fin(d)?sgn(d):"–";$("delta").className="delta"+(fin(d)?(d<-0.005?" ok":d>0.005?" bad":""):"");
-  $("deltaRef").textContent=bestTrace?"réf. "+lapFmt(bestTraceMs):"après 1 tour";
+  // chronos
   $("cur").textContent=lapShort(L.cur_ms);$("last").textContent=lapFmt(L.last_ms);$("best").textContent=lapFmt(L.best_ms);
 
   // pneus : températures, blocage et patinage, usure du relais
