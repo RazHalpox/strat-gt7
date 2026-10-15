@@ -6,6 +6,28 @@ Ton ingénieur de course pour Gran Turismo 7 : télémétrie en direct sur ton t
 
 ---
 
+## Sur Android : l'appli, sans PC
+
+Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télémétrie de la PS5. Pas besoin du PC ni de Python.
+
+**Installer (une seule fois)**
+1. Sur le téléphone Android, ouvre ce lien : https://github.com/RazHalpox/strat-gt7/releases/download/android/gt7-race-engineer.apk
+2. Ouvre le fichier téléchargé. Android demande d'autoriser l'installation depuis Chrome (ou « Fichiers ») : accepte, puis **Installer**.
+3. Si Play Protect affiche un avertissement (appli inconnue), touche **Plus de détails → Installer quand même**.
+
+Pour mettre à jour, refais la même chose : la nouvelle version s'installe par-dessus et garde tes réglages et ta stratégie.
+
+**En course**
+1. Ouvre **GT7 Engineer**, tape l'adresse IP de la PS5 (ou laisse vide pour la recherche automatique), puis **Démarrer**.
+2. Lance une course ou un essai dans GT7 : les écrans Pilote, Complet, Stratégie et ⚙ sont les mêmes que sur le PC, avec l'ingénieur vocal.
+3. Le bouton retour ramène à l'accueil ; la réception continue. Arrête-la avec **Arrêter la réception** ou depuis la notification.
+
+**Avec un iPad en plus :** pendant que l'appli tourne, l'iPad peut ouvrir l'adresse affichée sur l'accueil de l'appli (`http://IP-DU-TÉLÉPHONE:8777/pilote.html`). Le téléphone remplace alors le PC.
+
+Le **mode démo** de l'accueil fait tourner une course simulée, pour essayer sans la PS5.
+
+---
+
 ## 1. Installer Python sur le PC (une seule fois)
 
 1. Va sur **python.org → Downloads** et télécharge la dernière version pour Windows.
