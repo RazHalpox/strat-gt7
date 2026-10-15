@@ -72,10 +72,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .unit{display:block;margin-top:4px;font:600 16px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .liters{text-align:right}
 .liters b{display:block;font:700 34px var(--f-mono);font-variant-numeric:tabular-nums}
-.gauge{position:relative;height:26px;background:var(--panel-2);border-radius:4px;overflow:visible;margin:4px 0 16px}
+.gauge{position:relative;height:26px;background:var(--panel-2);border-radius:4px;overflow:visible;margin:4px 0 10px}
 .gauge i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--ok);transition:width .3s}
-.gauge .need{position:absolute;top:-6px;bottom:-6px;width:0;border-left:3px solid var(--fg)}
-.gauge .need span{position:absolute;top:30px;left:-2px;width:60px;text-align:left;font:600 11px var(--f-display);letter-spacing:.06em;color:var(--fg);text-transform:uppercase}
 .kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .kv div{background:var(--panel-2);border-radius:5px;padding:6px 8px;min-width:0}
 .kv small{display:block;font:600 12px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -159,7 +157,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
       <div><div class="big" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
       <div class="liters"><b id="fuelL">–</b><span class="unit">litres</span></div>
     </div>
-    <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i><div class="need" id="need" hidden><span>arrêt</span></div></div>
+    <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
     <div class="kv">
       <div><small>Conso moy.</small><b id="cons">–</b></div>
       <div><small>Dernier tour</small><b id="consLast">–</b></div>
@@ -314,13 +312,8 @@ function render(s){
   $("gaugeFill").style.background=fin(left)&&left<=O.fuelCrit?"var(--accent)":fin(left)&&left<=O.fuelWarn?"var(--warn)":"var(--ok)";
   $("cons").textContent=fin(cons)?f2(cons):"–";
   const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?f2(lc.fuel):"–";
-  // prochain arrêt prévu et carburant nécessaire
-  const nx=nextStop(L.lap),stop=$("stop");let endLap=null;
-  if(nx&&!nx.done){endLap=nx.endLap}else if(L.total_laps>0){endLap=L.total_laps}
-  else{const p=readPlan();if(p&&p.rows&&p.rows.length){endLap=p.rows[p.rows.length-1].to}}
-  if(endLap&&fin(cons)){const need=(endLap-L.lap+1)*cons;
-    const np=L.fuel_cap>0&&need>0?Math.min(100,need/L.fuel_cap*100):NaN;$("need").hidden=!fin(np);if(fin(np))$("need").style.left=np+"%"}
-  else{$("need").hidden=true}
+  // prochain arrêt prévu
+  const nx=nextStop(L.lap),stop=$("stop");
   if(nx&&!nx.done){const txt=`${CN[nx.g]} · ${nx.stop&&nx.stop.full?"+"+f1(nx.stop.add)+" L":"pneus seuls"}`;
     if(nx.inLaps===0){stop.className="stop crit";$("stopTitle").textContent="Box box · ce tour-ci";$("stopText").textContent=txt}
     else{stop.className="stop"+(O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}

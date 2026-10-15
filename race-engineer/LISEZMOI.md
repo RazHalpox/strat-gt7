@@ -44,7 +44,7 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 ## L'écran Pilote (iPad en paysage)
 
 Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Pense à tourner l'iPad en paysage.
-- **Carburant** (à gauche) : tours restants en gros, litres, jauge avec le repère du carburant nécessaire jusqu'au prochain arrêt, conso moyenne et du dernier tour, bandeau du prochain arrêt de ta stratégie (gomme et litres à remettre), la conso de tes 10 derniers tours, et ta **conso moyenne de chaque relais** (avec la gomme de ta stratégie et la moyenne de la course).
+- **Carburant** (à gauche) : tours restants en gros, litres, jauge, conso moyenne et du dernier tour, bandeau du prochain arrêt de ta stratégie (gomme et litres à remettre), la conso de tes 10 derniers tours, et ta **conso moyenne de chaque relais** (avec la gomme de ta stratégie et la moyenne de la course).
 - **Pneus** (à droite) : gomme et relais en cours selon ta stratégie, usure du relais (tours faits / vie de la gomme), température des 4 pneus en couleur, et alertes **BLOQUE** (roue bloquée au freinage) ou **PATINE** (roue qui patine à l'accélération).
 - **Au centre** : rapport engagé, vitesse, tour, position, turbo, et tes chronos (tour en cours, dernier, meilleur).
 - En haut, la barre de régime clignote au rupteur.
