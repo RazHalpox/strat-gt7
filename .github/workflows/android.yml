@@ -1,0 +1,54 @@
+name: Appli Android
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'race-engineer/web/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Compiler l'appli
+        working-directory: android
+        env:
+          # clé de signature de l'appli (toujours la même, pour que les mises à jour s'installent par-dessus)
+          KS_FILE: ${{ github.workspace }}/android/gt7-release.jks
+          KS_PASS: ppkKTaw6zlDSmHcOb2-7Uklv
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Renommer
+        run: cp android/app/build/outputs/apk/release/app-release.apk gt7-race-engineer.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gt7-race-engineer-apk
+          path: gt7-race-engineer.apk
+
+      - name: Publier le lien de téléchargement
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android --yes --cleanup-tag || true
+          gh release create android gt7-race-engineer.apk \
+            --title "GT7 Race Engineer pour Android" \
+            --notes "Appli Android (v1.3, compilée depuis ${GITHUB_SHA::7}). Ouvre ce lien sur ton téléphone Android et installe gt7-race-engineer.apk." \
+            --latest=false

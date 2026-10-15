@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'fr.razhalpox.gt7engineer'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'fr.razhalpox.gt7engineer'
+        minSdk 24
+        targetSdk 34
+        versionCode 13
+        versionName '1.3'
+    }
+
+    signingConfigs {
+        release {
+            // clé fournie par GitHub Actions (secret du dépôt)
+            def ks = System.getenv('KS_FILE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('KS_PASS')
+                keyAlias 'gt7'
+                keyPassword System.getenv('KS_PASS')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig System.getenv('KS_FILE') ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs += "$buildDir/webassets"
+        }
+    }
+}
+
+// Les écrans viennent du dossier race-engineer/web : une seule version à maintenir.
+def copyWeb = tasks.register('copyWeb', Copy) {
+    from "$rootDir/../race-engineer/web"
+    into "$buildDir/webassets/web"
+}
+tasks.named('preBuild') { dependsOn copyWeb }
