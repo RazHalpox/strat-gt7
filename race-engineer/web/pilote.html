@@ -90,6 +90,15 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .hist div{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end}
 .hist i{width:100%;border-top:3px solid var(--ok);border-radius:2px 2px 0 0;opacity:.85}
 .hist span{font:500 10px var(--f-mono);color:var(--muted)}
+.relays{display:flex;flex-direction:column;gap:5px}
+.relays>div{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:var(--panel-2);border-radius:5px;padding:5px 10px}
+.relays .chip{width:26px;height:26px;font-size:13px;border-width:3px}
+.relays .chip.X{border-color:var(--muted)}
+.relays .who{font:600 14px var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.relays .who em{font-style:normal;color:var(--fg)}
+.relays b{font:600 22px var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.relays b small{font:600 12px var(--f-display);color:var(--muted);margin-left:3px}
+.relays .now{outline:1px solid #3a4553}
 
 /* centre */
 #cCore{grid-area:core;align-items:center;justify-content:center;text-align:center}
@@ -158,6 +167,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div class="stop" id="stop"><span id="stopTitle">Pas de plan</span><small id="stopText">Choisis un plan dans Stratégie</small></div>
     <div class="lbl" style="font-size:12px"><span>Conso des derniers tours (L)</span></div>
     <div class="hist" id="hist"></div>
+    <div class="lbl" style="font-size:12px"><span>Conso moyenne par relais</span><span id="raceAvg"></span></div>
+    <div class="relays" id="relays"><div><span class="chip X">–</span><span class="who">Après le 1er tour</span><b>–</b></div></div>
   </section>
 
   <section class="card" id="cCore">
@@ -321,6 +332,15 @@ function render(s){
     const mx=Math.max(...hl.map(l=>l.fuel),0.1),mn=Math.min(...hl.map(l=>l.fuel),mx);
     $("hist").innerHTML=hl.map(l=>{const h=20+80*((l.fuel-mn*0.9)/(mx-mn*0.9||1));const c=fin(cons)&&l.fuel>cons*1.03?"#ffc833":fin(cons)&&l.fuel<cons*0.97?"#4fa8ff":"#3ddc84";
       return`<div><i style="height:${Math.max(8,Math.min(100,h))}%;border-top-color:${c};background:linear-gradient(${c}55,${c}11)"></i><span>${f2(l.fuel)}</span></div>`}).join("")}
+  // conso moyenne de chaque relais (un relais se termine au tour où tu passes au stand)
+  if(laps.length!==render._rl){render._rl=laps.length;
+    const st=[];let cur=null;
+    laps.forEach(l=>{if(!cur){cur={from:l.n,to:l.n,f:[]};st.push(cur)}cur.to=l.n;
+      if(!l.pit&&fin(l.fuel)&&l.fuel>0.05)cur.f.push(l.fuel);if(l.pit)cur=null});
+    const plan=readPlan(),rows=plan&&plan.rows||[];
+    const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+f2(all.reduce((a,b)=>a+b,0)/all.length)+" L":"";
+    if(st.length){$("relays").innerHTML=st.map((r,i)=>{const g=rows[i]&&rows[i].g,avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN,live=i===st.length-1&&cur;
+      return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?f2(avg):"–"}<small>L/t</small></b></div>`}).slice(-4).join("")}}
 
   // centre
   $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;
