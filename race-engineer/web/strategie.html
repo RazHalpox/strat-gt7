@@ -156,7 +156,6 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <body>
 <div class="topnav">
   <nav class="tabs3" aria-label="Écrans">
-    <a href="course.html">Course</a>
     <a href="pilote.html">Pilote</a>
     <a href="./">Complet</a>
     <a href="strategie.html" aria-current="page">Stratégie</a>
@@ -429,7 +428,7 @@ function render(){
   if(selN===null||!list.find(r=>nStops(r)===selN))selN=nStops(best);
   const useManual=!!(S.manual&&manualR);
   const sel=useManual?manualR:list.find(r=>nStops(r)===selN)||best;lastSel=sel;lastP=P;
-  // plan partagé avec l'écran Course (même appareil, même adresse du PC)
+  // plan partagé avec l'écran Pilote (même appareil, même adresse du PC)
   try{localStorage.setItem("gt7-plan",JSON.stringify({t:Date.now(),stops:nStops(sel),rows:sel.rows.map(x=>({g:x.g,from:x.from,to:x.to,laps:x.laps,
     stop:x.stop?{add:Math.round(x.stop.add*10)/10,full:x.stop.full}:null}))}))}catch(e){}
   const manualRow=manualR?(()=>{const r=manualR,mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;

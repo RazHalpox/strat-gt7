@@ -41,24 +41,10 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 
 ---
 
-## L'écran Course (jour de course)
-
-Ouvre `http://IP-DU-PC:8777/course.html`, ou l'onglet **Course**. Il n'affiche que l'essentiel, en très gros :
-- **tours de carburant restants**, avec les litres et la jauge ;
-- **dernier tour** et écart au meilleur ;
-- **tour en cours** et position ;
-- **température des 4 pneus**.
-
-**La bannière suit ta stratégie.** Ouvre d'abord l'onglet **Stratégie** sur le même appareil et choisis ton plan : l'écran Course le reprend. Trois tours avant chaque arrêt prévu, une bannière jaune affiche « Arrêt dans X tours » avec la gomme du relais suivant et les litres à mettre (ou « pneus seuls »). Au tour de l'arrêt, elle passe au rouge clignotant : **BOX BOX**. L'ingénieur vocal annonce les mêmes infos.
-
-Sécurité : si le carburant ne tient pas jusqu'à l'arrêt prévu, **BOX BOX — Carburant critique** s'affiche quand même. Sans plan enregistré, la bannière se base sur le carburant seul.
-
-L'ingénieur vocal y est aussi. En paysage, les blocs se réorganisent selon la taille de l'écran.
-
 ## L'écran Pilote (iPad en paysage)
 
 Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Pense à tourner l'iPad en paysage.
-- **Carburant** (à gauche) : tours restants en gros, litres, jauge avec le repère du carburant nécessaire jusqu'au prochain arrêt, conso moyenne et du dernier tour, **marge** à l'arrêt (ou à l'arrivée), bandeau du prochain arrêt de ta stratégie (gomme et litres à remettre), et la conso de tes 10 derniers tours.
+- **Carburant** (à gauche) : tours restants en gros, litres, jauge avec le repère du carburant nécessaire jusqu'au prochain arrêt, conso moyenne et du dernier tour, bandeau du prochain arrêt de ta stratégie (gomme et litres à remettre), et la conso de tes 10 derniers tours.
 - **Pneus** (à droite) : gomme et relais en cours selon ta stratégie, usure du relais (tours faits / vie de la gomme), température des 4 pneus en couleur, et alertes **BLOQUE** (roue bloquée au freinage) ou **PATINE** (roue qui patine à l'accélération).
 - **Au centre** : rapport engagé, vitesse, tour, position, turbo, **delta** en direct sur ton meilleur tour (à partir du 2e tour), chronos, et la trace accélérateur / frein.
 - En haut, la barre de régime clignote au rupteur.
@@ -88,7 +74,7 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 ## ⚙ Réglages
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
-- **Écran Course** : alerte d'arrêt de 1 à 5 tours avant (ou désactivée), BOX BOX clignotant ou fixe, alerte carburant critique ;
+- **Arrêts (écran Pilote)** : alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique ;
 - **Écran Complet** : afficher ou masquer la bande radio ;
 - **Ingénieur vocal** : temps de chaque tour, meilleurs tours, point carburant (tous les N tours), vitesse de la voix ;
 - **Carburant** : nombre de tours pour la conso moyenne, seuils jaune et rouge de la jauge ;

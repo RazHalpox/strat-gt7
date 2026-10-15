@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@600&display=swap">
 <style>
-/* Réglages : interrupteurs et listes, regroupés par écran ; même habillage sombre que Course et Complet */
+/* Réglages : interrupteurs et listes, regroupés par écran ; même habillage sombre que Pilote et Complet */
 :root{
   --bg:#0c0f13; --panel:#151a21; --panel-2:#1c232c; --line:#27303b; --fg:#e9edf1; --muted:#8e99a5;
   --accent:#ff3b4e; --ok:#3ddc84; --warn:#ffc833; --cold:#4fa8ff;
@@ -66,7 +66,6 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <div class="wrap">
 <header>
   <nav class="tabs3" aria-label="Écrans">
-    <a href="course.html">Course</a>
     <a href="pilote.html">Pilote</a>
     <a href="./">Complet</a>
     <a href="strategie.html">Stratégie</a>
@@ -77,10 +76,9 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   <h1><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>Réglages</h1>
 
   <section class="panel">
-    <h2>Écran Course</h2>
+    <h2>Arrêts (écran Pilote)</h2>
     <div class="row"><label for="warnLaps"><b>Alerte d'arrêt</b><small>Bannière jaune « Arrêt dans X tours » avant chaque arrêt de ta stratégie</small></label>
       <select id="warnLaps"><option value="0">Désactivée</option><option value="1">1 tour avant</option><option value="2">2 tours avant</option><option value="3">3 tours avant</option><option value="4">4 tours avant</option><option value="5">5 tours avant</option></select></div>
-    <div class="row"><label for="boxFlash"><b>BOX BOX clignotant</b><small>Sinon, bannière rouge fixe</small></label><span class="sw"><input type="checkbox" id="boxFlash"><i></i></span></div>
     <div class="row"><label for="fuelSafety"><b>Alerte carburant critique</b><small>BOX BOX si l'essence ne tient pas jusqu'à l'arrêt prévu</small></label><span class="sw"><input type="checkbox" id="fuelSafety"><i></i></span></div>
   </section>
 
@@ -122,7 +120,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 // Réglages du Race Engineer, partagés par tous les écrans de cet appareil.
 // L'onglet ⚙ Réglages les modifie ; les écrans les relisent à chaque mise à jour, donc ça s'applique tout de suite.
 const OPTS_DEF = {
-  // Écran Course
+  // Arrêts (écran Pilote)
   warnLaps: 3,        // bannière « Arrêt dans X tours » : combien de tours avant l'arrêt prévu
   boxFlash: true,     // BOX BOX clignotant
   fuelSafety: true,   // BOX BOX « Carburant critique » si l'essence ne tient pas jusqu'à l'arrêt prévu
@@ -158,7 +156,7 @@ function tyreColorOpt(t) {
 </script>
 <script>
 const $=id=>document.getElementById(id);
-const BOOL=["boxFlash","fuelSafety","radio","voiceLapTime","voiceBest"];
+const BOOL=["fuelSafety","radio","voiceLapTime","voiceBest"];
 const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelWarn","fuelCrit","tCold","tHot","tOver","slipPct"];
 function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]))}
 let t;
