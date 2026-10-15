@@ -75,6 +75,17 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 
 ---
 
+## ⚙ Réglages
+
+L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
+- **Écran Course** : alerte d'arrêt de 1 à 5 tours avant (ou désactivée), BOX BOX clignotant ou fixe, alerte carburant critique ;
+- **Écran Complet** : afficher ou masquer la bande radio ;
+- **Ingénieur vocal** : temps de chaque tour, meilleurs tours, point carburant (tous les N tours), vitesse de la voix ;
+- **Carburant** : nombre de tours pour la conso moyenne, seuils jaune et rouge de la jauge ;
+- **Pneus** : températures froid / chaud / trop chaud.
+
+Les réglages sont enregistrés sur l'appareil (iPad, téléphone) où tu les modifies.
+
 ## Garder l'écran allumé
 
 Règle la mise en veille de l'appareil pendant tes courses :

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GT7 Race Engineer – Réglages</title>
+<meta name="theme-color" content="#0c0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GT7 Engineer">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@600&display=swap">
+<style>
+/* Réglages : interrupteurs et listes, regroupés par écran ; même habillage sombre que Course et Complet */
+:root{
+  --bg:#0c0f13; --panel:#151a21; --panel-2:#1c232c; --line:#27303b; --fg:#e9edf1; --muted:#8e99a5;
+  --accent:#ff3b4e; --ok:#3ddc84; --warn:#ffc833; --cold:#4fa8ff;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+.wrap{padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+header{display:flex;justify-content:center;margin-bottom:16px}
+main{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+@media (max-width:720px){main{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 16px 10px;min-width:0}
+h1{grid-column:1/-1;font:700 28px var(--f-display);text-transform:uppercase;letter-spacing:.03em;margin:0;display:flex;align-items:center;gap:10px}
+h1 svg{width:26px;height:26px;color:var(--accent)}
+h2{font:600 15px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 0 2px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+h2+.row{border-top:0}
+.row label{display:flex;flex-direction:column;gap:2px;min-width:0;cursor:pointer}
+.row b{font-weight:500}
+.row small{color:var(--muted);font-size:13px}
+select{font:500 16px var(--f-mono);background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 9px;flex:none}
+input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 9px;width:84px;text-align:right;flex:none}
+/* interrupteur */
+.sw{position:relative;width:52px;height:30px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
+.sw i{position:absolute;inset:0;border-radius:15px;background:var(--panel-2);border:1px solid var(--line);transition:background .2s}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.sw input:checked+i{background:var(--ok);border-color:var(--ok)}
+.sw input:checked+i::after{transform:translateX(22px);background:#0c0f13}
+.sw input:focus-visible+i,select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.foot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.btn{background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:8px 14px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.btn.armed{background:var(--warn);border-color:var(--warn);color:#0c0f13}
+.saved{color:var(--ok);font-weight:600;min-height:1.2em}
+nav.tabs3{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
+nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
+nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--bg)}
+nav.tabs3 a.gear{display:flex;align-items:center;padding:6px 10px}
+nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <nav class="tabs3" aria-label="Écrans">
+    <a href="course.html">Course</a>
+    <a href="./">Complet</a>
+    <a href="strategie.html">Stratégie</a>
+    <a href="reglages.html" class="gear" aria-current="page" aria-label="Réglages" title="Réglages"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path fill="currentColor" d="M18.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L14 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L5.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></a>
+  </nav>
+</header>
+<main>
+  <h1><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>Réglages</h1>
+
+  <section class="panel">
+    <h2>Écran Course</h2>
+    <div class="row"><label for="warnLaps"><b>Alerte d'arrêt</b><small>Bannière jaune « Arrêt dans X tours » avant chaque arrêt de ta stratégie</small></label>
+      <select id="warnLaps"><option value="0">Désactivée</option><option value="1">1 tour avant</option><option value="2">2 tours avant</option><option value="3">3 tours avant</option><option value="4">4 tours avant</option><option value="5">5 tours avant</option></select></div>
+    <div class="row"><label for="boxFlash"><b>BOX BOX clignotant</b><small>Sinon, bannière rouge fixe</small></label><span class="sw"><input type="checkbox" id="boxFlash"><i></i></span></div>
+    <div class="row"><label for="fuelSafety"><b>Alerte carburant critique</b><small>BOX BOX si l'essence ne tient pas jusqu'à l'arrêt prévu</small></label><span class="sw"><input type="checkbox" id="fuelSafety"><i></i></span></div>
+  </section>
+
+  <section class="panel">
+    <h2>Écran Complet</h2>
+    <div class="row"><label for="radio"><b>Bande radio</b><small>Le dernier message de l'ingénieur, affiché sous les onglets</small></label><span class="sw"><input type="checkbox" id="radio"><i></i></span></div>
+    <h2>Ingénieur vocal</h2>
+    <div class="row"><label for="voiceLapTime"><b>Temps de chaque tour</b><small>Sinon, il ne parle que pour les arrêts et le carburant</small></label><span class="sw"><input type="checkbox" id="voiceLapTime"><i></i></span></div>
+    <div class="row"><label for="voiceBest"><b>Meilleurs tours</b><small>« Meilleur tour, bravo »</small></label><span class="sw"><input type="checkbox" id="voiceBest"><i></i></span></div>
+    <div class="row"><label for="voiceFuelEvery"><b>Point carburant</b><small>« Carburant pour X tours »</small></label>
+      <select id="voiceFuelEvery"><option value="0">Jamais</option><option value="1">Chaque tour</option><option value="2">Tous les 2 tours</option><option value="3">Tous les 3 tours</option><option value="5">Tous les 5 tours</option></select></div>
+    <div class="row"><label for="voiceRate"><b>Vitesse de la voix</b></label>
+      <select id="voiceRate"><option value="0.9">Lente</option><option value="1.05">Normale</option><option value="1.25">Rapide</option></select></div>
+  </section>
+
+  <section class="panel">
+    <h2>Carburant</h2>
+    <div class="row"><label for="consAvg"><b>Conso moyenne calculée sur</b><small>Les tours avec un arrêt au stand sont ignorés</small></label>
+      <select id="consAvg"><option value="3">3 tours</option><option value="5">5 tours</option><option value="10">10 tours</option></select></div>
+    <div class="row"><label for="fuelWarn"><b>Jauge jaune sous</b><small>tours de carburant restants</small></label><input type="number" id="fuelWarn" min="1" max="20" step="1"></div>
+    <div class="row"><label for="fuelCrit"><b>Jauge rouge sous</b><small>tours de carburant restants</small></label><input type="number" id="fuelCrit" min="1" max="20" step="1"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Pneus (°C)</h2>
+    <div class="row"><label for="tCold"><b>Froid en dessous de</b><small>affiché en bleu</small></label><input type="number" id="tCold" min="0" max="200" step="1"></div>
+    <div class="row"><label for="tHot"><b>Chaud au-dessus de</b><small>affiché en jaune</small></label><input type="number" id="tHot" min="0" max="200" step="1"></div>
+    <div class="row"><label for="tOver"><b>Trop chaud au-dessus de</b><small>affiché en rouge</small></label><input type="number" id="tOver" min="0" max="200" step="1"></div>
+  </section>
+
+  <div class="foot">
+    <span class="saved" id="saved" role="status"></span>
+    <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span>Réglages enregistrés sur cet appareil.</span><button class="btn" type="button" id="reset">Valeurs par défaut</button></span>
+  </div>
+</main>
+</div>
+<script src="opts.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const BOOL=["boxFlash","fuelSafety","radio","voiceLapTime","voiceBest"];
+const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelWarn","fuelCrit","tCold","tHot","tOver"];
+function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]))}
+let t;
+function store(){const O=opts();BOOL.forEach(k=>O[k]=$(k).checked);
+  NUM.forEach(k=>{const v=parseFloat($(k).value);if(isFinite(v))O[k]=v});
+  if(O.fuelCrit>O.fuelWarn)O.fuelCrit=O.fuelWarn;
+  const ok=saveOpts(O);$("saved").textContent=ok?"✓ Enregistré":"Enregistrement impossible sur ce navigateur";clearTimeout(t);t=setTimeout(()=>$("saved").textContent="",1800)}
+document.querySelector("main").addEventListener("change",store);
+document.querySelector("main").addEventListener("input",e=>{if(e.target.type==="number")store()});
+let armed=false;
+$("reset").addEventListener("click",()=>{const b=$("reset");
+  if(!armed){armed=true;b.classList.add("armed");b.textContent="Confirmer";setTimeout(()=>{if(armed){armed=false;b.classList.remove("armed");b.textContent="Valeurs par défaut"}},4000);return}
+  armed=false;b.classList.remove("armed");b.textContent="Valeurs par défaut";saveOpts(Object.assign({},OPTS_DEF));fill();$("saved").textContent="✓ Valeurs par défaut remises"});
+fill();
+</script>
+</body>
+</html>

@@ -47,6 +47,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;fle
 nav.tabs3{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px}
 nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
 nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--bg)}
+nav.tabs3 a.gear{display:flex;align-items:center;padding:6px 10px}
 nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;min-width:0}
@@ -120,6 +121,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
     <a href="course.html">Course</a>
     <a href="./" aria-current="page">Complet</a>
     <a href="strategie.html">Stratégie</a>
+    <a href="reglages.html" class="gear" aria-label="Réglages" title="Réglages"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path fill="currentColor" d="M18.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L14 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L5.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></a>
   </nav>
   <div class="hdr-right">
     <span class="pill wait" id="status">Connexion…</span>
@@ -162,7 +164,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
   <section class="card c3">
     <p class="lbl"><span>Pneus</span><span>°C</span></p>
     <div class="tyres" id="tyres"></div>
-    <p class="note" style="text-align:center">Bleu froid · vert bon · jaune chaud · rouge trop chaud</p>
+    <p class="note" style="text-align:center" id="tyreLegend">Bleu froid · vert bon · jaune chaud · rouge trop chaud</p>
   </section>
 
   <section class="card c7">
@@ -197,6 +199,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
 </main>
 </div>
 
+<script src="opts.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const fin=x=>typeof x==="number"&&isFinite(x);
@@ -217,12 +220,12 @@ function avgLap(laps,n){const c=laps.filter(l=>!l.pit&&l.ms>0).slice(-n);return 
 
 /* ---- bande radio : le dernier message de l'ingénieur, affiché même sans le son ---- */
 let radioT=null;
-function radio(text){const r=document.getElementById("radio");if(!r)return;
+function radio(text){const r=document.getElementById("radio");if(!r)return;if(!opts().radio){r.hidden=true;return}
   document.getElementById("radioText").textContent=text;r.hidden=false;r.classList.remove("old");
   clearTimeout(radioT);radioT=setTimeout(()=>r.classList.add("old"),20000)}
 /* ---- ingénieur vocal ---- */
 let voiceOn=false,lastSpokenLap=null,fuelWarned=0;
-function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=1.05;
+function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=+opts().voiceRate||1.05;
   const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith("fr"));if(v)u.voice=v;speechSynthesis.speak(u)}
 function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
 $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
@@ -232,14 +235,15 @@ function engineer(laps,live,lapsLeft){
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
     const L=live||{};radio(`Liaison radio établie.${L.lap?` Tour ${L.lap} en cours.`:""}${fin(lapsLeft)?` Carburant pour ${Math.floor(lapsLeft)} tours.`:""}`);return}
   if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;lastSpokenLap=last.n;
-  const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
-  let t=`Tour ${last.n}, ${sayLap(last.ms)}.`;
-  if(last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
+  const O=opts(),best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
+  let t=O.voiceLapTime?`Tour ${last.n}, ${sayLap(last.ms)}.`:"";
+  if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
   if(fin(lapsLeft)){const n=Math.floor(lapsLeft);
     if(n<=1){t+=" Carburant critique, rentre au stand ce tour-ci.";}
-    else if(n<=3){t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;}
-    else if(last.n%3===0)t+=` Carburant pour ${n} tours.`;}
-  radio(t);say(t);
+    else if(n<O.fuelWarn){t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;}
+    else if(O.voiceFuelEvery>0&&last.n%O.voiceFuelEvery===0)t+=` Carburant pour ${n} tours.`;}
+  t=t.trim();if(!t)t=`Tour ${last.n} terminé.`;
+  radio(t);if(t!==`Tour ${last.n} terminé.`)say(t);
 }
 
 /* ---- plan de la stratégie (enregistré par l'onglet Stratégie sur cet appareil) ---- */
@@ -251,14 +255,16 @@ function fuelTarget(L){
   for(let i=0;i<p.rows.length-1;i++)if(p.rows[i].to>=L.lap)return{endLap:p.rows[i].to,label:"Jusqu'à l'arrêt"};
   return{endLap:p.rows[p.rows.length-1].to,label:"Pour finir"};
 }
+function O_radioSync(){const r=$("radio");if(r&&!opts().radio)r.hidden=true;else if(r&&$("radioText").textContent)r.hidden=false;return true}
 /* ---- affichage ---- */
-function tyreColor(t){if(!fin(t))return"var(--panel-2)";if(t<55)return"var(--cold)";if(t<=95)return"var(--ok)";if(t<=110)return"var(--warn)";return"var(--accent)"}
+const tyreColor=tyreColorOpt;
 let lastLapsLen=-1;
 function render(s){
   const st=$("status"),mode=s.mode,L=s.live||{},laps=s.laps||[];
   st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
   st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente";
   $("waitBox").hidden=mode!=="attente";$("dash").style.opacity=mode==="attente"?".45":"1";
+  O_radioSync();
   if(!L||!fin(L.fuel))return;
   // chrono
   $("lapNo").textContent=L.total_laps>0?`Tour ${L.lap} / ${L.total_laps}`:`Tour ${L.lap}`;
@@ -269,10 +275,10 @@ function render(s){
   $("avg3").textContent=lapFmt(avgLap(laps,3));
   $("speed").textContent=Math.round(L.speed)+" km/h";
   // carburant
-  const cons=avgFuel(laps,5),pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN,left=cons>0?L.fuel/cons:NaN;
+  const O=opts(),cons=avgFuel(laps,O.consAvg),pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN,left=cons>0?L.fuel/cons:NaN;
   $("fuelL").textContent=f1(L.fuel);$("fuelPct").textContent=fin(pct)?Math.round(pct)+" %":"–";
-  $("fuelLaps").textContent=fin(left)?f1(left):"–";$("fuelLaps").className="fuel-laps"+(fin(left)&&left<=2?" neg":fin(left)&&left<=4?" wrn":"");
-  $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";$("gauge").className="gauge"+(fin(left)&&left<=2?" crit":fin(left)&&left<=4?" low":"");
+  $("fuelLaps").textContent=fin(left)?f1(left):"–";$("fuelLaps").className="fuel-laps"+(fin(left)&&left<=O.fuelCrit?" neg":fin(left)&&left<=O.fuelWarn?" wrn":"");
+  $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";$("gauge").className="gauge"+(fin(left)&&left<=O.fuelCrit?" crit":fin(left)&&left<=O.fuelWarn?" low":"");
   $("cons").textContent=fin(cons)?f2(cons)+" L":"–";
   const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?f2(lastClean.fuel)+" L":"–";
   // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
