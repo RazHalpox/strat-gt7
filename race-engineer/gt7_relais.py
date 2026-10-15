@@ -345,7 +345,7 @@ def main():
     demo = "--demo" in sys.argv
     print()
     print("  ==============================================")
-    print("   GT7 RACE ENGINEER - relais telemetrie")
+    print("   GT7 RACE ENGINEER v1.3 - relais telemetrie")
     print("  ==============================================")
     if demo:
         print("  Mode DEMO : donnees simulees, pas besoin de la PS5.")

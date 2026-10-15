@@ -1,4 +1,4 @@
-# GT7 Race Engineer
+# GT7 Race Engineer · v1.3
 
 Ton ingénieur de course pour Gran Turismo 7 : télémétrie en direct sur ton téléphone, ingénieur vocal en français, et ton calculateur de stratégie d'endurance rempli automatiquement avec ta vraie conso et tes vrais temps.
 
