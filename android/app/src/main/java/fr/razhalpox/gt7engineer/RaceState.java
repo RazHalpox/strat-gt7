@@ -21,16 +21,20 @@ public final class RaceState {
     private Double prevFuel;
     private boolean moved;       // la voiture a roulé depuis le début du tour
     private long stillSince = -1; // arrêtée depuis (arrêt au stand sans essence)
+    private double minFuel = Double.NaN; // plus bas niveau de carburant du tour en cours
 
     public synchronized void reset(String newMode) {
         live = null; curMs = null; laps.clear(); lastRx = 0; lap = null; prevFuel = null; pit = false;
-        moved = false; stillSince = -1;
+        moved = false; stillSince = -1; minFuel = Double.NaN;
         mode = newMode;
     }
 
     public synchronized void update(Gt7.Frame d, long now) {
         lastRx = now;
-        if (prevFuel != null && d.fuel > prevFuel + 0.5) pit = true; // ravitaillement : le carburant remonte
+        // ravitaillement : le carburant remonte (GT7 remplit petit à petit : on compare au plus bas du tour)
+        if (prevFuel != null && d.fuel > prevFuel + 0.5) pit = true;
+        if (!Double.isNaN(minFuel) && d.fuel > minFuel + 0.5) pit = true;
+        minFuel = Double.isNaN(minFuel) ? d.fuel : Math.min(minFuel, d.fuel);
         prevFuel = d.fuel;
         // arrêt au stand sans essence (pneus seuls) : voiture immobile plus de 3 s après avoir roulé
         if (d.speed > 30) moved = true;
@@ -43,7 +47,7 @@ public final class RaceState {
         } else if (lap == null || d.lap < lap) {          // nouvelle course
             laps.clear();
             lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false;
-            moved = false; stillSince = -1;
+            moved = false; stillSince = -1; minFuel = d.fuel;
         } else if (d.lap > lap) {                           // tour terminé
             if (lap >= 1 && d.lastMs > 0) {
                 Lap l = new Lap();
@@ -54,7 +58,7 @@ public final class RaceState {
                 while (laps.size() > 200) laps.remove(0);
             }
             lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false;
-            moved = d.speed > 30; stillSince = -1;
+            moved = d.speed > 30; stillSince = -1; minFuel = d.fuel;
         }
         curMs = (lapT0 > 0 && !d.paused) ? (now - lapT0) : null;
         live = d;

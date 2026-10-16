@@ -377,7 +377,7 @@ function render(s){
       if(!l.pit&&fin(l.fuel)&&l.fuel>0.05)cur.f.push(l.fuel);if(l.pit)cur=null});
     const plan=readPlan(),rows=plan&&plan.rows||[];
     const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+f2(all.reduce((a,b)=>a+b,0)/all.length)+" L":"";
-    if(st.length){$("relays").innerHTML=st.map((r,i)=>{const g=rows[i]&&rows[i].g,avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN,live=i===st.length-1&&cur;
+    if(st.length){$("relays").innerHTML=st.map((r,i)=>{const pr=rows.find(x=>r.from>=x.from&&r.from<=x.to),g=pr?pr.g:"",avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN,live=i===st.length-1&&cur;
       return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?f2(avg):"–"}<small>L/t</small></b></div>`}).slice(-4).join("")}}
 
   // centre

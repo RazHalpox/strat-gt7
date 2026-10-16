@@ -152,6 +152,7 @@ class RaceState:
         self._prev_fuel = None
         self._moved = False      # la voiture a roule depuis le debut du tour
         self._still_since = None # arretee depuis (arret au stand sans essence)
+        self._min_fuel = None    # plus bas niveau de carburant du tour en cours
 
     def update(self, d, now=None):
         now = now or time.time()
@@ -159,9 +160,12 @@ class RaceState:
             self.last_rx = now
             lap = d["lap"]
             fuel = d["fuel"]
-            # ravitaillement : le carburant remonte
+            # ravitaillement : le carburant remonte (GT7 remplit petit a petit : on compare au plus bas du tour)
             if self._prev_fuel is not None and fuel > self._prev_fuel + 0.5:
                 self._pit = True
+            if self._min_fuel is not None and fuel > self._min_fuel + 0.5:
+                self._pit = True
+            self._min_fuel = fuel if self._min_fuel is None else min(self._min_fuel, fuel)
             self._prev_fuel = fuel
             # arret au stand sans essence (pneus seuls) : voiture immobile plus de 3 s apres avoir roule
             spd = d["speed"]
@@ -179,7 +183,7 @@ class RaceState:
             elif self._lap is None or lap < self._lap:     # nouvelle course
                 self.laps = []
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
-                self._moved, self._still_since = False, None
+                self._moved, self._still_since, self._min_fuel = False, None, fuel
             elif lap > self._lap:                          # tour termine
                 if self._lap >= 1 and d["last_ms"] > 0:
                     used = None if self._pit else max(0.0, self._lap_fuel - fuel)
@@ -188,7 +192,7 @@ class RaceState:
                                       "pit": self._pit, "fuel_end": round(fuel, 2)})
                     self.laps = self.laps[-200:]
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
-                self._moved, self._still_since = spd > 30, None
+                self._moved, self._still_since, self._min_fuel = spd > 30, None, fuel
             cur = int((now - self._lap_t0) * 1000) if self._lap_t0 and not d["paused"] else None
             self.live = dict(d, cur_ms=cur)
 
