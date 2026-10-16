@@ -150,6 +150,8 @@ class RaceState:
         self._lap_t0 = None
         self._pit = False
         self._prev_fuel = None
+        self._moved = False      # la voiture a roule depuis le debut du tour
+        self._still_since = None # arretee depuis (arret au stand sans essence)
 
     def update(self, d, now=None):
         now = now or time.time()
@@ -161,9 +163,23 @@ class RaceState:
             if self._prev_fuel is not None and fuel > self._prev_fuel + 0.5:
                 self._pit = True
             self._prev_fuel = fuel
-            if self._lap is None or lap < self._lap:     # nouvelle course
+            # arret au stand sans essence (pneus seuls) : voiture immobile plus de 3 s apres avoir roule
+            spd = d["speed"]
+            if spd > 30:
+                self._moved = True
+            if self._moved and spd < 1 and d["on_track"] and not d["paused"] and not d["loading"]:
+                if self._still_since is None:
+                    self._still_since = now
+                elif now - self._still_since >= 3:
+                    self._pit = True
+            else:
+                self._still_since = None
+            if lap <= 0 and self._lap is not None and self._lap >= 1:
+                pass                                       # tour 0 en pleine course (chargement, menu) : on garde l'historique
+            elif self._lap is None or lap < self._lap:     # nouvelle course
                 self.laps = []
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
+                self._moved, self._still_since = False, None
             elif lap > self._lap:                          # tour termine
                 if self._lap >= 1 and d["last_ms"] > 0:
                     used = None if self._pit else max(0.0, self._lap_fuel - fuel)
@@ -172,6 +188,7 @@ class RaceState:
                                       "pit": self._pit, "fuel_end": round(fuel, 2)})
                     self.laps = self.laps[-200:]
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
+                self._moved, self._still_since = spd > 30, None
             cur = int((now - self._lap_t0) * 1000) if self._lap_t0 and not d["paused"] else None
             self.live = dict(d, cur_ms=cur)
 

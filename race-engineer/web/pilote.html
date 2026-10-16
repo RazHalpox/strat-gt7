@@ -370,7 +370,8 @@ function render(s){
     $("hist").innerHTML=hl.map(l=>{const h=20+80*((l.fuel-mn*0.9)/(mx-mn*0.9||1));const c=fin(cons)&&l.fuel>cons*1.03?"#ffc833":fin(cons)&&l.fuel<cons*0.97?"#4fa8ff":"#3ddc84";
       return`<div><i style="height:${Math.max(8,Math.min(100,h))}%;border-top-color:${c};background:linear-gradient(${c}55,${c}11)"></i><span>${f2(l.fuel)}</span></div>`}).join("")}
   // conso moyenne de chaque relais (un relais se termine au tour où tu passes au stand)
-  if(laps.length!==render._rl){render._rl=laps.length;
+  const rlKey=laps.length+":"+(laps.length?laps[laps.length-1].n:"")+":"+(localStorage.getItem("gt7-plan")||"");
+  if(rlKey!==render._rl){render._rl=rlKey;
     const st=[];let cur=null;
     laps.forEach(l=>{if(!cur){cur={from:l.n,to:l.n,f:[]};st.push(cur)}cur.to=l.n;
       if(!l.pit&&fin(l.fuel)&&l.fuel>0.05)cur.f.push(l.fuel);if(l.pit)cur=null});

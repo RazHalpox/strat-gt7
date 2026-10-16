@@ -19,9 +19,12 @@ public final class RaceState {
     private long lapT0;
     private boolean pit;
     private Double prevFuel;
+    private boolean moved;       // la voiture a roulé depuis le début du tour
+    private long stillSince = -1; // arrêtée depuis (arrêt au stand sans essence)
 
     public synchronized void reset(String newMode) {
         live = null; curMs = null; laps.clear(); lastRx = 0; lap = null; prevFuel = null; pit = false;
+        moved = false; stillSince = -1;
         mode = newMode;
     }
 
@@ -29,9 +32,18 @@ public final class RaceState {
         lastRx = now;
         if (prevFuel != null && d.fuel > prevFuel + 0.5) pit = true; // ravitaillement : le carburant remonte
         prevFuel = d.fuel;
-        if (lap == null || d.lap < lap) {                 // nouvelle course
+        // arrêt au stand sans essence (pneus seuls) : voiture immobile plus de 3 s après avoir roulé
+        if (d.speed > 30) moved = true;
+        if (moved && d.speed < 1 && d.onTrack && !d.paused && !d.loading) {
+            if (stillSince < 0) stillSince = now;
+            else if (now - stillSince >= 3000) pit = true;
+        } else stillSince = -1;
+        if (d.lap <= 0 && lap != null && lap >= 1) {
+            // tour 0 en pleine course (chargement, menu) : on garde l'historique
+        } else if (lap == null || d.lap < lap) {          // nouvelle course
             laps.clear();
             lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false;
+            moved = false; stillSince = -1;
         } else if (d.lap > lap) {                           // tour terminé
             if (lap >= 1 && d.lastMs > 0) {
                 Lap l = new Lap();
@@ -42,6 +54,7 @@ public final class RaceState {
                 while (laps.size() > 200) laps.remove(0);
             }
             lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false;
+            moved = d.speed > 30; stillSince = -1;
         }
         curMs = (lapT0 > 0 && !d.paused) ? (now - lapT0) : null;
         live = d;
