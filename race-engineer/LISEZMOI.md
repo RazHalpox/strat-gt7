@@ -98,7 +98,9 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 
 Sur Pilote, le bouton **Plan B** recalcule la fin de la course si tu rentres **à la fin du tour en cours** : il part de ton tour, de ton essence, des gommes déjà roulées et des règles de Stratégie, et propose la meilleure option pour chaque gomme (gomme à monter, essence à remettre ou pneus seuls, arrêts suivants). Touche une option : le bandeau passe en « Box box · ce tour-ci » avec ce choix, et tout le plan des écrans est mis à jour.
 
-Si l'appli détecte un arrêt **hors plan** sans que tu aies utilisé Plan B, elle te demande quelle gomme tu as montée et recalcule la suite toute seule.
+**Automatique dans la voie des stands :** quand tu entres dans la voie des stands à un tour qui n'est pas un arrêt prévu, l'appli le reconnaît au limiteur (vitesse figée), ouvre le Plan B toute seule et l'ingénieur annonce le meilleur choix. Il ne reste qu'à toucher l'option.
+
+En dernier recours, si un arrêt hors plan est passé inaperçu, l'appli demande ensuite quelle gomme tu as montée et recalcule la suite.
 
 Le calcul prend quelques millisecondes et utilise tes temps au tour et la vie des gommes de Stratégie › Paramètres, avec ta conso réelle. Tant que tu ne touches à rien dans Stratégie, le Plan B reste actif ; le bouton « Revenir au plan » de Stratégie le remplace par le plan d'origine.
 

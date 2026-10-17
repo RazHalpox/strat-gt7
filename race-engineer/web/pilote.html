@@ -524,7 +524,7 @@ function render(s){
   else{$("tyreRelay").textContent="sans plan";$("stintTxt").textContent="–";$("wear").style.width="0"}
 
   engineer(laps,L,left,nx);
-  window.__S={L,laps,cons,rem};planBCheck(L,laps,cons);
+  window.__S={L,laps,cons,rem};pitLaneCheck(L);planBCheck(L,laps,cons);
 }
 
 function connect(){
@@ -676,6 +676,25 @@ $("pbClose").addEventListener("click",()=>{if(pbOpen&&pbOpen.kind==="after")ackP
 $("planBBtn").addEventListener("click",()=>{const X=ctxNow();if(!X){return}
   if(!(Replan.readPlan()||{}).rows){showPB("now",X,X.fromLap-1,"Plan B","Choisis d'abord un plan dans Stratégie.");$("pbList").innerHTML="";return}
   showPB("now",X,X.fromLap-1,`Plan B · arrêt à la fin du T${X.fromLap-1}`,`Si tu rentres à la fin de ce tour : la meilleure option pour chaque gomme, pour la suite de la course.`)});
+// entrée dans la voie des stands : le limiteur fige la vitesse (±1 km/h, entre 30 et 110 km/h) sans freiner.
+// Si ce tour n'est pas un arrêt prévu, le Plan B s'ouvre tout de suite et l'ingénieur annonce le meilleur choix.
+let pitBuf=[],pitAutoLap=null;
+function pitLaneCheck(L){
+  const now=performance.now(),v=L.speed;
+  if(!fin(v)||!L.on_track||L.paused||L.loading||v<30||v>110||(L.brake||0)>5){pitBuf=[];return}
+  pitBuf.push({t:now,v});pitBuf=pitBuf.filter(x=>now-x.t<=2500);
+  if(now-pitBuf[0].t<1200)return;
+  const vs=pitBuf.map(x=>x.v);if(Math.max(...vs)-Math.min(...vs)>1.2)return;
+  window.inPitLane=now;
+  if(pbOpen||window.editing||pitAutoLap===L.lap||!fin(L.lap)||!(window.__S&&window.__S.laps.length))return;
+  const p=Replan.readPlan();if(!p||!p.rows||!p.rows.length)return;
+  const ends=p.rows.slice(0,-1).map(r=>r.to),r=p.replan,lap=L.lap;
+  if(ends.includes(lap)||ends.includes(lap-1)||(r&&(r.at===lap||r.at===lap-1)))return; // arrêt prévu : rien à faire
+  pitAutoLap=lap;
+  const X=ctxNow();if(!X)return;
+  showPB("now",X,lap,`Arrêt hors plan · T${lap}`,"Tu es dans la voie des stands : choisis ce que tu montes, la suite de la course est recalculée.");
+  const b=document.querySelector(".pbOpt.best b");if(b)say(`Arrêt hors plan. Conseil : ${b.textContent.replace(" · ",", ").replace("+","").replace("%"," pour cent")}.`);
+}
 function ackPit(pl){try{localStorage.setItem("gt7-pitack",JSON.stringify({pl,t:Date.now()}))}catch(e){}}
 function acked(pl){try{const a=JSON.parse(localStorage.getItem("gt7-pitack")||"null");return a&&a.pl===pl&&Date.now()-a.t<3*3600e3}catch(e){return false}}
 // arrêt hors plan détecté (accident, crevaison…) : on demande la gomme montée et on recalcule la suite
