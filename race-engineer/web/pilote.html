@@ -302,6 +302,7 @@ function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=ne
 function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
 $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
   $("voiceBtn").textContent=voiceOn?"🎧 On":"🎧 Off";if(voiceOn)say("Radio check. Je suis avec toi.")});
+let fuelShort=null;
 function engineer(laps,live,lapsLeft,nx){
   // premier contact : message de liaison, sans relire les tours déjà faits
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
@@ -310,8 +311,11 @@ function engineer(laps,live,lapsLeft,nx){
   const O=opts(),best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   let t=O.voiceLapTime?`Tour ${last.n}, ${sayLap(last.ms)}.`:"",alert=false;
   if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
-  if(nx&&!nx.done&&nx.inLaps===0){t+=` Box box, ce tour-ci. ${CN[nx.g]}${nx.stop&&nx.stop.full?`, ${Math.round(nx.stop.add)} litres`:", pneus seuls"}.`;alert=true}
+  if(nx&&!nx.done&&nx.inLaps===0){t+=` Box box, ce tour-ci. ${CN[nx.g]}${addL(nx)>0?`, ${addL(nx)} litres`:", pneus seuls"}.`;alert=true}
   else if(nx&&!nx.done&&O.warnLaps>0&&nx.inLaps<=O.warnLaps){t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CN[nx.g]}.`;alert=true}
+  if(fuelShort&&fin(lapsLeft)&&Math.floor(lapsLeft)>1){const n=Math.floor(lapsLeft);
+    t+=fuelShort.toStop?` Attention, essence pour ${n} tours seulement, l'arrêt prévu est trop loin. Rentre plus tôt ou économise.`
+      :` Attention, il manque ${fuelShort.miss} litres pour finir. Économise ou ravitaille.`;alert=true}
   if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft);
     if(n<=1&&O.fuelSafety)t+=" Carburant critique, rentre au stand ce tour-ci.";
     else if(!nx&&n<O.fuelWarn)t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;
@@ -327,7 +331,16 @@ function readPlan(){try{return JSON.parse(localStorage.getItem("gt7-plan")||"nul
 function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
   for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,stop:nx.stop,n:i+1}}}
   return{done:true}}
-function stopTxt(nx){const st=nx.stop||{};return`${CN[nx.g]||nx.g} · ${st.full?"+"+String(st.add).replace(".",",")+" L":"pneus seuls"}`}
+// litres à remettre, recalculés en direct : essence qu'il restera à l'arrêt (tour en cours compté en entier)
+// + tours du relais suivant + marge de la stratégie, arrondi au litre supérieur
+function stratMargin(){try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");const v=parseFloat(o&&o.S&&o.S.fuelMargin);return v>=0?v:1}catch(e){return 1}}
+function liveAdd(nx,L,cons){const p=readPlan(),row=p&&p.rows&&p.rows[nx.n];
+  if(!row||!fin(cons)||!(cons>0)||!fin(L.fuel))return null;
+  const laps=row.laps||row.to-row.from+1,atStop=L.fuel-(nx.inLaps+1)*cons,cap=L.fuel_cap>0?L.fuel_cap:100;
+  const need=(laps+stratMargin())*cons-atStop;return need>0?Math.ceil(Math.min(need,cap-Math.max(0,atStop))-1e-9):0}
+// litres à annoncer : le calcul en direct, sinon le plan (arrondi au litre supérieur)
+function addL(nx){if(fin(nx.live))return nx.live;const st=nx.stop||{};return st.full?Math.ceil(st.add-1e-9):0}
+function stopTxt(nx){const a=addL(nx);return`${CN[nx.g]||nx.g} · ${a>0?"+"+a+" L":"pneus seuls"}`}
 
 
 /* ---- relais en cours d'après le plan de la stratégie ---- */
@@ -357,11 +370,17 @@ function render(s){
   $("cons").textContent=fin(cons)?f2(cons):"–";
   const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?f2(lc.fuel):"–";
   // prochain arrêt prévu
-  const nx=nextStop(L.lap),stop=$("stop");
-  if(nx&&!nx.done){const txt=`${CN[nx.g]} · ${nx.stop&&nx.stop.full?"+"+f1(nx.stop.add)+" L":"pneus seuls"}`;
+  const nx=nextStop(L.lap),stop=$("stop");if(nx&&!nx.done)nx.live=liveAdd(nx,L,cons);
+  // essence courte : ne tiendra pas jusqu'à l'arrêt prévu (ou jusqu'à l'arrivée au dernier relais)
+  const pl=readPlan(),finishLap=L.total_laps>0?L.total_laps:(pl&&pl.rows&&pl.rows.length?pl.rows[pl.rows.length-1].to:NaN);
+  const lapsTo=nx&&!nx.done?nx.inLaps+1:(nx&&nx.done&&fin(finishLap)?finishLap-L.lap+1:NaN);
+  fuelShort=O.fuelSafety&&fin(left)&&fin(lapsTo)&&left<lapsTo-0.05?{left,lapsTo,miss:Math.ceil((lapsTo-left)*cons),toStop:!!(nx&&!nx.done)}:null;
+  if(O.fuelSafety&&fin(left)&&left<1.5&&(fuelShort||!nx)&&!(nx&&!nx.done&&nx.inLaps===0)){stop.className="stop crit";$("stopTitle").textContent="Box box · carburant critique";$("stopText").textContent="Rentre au stand ce tour-ci"}
+  else if(nx&&!nx.done){const txt=stopTxt(nx);
     if(nx.inLaps===0){stop.className="stop crit";$("stopTitle").textContent="Box box · ce tour-ci";$("stopText").textContent=txt}
+    else if(fuelShort){stop.className="stop crit";$("stopTitle").textContent=`Essence courte · ${f1(left)} tours`;$("stopText").textContent=`Arrêt prévu T${nx.endLap} : rentre plus tôt ou économise · ${txt}`}
     else{stop.className="stop"+(O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}
-  else if(O.fuelSafety&&fin(left)&&left<1.5){stop.className="stop crit";$("stopTitle").textContent="Box box";$("stopText").textContent="Carburant critique"}
+  else if(fuelShort){stop.className="stop warn";$("stopTitle").textContent=`Essence courte pour finir · ${f1(left)} tours`;$("stopText").textContent=`Il manque ${fuelShort.miss} L : économise ou ravitaille`}
   else{stop.className="stop";$("stopTitle").textContent=nx&&nx.done?"Dernier relais":"Pas de plan";$("stopText").textContent=nx&&nx.done?"Plus d'arrêt prévu":"Choisis un plan dans Stratégie"}
   // conso des derniers tours
   const hl=laps.filter(l=>fin(l.fuel)&&!l.pit).slice(-10);

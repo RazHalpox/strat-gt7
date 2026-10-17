@@ -49,6 +49,7 @@ Pour Soft, Medium et Hard :
 
 ### 4. Régler le stand
 - **Changement de pneus uniquement** : chronomètre un tour avec un arrêt pneus seuls, puis retire ton temps au tour normal.
+- **Marge de carburant** : l'essence gardée en plus à chaque relais (1 tour conseillé), contre les tours plus gourmands et le tour en plus d'une course à la durée. Les litres à remettre sont arrondis au litre supérieur.
 - **Calcul du temps d'arrêt** :
   - *Pneus + litres ÷ refuel rate* : le temps de l'arrêt dépend des litres remis ;
   - *Temps fixes* : tu entres aussi un temps d'arrêt complet, utilisé dès qu'il y a de l'essence à remettre.
