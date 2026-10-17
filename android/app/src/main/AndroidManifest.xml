@@ -47,5 +47,10 @@
         <receiver
             android:name=".InstallReceiver"
             android:exported="false" />
+        <provider
+            android:name=".RecProvider"
+            android:authorities="fr.razhalpox.gt7engineer.rec"
+            android:exported="false"
+            android:grantUriPermissions="true" />
     </application>
 </manifest>

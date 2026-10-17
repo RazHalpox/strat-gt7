@@ -5,6 +5,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
@@ -20,6 +21,12 @@ public final class Engine {
     /** Adresse de la PS5 trouvée (utile quand on la cherche automatiquement). */
     public volatile String ps5Found = null;
     public volatile String error = null;
+    /** Dossier des enregistrements (null = pas d'enregistrement). */
+    public volatile File recBase = null;
+    private Recorder rec;
+    /** Relecture en cours : vitesse (1, 5, 20…) et fin atteinte. */
+    public volatile double replaySpeed = 0;
+    public volatile boolean replayDone = false;
 
     public synchronized void startPs5(final String ip) {
         stop();
@@ -39,8 +46,36 @@ public final class Engine {
         thread.start();
     }
 
+    /** Rejoue une course enregistrée comme si elle arrivait de la PS5. */
+    public synchronized void startReplay(final File f, final double speed) {
+        stop();
+        state.reset("replay");
+        running = true;
+        replaySpeed = speed;
+        replayDone = false;
+        error = null;
+        thread = new Thread(() -> {
+            final long start = System.currentTimeMillis();
+            try {
+                Recorder.replay(f, speed, (fr, t) -> {
+                    if (!running) return false;
+                    state.mode = "replay";
+                    state.update(fr, start + t); // l'heure de la course enregistrée, pour les chronos
+                    return true;
+                });
+            } catch (Exception e) {
+                error = "Relecture impossible : " + e.getMessage();
+            }
+            replayDone = true;
+        }, "gt7-replay");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     public synchronized void stop() {
         running = false;
+        replaySpeed = 0;
+        if (rec != null) { rec.close(); rec = null; }
         if (sock != null) sock.close();
         if (thread != null) thread.interrupt();
         thread = null;
@@ -86,7 +121,13 @@ public final class Engine {
                     if (auto) target = pk.getAddress(); // ensuite, on parle directement à la PS5
                 }
                 state.mode = "live";
-                state.update(Gt7.parse(dec), System.currentTimeMillis());
+                Gt7.Frame fr = Gt7.parse(dec);
+                long t = System.currentTimeMillis();
+                state.update(fr, t);
+                if (recBase != null) {
+                    if (rec == null) rec = Recorder.create(recBase);
+                    rec.write(fr, t);
+                }
             }
         } catch (Exception e) {
             if (running) error = "Réception impossible : " + e.getMessage();

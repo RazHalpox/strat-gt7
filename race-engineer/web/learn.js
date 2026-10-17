@@ -26,7 +26,7 @@ function trackStop(L,cur){
 
 /* ---- suivi de la course en cours et carnet ---- */
 function update(s){
-  if(!s||s.mode==="demo"||s.mode==="attente")return;
+  if(!s||s.mode!=="live")return; // ni démo, ni relecture, ni attente
   const L=s.live||{},laps=s.laps||[];
   let cur=rd(LKEY,null);const last=laps.length?laps[laps.length-1].n:0,now=Date.now();
   const fresh=!cur||!cur.id||(laps.length&&last<cur.lastN)||(laps.length&&laps.length<(cur.count||0)-1)||(now-(cur.lastSeen||0)>2*3600e3);

@@ -9,7 +9,13 @@ Aucune installation a part Python 3 : tout est dans ce fichier.
 
 Lancement :  double-clic sur lancer.bat
 Mode demo :  double-clic sur lancer-demo.bat (donnees simulees, sans PS5)
+Relecture :  double-clic sur rejouer-course.bat (rejoue la derniere course enregistree)
+             ou  python gt7_relais.py --replay [fichier] [--vitesse 5]
+
+Chaque reception de la PS5 est enregistree dans le dossier "enregistrements" (les 10 dernieres).
 """
+import glob
+import gzip
 import json
 import math
 import os
@@ -27,6 +33,7 @@ LOCAL_RECV_PORT = 33740     # port du PC qui recoit la telemetrie
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(HERE, "web")
 CONFIG = os.path.join(HERE, "config.json")
+REC_DIR = os.path.join(HERE, "enregistrements")
 
 # --------------------------------------------------------------------------
 # Salsa20 (dechiffrement des paquets GT7), en Python pur
@@ -157,7 +164,7 @@ class RaceState:
     def update(self, d, now=None):
         now = now or time.time()
         with self.lock:
-            self.last_rx = now
+            self.last_rx = time.time()   # horloge reelle (en relecture, "now" est l'heure de la course enregistree)
             lap = d["lap"]
             fuel = d["fuel"]
             # ravitaillement : le carburant remonte (GT7 remplit petit a petit : on compare au plus bas du tour)
@@ -199,11 +206,101 @@ class RaceState:
     def snapshot(self):
         with self.lock:
             stale = time.time() - self.last_rx > 2.5
-            return {"mode": "attente" if stale and self.mode != "demo" else self.mode,
+            return {"mode": "attente" if stale and self.mode not in ("demo", "replay") else self.mode,
                     "live": self.live, "laps": self.laps, "t": time.time()}
 
 
 STATE = RaceState()
+
+
+# --------------------------------------------------------------------------
+# Enregistrement des courses (10 images par seconde, ~1 Mo par heure) et relecture
+# --------------------------------------------------------------------------
+class Recorder:
+    KEEP = 10
+
+    def __init__(self):
+        self.f = None
+        self.t0 = None
+        self.last_t = -1000
+        self.last_flush = 0.0
+
+    def write(self, d, now):
+        try:
+            if self.f is None:
+                os.makedirs(REC_DIR, exist_ok=True)
+                old = sorted(glob.glob(os.path.join(REC_DIR, "course-*.jsonl.gz")), key=os.path.getmtime, reverse=True)
+                for o in old[self.KEEP - 1:]:
+                    try:
+                        os.remove(o)
+                    except OSError:
+                        pass
+                name = time.strftime("course-%Y%m%d-%H%M%S.jsonl.gz")
+                self.f = gzip.open(os.path.join(REC_DIR, name), "wt", encoding="utf-8")
+                self.t0 = now
+                print("  > Enregistrement :", os.path.join("enregistrements", name))
+            t = int((now - self.t0) * 1000)
+            if t - self.last_t < 95:
+                return
+            self.last_t = t
+            self.f.write(json.dumps(dict(d, t=t), separators=(",", ":")) + "\n")
+            if now - self.last_flush > 5:          # un arret brutal ne perd que 5 s
+                self.f.flush()
+                self.last_flush = now
+        except OSError:
+            self.f = None
+
+    def close(self):
+        try:
+            if self.f is not None:
+                self.f.close()
+        except OSError:
+            pass
+        self.f = None
+
+
+REC = Recorder()
+
+
+def latest_recording():
+    files = sorted(glob.glob(os.path.join(REC_DIR, "course-*.jsonl.gz")), key=os.path.getmtime, reverse=True)
+    for f in files:
+        if os.path.getsize(f) > 200:
+            return f
+    return None
+
+
+def replay_loop(path, speed):
+    """Rejoue une course enregistree comme si elle arrivait de la PS5."""
+    STATE.mode = "replay"
+    start = time.time()
+    prev = None
+    n = 0
+    try:
+        with gzip.open(path, "rt", encoding="utf-8") as f:
+            while True:
+                try:
+                    line = f.readline()
+                except (EOFError, OSError):   # fichier coupe (relais ferme brutalement) : on s'arrete la
+                    break
+                if not line:
+                    break
+                try:
+                    d = json.loads(line)
+                except ValueError:
+                    continue
+                t = d.pop("t", (prev or 0) + 100)
+                d.pop("cur_ms", None)
+                if prev is not None and t > prev:
+                    time.sleep(min(3.0, (t - prev) / 1000.0 / max(0.1, speed)))
+                prev = t
+                STATE.mode = "replay"
+                STATE.update(d, start + t / 1000.0)
+                n += 1
+    except OSError as e:
+        print("  ! Relecture impossible :", e)
+        return
+    print(f"  > Relecture terminee ({n} images). Les ecrans gardent la fin de la course.")
 
 
 # --------------------------------------------------------------------------
@@ -239,7 +336,10 @@ def ps5_loop(ps5_ip):
         if STATE.mode != "live":
             STATE.mode = "live"
             print("  > Telemetrie GT7 recue. C'est parti !")
-        STATE.update(parse_gt7(dec))
+        d = parse_gt7(dec)
+        now = time.time()
+        STATE.update(d, now)
+        REC.write(d, now)
 
 
 def demo_loop():
@@ -364,11 +464,28 @@ def ask_ps5_ip():
 
 def main():
     demo = "--demo" in sys.argv
+    replay = None
+    speed = 1.0
+    if "--replay" in sys.argv:
+        i = sys.argv.index("--replay")
+        nxt = sys.argv[i + 1] if i + 1 < len(sys.argv) else ""
+        replay = nxt if nxt and not nxt.startswith("--") else latest_recording()
+        if "--vitesse" in sys.argv:
+            try:
+                speed = float(sys.argv[sys.argv.index("--vitesse") + 1].replace(",", "."))
+            except (IndexError, ValueError):
+                speed = 1.0
+        if not replay or not os.path.isfile(replay):
+            print("  Aucun enregistrement a rejouer (dossier 'enregistrements' vide).")
+            return
     print()
     print("  ==============================================")
     print("   GT7 RACE ENGINEER v1.3 - relais telemetrie")
     print("  ==============================================")
-    if demo:
+    if replay:
+        print(f"  RELECTURE x{speed:g} : {os.path.basename(replay)}")
+        threading.Thread(target=replay_loop, args=(replay, speed), daemon=True).start()
+    elif demo:
         print("  Mode DEMO : donnees simulees, pas besoin de la PS5.")
         threading.Thread(target=demo_loop, daemon=True).start()
     else:
@@ -386,12 +503,14 @@ def main():
     print("      " + url + "               (dashboard complet)")
     print()
     print("  Laisse cette fenetre ouverte pendant la course. Ctrl+C pour quitter.")
-    if not demo:
+    if not demo and not replay:
         print("  En attente de la telemetrie... (lance une course ou un essai dans GT7)")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
         print("\n  Arret.")
+    finally:
+        REC.close()
 
 
 if __name__ == "__main__":

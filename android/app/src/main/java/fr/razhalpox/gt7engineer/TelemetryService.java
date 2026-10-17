@@ -47,8 +47,23 @@ public class TelemetryService extends Service {
         }
     }
 
+    public static volatile boolean replay;
+
+    /** Rejoue une course enregistrée (vitesse ×1, ×5, ×20…). */
+    public static void startReplay(Context ctx, java.io.File f, double speed) {
+        ensureWeb(ctx);
+        ENGINE.startReplay(f, speed);
+        demo = false;
+        replay = true;
+        running = true;
+        Intent i = new Intent(ctx, TelemetryService.class).setAction(ACTION_START);
+        if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(i); else ctx.startService(i);
+    }
+
     public static void start(Context ctx, String ip, boolean demoMode) {
         ensureWeb(ctx);
+        replay = false;
+        ENGINE.recBase = ctx.getApplicationContext().getFilesDir();
         if (demoMode) ENGINE.startDemo(); else ENGINE.startPs5(ip);
         demo = demoMode;
         running = true;
@@ -60,6 +75,7 @@ public class TelemetryService extends Service {
         ENGINE.stop();
         ENGINE.state.reset("attente");
         running = false;
+        replay = false;
         ctx.startService(new Intent(ctx, TelemetryService.class).setAction(ACTION_STOP));
     }
 
@@ -95,7 +111,7 @@ public class TelemetryService extends Service {
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
         b.setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setContentTitle("GT7 Race Engineer")
-                .setContentText(demo ? "Mode démo en cours" : "Réception de la télémétrie de la PS5")
+                .setContentText(demo ? "Mode démo en cours" : replay ? "Relecture d'une course enregistrée" : "Réception de la télémétrie de la PS5")
                 .setContentIntent(open)
                 .setOngoing(true)
                 .addAction(new Notification.Action.Builder(null, "Arrêter", stop).build());

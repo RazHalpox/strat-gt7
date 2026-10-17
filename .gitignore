@@ -1,3 +1,6 @@
 __pycache__/
 /pil-*.png
 /*.png
+
+# courses enregistrees par le relais PC
+race-engineer/enregistrements/

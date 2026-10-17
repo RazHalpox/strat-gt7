@@ -75,8 +75,11 @@ function onBtn(){const X=ctxNow();if(!X){return}
 // Si ce tour n'est pas un arrêt prévu, le Plan B s'ouvre tout de suite et l'ingénieur annonce le meilleur choix.
 let pitBuf=[],pitAutoLap=null;
 function pitLaneCheck(L){
-  const now=performance.now(),v=L.speed;
+  // horloge : le chrono du tour (suit aussi une relecture accélérée), sinon l'heure de l'appareil
+  const now=fin(L.cur_ms)?L.cur_ms:performance.now(),v=L.speed;
+  if(pitBuf.length&&now<pitBuf[pitBuf.length-1].t)pitBuf=[];
   if(!fin(v)||!L.on_track||L.paused||L.loading||v<30||v>110||(L.brake||0)>5){pitBuf=[];return}
+  if(pitBuf.length&&now===pitBuf[pitBuf.length-1].t)return;
   pitBuf.push({t:now,v});pitBuf=pitBuf.filter(x=>now-x.t<=2500);
   if(now-pitBuf[0].t<1200)return;
   const vs=pitBuf.map(x=>x.v);if(Math.max(...vs)-Math.min(...vs)>1.2)return;

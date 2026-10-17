@@ -30,7 +30,7 @@ public final class RaceState {
     }
 
     public synchronized void update(Gt7.Frame d, long now) {
-        lastRx = now;
+        lastRx = System.currentTimeMillis(); // horloge réelle (en relecture, « now » est l'heure de la course enregistrée)
         // ravitaillement : le carburant remonte (GT7 remplit petit à petit : on compare au plus bas du tour)
         if (prevFuel != null && d.fuel > prevFuel + 0.5) pit = true;
         if (!Double.isNaN(minFuel) && d.fuel > minFuel + 0.5) pit = true;
@@ -67,58 +67,71 @@ public final class RaceState {
     /** Télémétrie reçue il y a moins de 2,5 s. */
     public synchronized boolean isFresh() { return System.currentTimeMillis() - lastRx <= 2500; }
 
-    private static void num(StringBuilder b, double v) {
+    static void num(StringBuilder b, double v) {
         if (Double.isNaN(v) || Double.isInfinite(v)) b.append("null"); else b.append(v);
     }
 
-    private static void arr(StringBuilder b, double[] a) {
+    static void arr(StringBuilder b, double[] a) {
         b.append('[');
         for (int i = 0; i < a.length; i++) { if (i > 0) b.append(','); num(b, a[i]); }
         b.append(']');
+    }
+
+    /** Champs d'une image de télémétrie, au même format que le relais Python (sans l'accolade de fin). */
+    static void frameFields(StringBuilder b, Gt7.Frame d) {
+        b.append("{\"x\":"); num(b, d.x);
+        b.append(",\"z\":"); num(b, d.z);
+        b.append(",\"slip\":"); arr(b, d.slip);
+        b.append(",\"boost\":"); num(b, d.boost);
+        b.append(",\"oil_p\":"); num(b, d.oilP);
+        b.append(",\"pkt\":").append(d.pkt);
+        b.append(",\"rpm\":"); num(b, d.rpm);
+        b.append(",\"fuel\":"); num(b, d.fuel);
+        b.append(",\"fuel_cap\":"); num(b, d.fuelCap);
+        b.append(",\"speed\":"); num(b, d.speed);
+        b.append(",\"water\":"); num(b, d.water);
+        b.append(",\"oil\":"); num(b, d.oil);
+        b.append(",\"tyres\":"); arr(b, d.tyres);
+        b.append(",\"lap\":").append(d.lap);
+        b.append(",\"total_laps\":").append(d.totalLaps);
+        b.append(",\"best_ms\":").append(d.bestMs);
+        b.append(",\"last_ms\":").append(d.lastMs);
+        b.append(",\"pos\":").append(d.pos);
+        b.append(",\"cars\":").append(d.cars);
+        b.append(",\"rpm_lo\":").append(d.rpmLo);
+        b.append(",\"rpm_hi\":").append(d.rpmHi);
+        b.append(",\"gear\":").append(d.gear);
+        b.append(",\"gear_sug\":").append(d.gearSug);
+        b.append(",\"throttle\":"); num(b, d.throttle);
+        b.append(",\"brake\":"); num(b, d.brake);
+        b.append(",\"on_track\":").append(d.onTrack);
+        b.append(",\"paused\":").append(d.paused);
+        b.append(",\"loading\":").append(d.loading);
+        b.append(",\"rev_limit\":").append(d.revLimit);
+        b.append(",\"asm\":").append(d.asm);
+        b.append(",\"tcs\":").append(d.tcs);
+        b.append(",\"car\":").append(d.car);
+    }
+
+    /** Une image complète en JSON (enregistrement des courses). */
+    static String frameJson(Gt7.Frame d, long t) {
+        StringBuilder b = new StringBuilder(700);
+        frameFields(b, d);
+        b.append(",\"t\":").append(t).append('}');
+        return b.toString();
     }
 
     /** Même JSON que le relais Python, envoyé 10 fois par seconde aux écrans. */
     public synchronized String snapshotJson() {
         long now = System.currentTimeMillis();
         boolean stale = now - lastRx > 2500;
-        String m = stale && !"demo".equals(mode) ? "attente" : mode;
+        String m = stale && !"demo".equals(mode) && !"replay".equals(mode) ? "attente" : mode;
         StringBuilder b = new StringBuilder(4096);
         b.append("{\"mode\":\"").append(m).append("\",\"live\":");
         Gt7.Frame d = live;
         if (d == null) b.append("{}");
         else {
-            b.append("{\"x\":"); num(b, d.x);
-            b.append(",\"z\":"); num(b, d.z);
-            b.append(",\"slip\":"); arr(b, d.slip);
-            b.append(",\"boost\":"); num(b, d.boost);
-            b.append(",\"oil_p\":"); num(b, d.oilP);
-            b.append(",\"pkt\":").append(d.pkt);
-            b.append(",\"rpm\":"); num(b, d.rpm);
-            b.append(",\"fuel\":"); num(b, d.fuel);
-            b.append(",\"fuel_cap\":"); num(b, d.fuelCap);
-            b.append(",\"speed\":"); num(b, d.speed);
-            b.append(",\"water\":"); num(b, d.water);
-            b.append(",\"oil\":"); num(b, d.oil);
-            b.append(",\"tyres\":"); arr(b, d.tyres);
-            b.append(",\"lap\":").append(d.lap);
-            b.append(",\"total_laps\":").append(d.totalLaps);
-            b.append(",\"best_ms\":").append(d.bestMs);
-            b.append(",\"last_ms\":").append(d.lastMs);
-            b.append(",\"pos\":").append(d.pos);
-            b.append(",\"cars\":").append(d.cars);
-            b.append(",\"rpm_lo\":").append(d.rpmLo);
-            b.append(",\"rpm_hi\":").append(d.rpmHi);
-            b.append(",\"gear\":").append(d.gear);
-            b.append(",\"gear_sug\":").append(d.gearSug);
-            b.append(",\"throttle\":"); num(b, d.throttle);
-            b.append(",\"brake\":"); num(b, d.brake);
-            b.append(",\"on_track\":").append(d.onTrack);
-            b.append(",\"paused\":").append(d.paused);
-            b.append(",\"loading\":").append(d.loading);
-            b.append(",\"rev_limit\":").append(d.revLimit);
-            b.append(",\"asm\":").append(d.asm);
-            b.append(",\"tcs\":").append(d.tcs);
-            b.append(",\"car\":").append(d.car);
+            frameFields(b, d);
             b.append(",\"cur_ms\":").append(curMs == null ? "null" : curMs.toString());
             b.append('}');
         }

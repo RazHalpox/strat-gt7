@@ -23,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -35,7 +36,9 @@ public class MainActivity extends Activity {
             OK = Color.rgb(61, 220, 132), WARN = Color.rgb(255, 200, 51);
 
     private EditText ipField;
-    private TextView status, lanInfo;
+    private TextView status, lanInfo, recInfo;
+    private LinearLayout replayRow;
+    private Button shareBtn;
     private Button startBtn, demoBtn, openBtn, stopBtn;
     private SharedPreferences prefs;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -158,6 +161,42 @@ public class MainActivity extends Activity {
         llp.topMargin = dp(22);
         col.addView(lanInfo, llp);
 
+        // enregistrements : chaque réception de la PS5 est enregistrée, on peut la rejouer ou l'envoyer
+        TextView recLbl = text("Enregistrements", 15, FG, true);
+        recLbl.setPadding(0, dp(22), 0, dp(4));
+        col.addView(recLbl);
+        recInfo = text("", 13, MUTED, false);
+        col.addView(recInfo);
+        replayRow = new LinearLayout(this);
+        replayRow.setOrientation(LinearLayout.HORIZONTAL);
+        for (final double sp : new double[]{1, 5, 20}) {
+            Button rb = button(sp == 1 ? "Rejouer ×1" : "×" + (int) sp, PANEL2, FG);
+            LinearLayout.LayoutParams rlp = new LinearLayout.LayoutParams(0, dp(54), sp == 1 ? 2f : 1f);
+            rlp.topMargin = dp(10);
+            if (sp != 1) rlp.leftMargin = dp(8);
+            rb.setLayoutParams(rlp);
+            rb.setOnClickListener(v -> {
+                File f = Recorder.latest(getFilesDir());
+                if (f == null) return;
+                TelemetryService.startReplay(this, f, sp);
+                openDash();
+            });
+            replayRow.addView(rb);
+        }
+        col.addView(replayRow, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        shareBtn = button("Envoyer le dernier enregistrement", PANEL2, FG);
+        col.addView(shareBtn);
+        shareBtn.setOnClickListener(v -> {
+            File f = Recorder.latest(getFilesDir());
+            if (f == null) return;
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("application/gzip");
+            i.putExtra(Intent.EXTRA_STREAM, RecProvider.uri(f));
+            i.putExtra(Intent.EXTRA_SUBJECT, "Course GT7 enregistrée");
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(i, "Envoyer l'enregistrement"));
+        });
+
         Button updBtn = button("Rechercher une mise à jour", PANEL2, FG);
         LinearLayout.LayoutParams ulp = (LinearLayout.LayoutParams) updBtn.getLayoutParams();
         ulp.topMargin = dp(18);
@@ -206,6 +245,8 @@ public class MainActivity extends Activity {
             status.setText("● Arrêté"); status.setTextColor(MUTED);
         } else if (TelemetryService.demo) {
             status.setText("● Mode démo en cours"); status.setTextColor(WARN);
+        } else if (TelemetryService.replay) {
+            status.setText(e.replayDone ? "● Relecture terminée" : "● Relecture ×" + (int) e.replaySpeed + " en cours"); status.setTextColor(WARN);
         } else if (e.error != null) {
             status.setText("● " + e.error); status.setTextColor(ACCENT);
         } else if ("live".equals(mode) && e.state.isFresh()) {
@@ -215,6 +256,14 @@ public class MainActivity extends Activity {
                     : "● PS5 " + e.ps5Found + " · en attente (menu ou pause)");
             status.setTextColor(WARN);
         }
+
+        File last = Recorder.latest(getFilesDir());
+        recInfo.setText(last == null ? "Chaque réception de la PS5 est enregistrée automatiquement (les 10 dernières). Rien pour l'instant."
+                : "Dernier : " + new java.text.SimpleDateFormat("d MMM à HH:mm", java.util.Locale.FRANCE).format(new java.util.Date(last.lastModified()))
+                + " · " + String.format(java.util.Locale.FRANCE, "%.1f Mo", last.length() / 1048576.0)
+                + ". Rejoue-le pour revoir ta course sur les écrans, ou envoie-le pour l'analyser.");
+        replayRow.setVisibility(!on && last != null ? View.VISIBLE : View.GONE);
+        shareBtn.setVisibility(last != null ? View.VISIBLE : View.GONE);
 
         String ip = lanIp();
         lanInfo.setText(ip == null ? "Connecte le téléphone au Wi-Fi pour recevoir la télémétrie."

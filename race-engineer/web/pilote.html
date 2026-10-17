@@ -432,8 +432,8 @@ function readStratLife(g){try{const o=JSON.parse(localStorage.getItem("gt7-endu-
 function render(s){
   try{Learn.update(s)}catch(e){}
   const O=opts(),L=s.live||{},laps=s.laps||[],mode=s.mode;
-  const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
-  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente";
+  const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"||mode==="replay"?"demo":"wait");
+  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":mode==="replay"?"Relecture":"En attente";
   $("waitBox").hidden=mode!=="attente"||window.editing;$("grid").hidden=mode==="attente"&&!window.editing;
   if(!fin(L.fuel))return;
 

@@ -26,6 +26,8 @@ Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télé
 
 Le **mode démo** de l'accueil fait tourner une course simulée, pour essayer sans la PS5.
 
+**Enregistrements :** chaque réception de la PS5 est enregistrée automatiquement sur le téléphone (les 10 dernières, environ 1 Mo par heure). Sur l'accueil, **Rejouer ×1 / ×5 / ×20** fait revivre la dernière course sur les écrans comme en direct (pastille « Relecture »), et **Envoyer le dernier enregistrement** permet de la partager (Discord, mail…) pour l'analyser.
+
 ---
 
 ## 1. Installer Python sur le PC (une seule fois)
@@ -94,9 +96,15 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 
 ---
 
+### Conso à viser et arrivée prévue
+
+Quand l'essence ne tient pas jusqu'à l'arrêt prévu (ou jusqu'à l'arrivée), le bandeau donne la **conso à viser** : « Vise 8,3 %/t (−0,3) jusqu'au T22 ». Passe ta carte carburant plus économique ou lève le pied jusqu'à revenir sous ce chiffre ; l'ingénieur l'annonce aussi. Si l'économie demandée est trop forte, il te dit de rentrer plus tôt.
+
+En course à la durée, l'appli calcule le **tour d'arrivée** d'après ton rythme réel et les arrêts restants (fenêtre Chronos sur Pilote, « Arrivée prévue » sur Complet) et l'annonce quand il change. Si un tour de plus ou de moins se joue à quelques secondes, c'est signalé (« +1 tour à 6 s »). L'essence à remettre au dernier arrêt est calculée sur ce tour d'arrivée.
+
 ### Plan B : arrêt imprévu (accident, crevaison…)
 
-Sur Pilote, le bouton **Plan B** recalcule la fin de la course si tu rentres **à la fin du tour en cours** : il part de ton tour, de ton essence, des gommes déjà roulées et des règles de Stratégie, et propose la meilleure option pour chaque gomme (gomme à monter, essence à remettre ou pneus seuls, arrêts suivants). Touche une option : le bandeau passe en « Box box · ce tour-ci » avec ce choix, et tout le plan des écrans est mis à jour.
+Sur Pilote et sur Complet, le bouton **Plan B** recalcule la fin de la course si tu rentres **à la fin du tour en cours** : il part de ton tour, de ton essence, des gommes déjà roulées et des règles de Stratégie, et propose la meilleure option pour chaque gomme (gomme à monter, essence à remettre ou pneus seuls, arrêts suivants). Touche une option : le bandeau passe en « Box box · ce tour-ci » avec ce choix, et tout le plan des écrans est mis à jour.
 
 **Automatique dans la voie des stands :** quand tu entres dans la voie des stands à un tour qui n'est pas un arrêt prévu, l'appli le reconnaît au limiteur (vitesse figée), ouvre le Plan B toute seule et l'ingénieur annonce le meilleur choix. Il ne reste qu'à toucher l'option. Tu peux couper ce déclenchement automatique dans ⚙ Réglages › Arrêts › **Plan B automatique** (le bouton Plan B reste utilisable).
 
@@ -112,6 +120,17 @@ Le bouton **▦** (en haut à droite de Pilote) ouvre le mode **Disposition** :
 - **Par défaut** remet la disposition d'origine, **Terminé** quitte le mode.
 
 Les colonnes s'alignent toutes seules et les chiffres s'adaptent à la taille de chaque fenêtre. En portrait, les fenêtres s'empilent dans le même ordre (on glisse avec la poignée ✥). La disposition est enregistrée sur l'appareil.
+
+## Mesures en course et carnet
+
+Pendant la course, les écrans Pilote et Complet notent tout : ton rythme moyen et l'usure par gomme, le temps perdu à chaque arrêt, le carburant ajouté et la vitesse de ravitaillement réelle.
+
+- **Stratégie › Paramètres › Mesuré en course** compare tes réglages à ce qui a été mesuré (conso, temps au tour et vie de chaque gomme, temps d'arrêt, refuel rate). **Utiliser** remplace un réglage, **Tout utiliser** les prend tous. La vie d'une gomme = le nombre de tours avant de perdre 1,5 s par tour. Plus ces réglages sont justes, plus la stratégie et le Plan B le sont.
+- **Stratégie › Carnet** garde tes 20 dernières courses : relais (gomme, moyenne, usure, conso), arrêts (temps perdu, carburant ajouté) et tous les tours. **Utiliser ses mesures** prend cette course comme référence, **Exporter (CSV)** l'envoie ou la télécharge (tableur).
+
+## Enregistrer et rejouer une course (PC)
+
+Le relais PC enregistre aussi chaque réception dans le dossier `enregistrements` (les 10 dernières). Double-clic sur **rejouer-course.bat** pour rejouer la dernière course sur les écrans (vitesse demandée au lancement : 1 = temps réel, 5, 20…), ou `python gt7_relais.py --replay fichier.jsonl.gz --vitesse 5`. Les enregistrements du téléphone et du PC ont le même format.
 
 ## ⚙ Réglages
 
