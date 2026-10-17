@@ -94,6 +94,15 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 
 ---
 
+### Disposition de l'écran Pilote
+
+Le bouton **▦** (en haut à droite de Pilote) ouvre le mode **Disposition** :
+- glisse une fenêtre (Carburant, Rapport et vitesse, Chronos, Pneus) sur une autre : **au centre** elles s'échangent, **sur un bord** (gauche, droite, haut, bas) elle se place à côté ;
+- **✕ Masquer** retire une fenêtre ; elle réapparaît avec le bouton **+ Nom** dans la barre ;
+- **Par défaut** remet la disposition d'origine, **Terminé** quitte le mode.
+
+Les colonnes s'alignent toutes seules et les chiffres s'adaptent à la taille de chaque fenêtre. En portrait, les fenêtres s'empilent dans le même ordre (on glisse avec la poignée ✥). La disposition est enregistrée sur l'appareil.
+
 ## ⚙ Réglages
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :

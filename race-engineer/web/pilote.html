@@ -44,6 +44,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
 .pill.live{background:rgba(61,220,132,.14);color:var(--ok)}.pill.demo{background:rgba(255,200,51,.14);color:var(--warn)}.pill.wait{background:rgba(138,150,163,.16);color:var(--muted)}
 .btn{background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 10px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.tools .btn{white-space:nowrap}
+#layoutBtn{padding:7px 9px}
 .btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 
@@ -55,10 +57,15 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 @media (prefers-reduced-motion:reduce){.rpm.flash i{animation:none}}
 
 /* grille principale */
-.grid{flex:1;min-height:0;display:grid;gap:8px;grid-template-columns:1.2fr 1.1fr 1.2fr;grid-template-rows:1.15fr .85fr;
-  grid-template-areas:"fuel core tyre" "fuel time tyre"}
+/* les fenêtres sont rangées en colonnes (ordre choisi dans le mode Disposition) ;
+   largeur des colonnes et hauteur des fenêtres calculées toutes seules */
+.grid{flex:1;min-height:0;display:flex;gap:8px}
+.col{flex:var(--w,1) 1 0;min-width:0;min-height:0;display:flex;flex-direction:column;gap:inherit}
+.col>.card{flex:var(--h,1) 1 0}
 @media (orientation:portrait){body{overflow:auto}.wrap{height:auto;min-height:100dvh}
-  .grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;grid-template-areas:"core time" "fuel fuel" "tyre tyre"}}
+  .grid{display:grid;grid-template-columns:1fr 1fr}
+  .col{display:contents}
+  .grid .card{grid-column:1/-1}.grid .card.half{grid-column:auto}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:0;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden;position:relative}
 .lbl{font:600 15px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
 .lbl b{color:var(--fg);font-weight:600;letter-spacing:.04em}
@@ -66,7 +73,6 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .ok{color:var(--ok)}.bad{color:var(--accent)}.wrn{color:var(--warn)}
 
 /* carburant */
-#cFuel{grid-area:fuel}
 .fuelTop{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
 .big{font:700 clamp(54px,8.6vw,120px)/1.05 var(--f-mono);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .unit{display:block;margin-top:4px;font:600 16px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
@@ -99,7 +105,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .relays .now{outline:1px solid #3a4553}
 
 /* centre */
-#cCore{grid-area:core;align-items:center;justify-content:center;text-align:center}
+#cCore{align-items:center;justify-content:center;text-align:center}
 .gear{font:700 clamp(110px,15vw,210px)/.85 var(--f-mono)}
 /* alerte stand, au-dessus du rapport engagé, clignotante */
 .pitAlert{align-self:stretch;border-radius:6px;padding:6px 10px;margin-bottom:6px;font:700 clamp(17px,2.1vw,26px)/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;animation:pa 1s steps(2,end) infinite}
@@ -112,14 +118,12 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .speed small{font:600 16px var(--f-display);color:var(--muted);margin-left:4px}
 .coreRow{display:flex;gap:16px;justify-content:center;font:600 18px var(--f-display);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .coreRow b{color:var(--fg);font-family:var(--f-mono)}
-#cTime{grid-area:time}
 .chronos{flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px}
 .chronos div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;background:var(--panel-2);border-radius:5px;padding:8px 12px}
 .chronos small{font:600 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .chronos b{font:600 clamp(22px,2.6vw,32px) var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* pneus */
-#cTyre{grid-area:tyre}
 .stint{display:flex;align-items:center;gap:10px}
 .chip{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font:700 15px var(--f-display);border:3.5px solid;color:var(--fg);flex:none}
 .chip.S{border-color:var(--soft)}.chip.M{border-color:var(--med)}.chip.H{border-color:var(--hard)}
@@ -142,7 +146,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 @media (orientation:landscape) and (max-height:540px){
   .wrap{gap:5px;padding-bottom:calc(5px + env(safe-area-inset-bottom,0px))}
   .rpm{height:10px;gap:2px}
-  .grid{gap:5px;grid-template-columns:1.15fr 1fr 1.05fr;grid-template-rows:1.1fr .9fr}
+  .grid{gap:5px}
   .card{padding:5px 9px;gap:3px;border-radius:6px}
   .lbl{font-size:11px}
   .big{font-size:clamp(30px,15vh,76px);line-height:1}
@@ -176,7 +180,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .tools{justify-self:center}
   nav.tabs3 a{font-size:14px;padding:6px 10px}
   .rpm{height:14px}
-  .grid{grid-template-columns:1fr;grid-template-areas:"core" "fuel" "tyre" "time"}
+  .grid{grid-template-columns:1fr}.grid .card.half{grid-column:1/-1}
   .gear{font-size:120px}
   .coreRow{flex-wrap:wrap;gap:6px 14px}
   .big{font-size:clamp(54px,18vw,90px)}
@@ -184,6 +188,46 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .car{flex:none;height:240px}
   .tyre .t{font-size:42px}
 }
+
+/* ---- taille automatique : en paysage, chaque fenêtre adapte ses chiffres à sa propre taille ---- */
+@media (orientation:landscape){
+  .card{container-type:size}
+  .gear{font-size:clamp(36px,min(55cqh,52cqw),300px)}
+  #cCore:has(.pitAlert:not([hidden])) .gear{font-size:clamp(30px,min(39cqh,48cqw),240px)}
+  .pitAlert{font-size:clamp(11px,min(6.9cqw,7cqh),36px)}
+  .speed{font-size:clamp(14px,min(10.5cqw,13cqh),64px)}
+  .coreRow{font-size:clamp(9px,min(5cqw,6cqh),26px)}
+  .big{font-size:clamp(28px,min(18.5cqh,28cqw),190px)}
+  .liters b{font-size:clamp(16px,min(10cqw,7.5cqh),56px)}
+  .tyre .t{font-size:clamp(16px,min(14cqw,11cqh),90px)}
+  .chronos b{font-size:clamp(13px,min(9.5cqw,16cqh),60px)}
+  @container (max-height:560px){.hist,.histLbl{display:none}}
+  @container (max-height:340px){.relays>div:nth-last-child(n+2){display:none}}
+  @container (max-height:250px){.kv{display:none}}
+  @container (max-height:240px){.relays,.relLbl{display:none}}
+  @container (max-height:280px){.legend{display:none}}
+  @container (max-width:300px){.big{font-size:clamp(28px,min(18.5cqh,22cqw),190px)}}
+  @container (max-width:250px){.fuelTop{flex-wrap:wrap}.coreRow{flex-wrap:wrap;gap:2px 8px;justify-content:center}}
+}
+
+/* ---- mode Disposition ---- */
+.editBar{display:none;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:6px 10px;font:600 14px var(--f-display);color:var(--muted)}
+.editBar b{color:var(--fg);text-transform:uppercase;letter-spacing:.06em}
+.editBar .sp{flex:1}
+.editBar .btn{padding:5px 10px;font-size:13px}
+body.editing .editBar{display:flex}
+.hP{display:none}@media (orientation:portrait){.hL{display:none}.hP{display:inline}}
+body.editing .rpm{display:none}
+.edOv{display:none}
+body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:rgba(7,9,12,.72);border:2px dashed var(--accent);border-radius:inherit;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.edOv .nm{font:700 22px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--fg);text-align:center}
+.edOv .grip{font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:#fff;background:var(--accent);border-radius:5px;padding:8px 14px;touch-action:none}
+.edOv .hideBtn{position:absolute;top:6px;right:6px}
+.card.dragSrc{opacity:.35}
+.dropInd{position:fixed;z-index:40;pointer-events:none;background:rgba(255,59,78,.35);border:2px solid var(--accent);border-radius:6px;display:none}
+.ghost{position:fixed;z-index:50;pointer-events:none;background:var(--accent);color:#fff;font:700 16px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:8px 14px;border-radius:6px;transform:translate(-50%,-50%);box-shadow:0 6px 20px rgba(0,0,0,.5)}
+@media (orientation:portrait){.edOv{touch-action:pan-y}body.editing .edOv{touch-action:pan-y}}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
@@ -199,11 +243,16 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   </nav>
   <div class="tools">
     <span class="pill wait" id="status">Connexion…</span>
+    <button class="btn" id="layoutBtn" type="button" aria-pressed="false" title="Disposition des fenêtres" aria-label="Disposition des fenêtres">▦</button>
     <button class="btn" id="voiceBtn" type="button" aria-pressed="false" aria-label="Ingénieur vocal">🎧 Off</button>
   </div>
 </header>
 
 <div class="rpm" id="rpm" aria-hidden="true"></div>
+<div class="editBar" id="editBar"><b>Disposition</b><span id="edHelp" class="hL">Glisse une fenêtre sur une autre : au centre pour les échanger, sur un bord pour la placer à côté.</span><span class="hP">Glisse avec ✥ sur une autre fenêtre : au centre pour les échanger, en haut ou en bas pour la placer avant ou après.</span>
+  <span id="edHidden"></span><span class="sp"></span>
+  <button class="btn" type="button" id="edReset">Par défaut</button><button class="btn on" type="button" id="edDone">Terminé</button></div>
+<div class="dropInd" id="dropInd"></div>
 <div class="waitbox" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
 
 <main class="grid" id="grid">
@@ -221,7 +270,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div class="stop" id="stop"><span id="stopTitle">Pas de plan</span><small id="stopText">Choisis un plan dans Stratégie</small></div>
     <div class="lbl histLbl" style="font-size:12px"><span>Conso des derniers tours (%)</span></div>
     <div class="hist" id="hist"></div>
-    <div class="lbl" style="font-size:12px"><span>Conso par relais</span><span id="raceAvg"></span></div>
+    <div class="lbl relLbl" style="font-size:12px"><span>Conso par relais</span><span id="raceAvg"></span></div>
     <div class="relays" id="relays"><div><span class="chip X">–</span><span class="who">Après le 1er tour</span><b>–</b></div></div>
   </section>
 
@@ -367,7 +416,7 @@ function render(s){
   const O=opts(),L=s.live||{},laps=s.laps||[],mode=s.mode;
   const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
   st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente";
-  $("waitBox").hidden=mode!=="attente";$("grid").hidden=mode==="attente";
+  $("waitBox").hidden=mode!=="attente"||window.editing;$("grid").hidden=mode==="attente"&&!window.editing;
   if(!fin(L.fuel))return;
 
   // compte-tours
@@ -452,6 +501,108 @@ function connect(){
   es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};
 }
 connect();
+</script>
+<script>
+// ---- Disposition des fenêtres : colonnes de fenêtres, enregistrées sur cet appareil ----
+const PANES={cFuel:{n:"Carburant",w:1.2,h:1},cCore:{n:"Rapport et vitesse",w:1.1,h:1.15},cTime:{n:"Chronos",w:1.1,h:.85},cTyre:{n:"Pneus",w:1.2,h:1}};
+const LAYOUT_DEF={cols:[["cFuel"],["cCore","cTime"],["cTyre"]],hidden:[]};
+const LKEY="gt7-pilote-layout";
+window.editing=false;
+function loadLayout(){
+  try{const L=JSON.parse(localStorage.getItem(LKEY)||"null");
+    if(L&&Array.isArray(L.cols)&&Array.isArray(L.hidden)){
+      const all=[...L.cols.flat(),...L.hidden];
+      if(all.length===4&&Object.keys(PANES).every(k=>all.includes(k))&&L.cols.flat().length>0)
+        return {cols:L.cols.filter(c=>Array.isArray(c)&&c.length),hidden:L.hidden};}
+  }catch(e){}
+  return JSON.parse(JSON.stringify(LAYOUT_DEF));
+}
+let LAY=loadLayout();
+function saveLayout(){try{localStorage.setItem(LKEY,JSON.stringify(LAY))}catch(e){}}
+function renderLayout(){
+  const g=$("grid");
+  Object.keys(PANES).forEach(id=>{const c=$(id);c.hidden=LAY.hidden.includes(id);c.classList.remove("half");g.appendChild(c)});
+  g.querySelectorAll(".col").forEach(c=>c.remove());
+  LAY.cols.forEach(ids=>{const col=document.createElement("div");col.className="col";
+    col.style.setProperty("--w",Math.max(...ids.map(i=>PANES[i].w)));
+    ids.forEach(id=>{const c=$(id);c.style.setProperty("--h",ids.length>1?PANES[id].h:1);col.appendChild(c)});
+    g.appendChild(col)});
+  LAY.hidden.forEach(id=>g.appendChild($(id)));
+  // portrait : deux petites fenêtres (rapport, chronos) qui se suivent se partagent une ligne
+  const flat=LAY.cols.flat(),small=x=>x==="cCore"||x==="cTime";
+  for(let i=0;i<flat.length-1;i++)if(small(flat[i])&&small(flat[i+1])){$(flat[i]).classList.add("half");$(flat[i+1]).classList.add("half");i++}
+  const hd=$("edHidden");hd.innerHTML="";
+  LAY.hidden.forEach(id=>{const b=document.createElement("button");b.type="button";b.className="btn";b.textContent="+ "+PANES[id].n;
+    b.addEventListener("click",()=>{LAY.hidden=LAY.hidden.filter(x=>x!==id);LAY.cols.push([id]);saveLayout();renderLayout()});hd.appendChild(b)});
+}
+function posOf(id){for(let c=0;c<LAY.cols.length;c++){const r=LAY.cols[c].indexOf(id);if(r>=0)return[c,r]}return null}
+function moveTo(src,dst,zone){
+  if(src===dst)return;
+  if(zone==="center"){const[a,b]=posOf(src),[c,d]=posOf(dst);LAY.cols[a][b]=dst;LAY.cols[c][d]=src}
+  else{const[a,b]=posOf(src);LAY.cols[a].splice(b,1);
+    let[c,d]=posOf(dst);
+    if(zone==="top")LAY.cols[c].splice(d,0,src);
+    else if(zone==="bottom")LAY.cols[c].splice(d+1,0,src);
+    else if(zone==="left")LAY.cols.splice(c,0,[src]);
+    else LAY.cols.splice(c+1,0,[src]);
+    LAY.cols=LAY.cols.filter(x=>x.length)}
+  saveLayout();renderLayout();
+}
+function hidePane(id){
+  if(LAY.cols.flat().length<=1)return;
+  const[a,b]=posOf(id);LAY.cols[a].splice(b,1);LAY.cols=LAY.cols.filter(x=>x.length);LAY.hidden.push(id);saveLayout();renderLayout();
+}
+function setEditing(on){
+  window.editing=on;document.body.classList.toggle("editing",on);
+  $("layoutBtn").classList.toggle("on",on);$("layoutBtn").setAttribute("aria-pressed",on);
+  if(on){$("grid").hidden=false;$("waitBox").hidden=true}
+}
+// calques du mode édition sur chaque fenêtre
+const portrait=()=>matchMedia("(orientation:portrait)").matches;
+Object.keys(PANES).forEach(id=>{
+  const ov=document.createElement("div");ov.className="edOv";
+  ov.innerHTML='<span class="nm"></span><span class="grip">✥ Glisser</span><button type="button" class="btn hideBtn">✕ Masquer</button>';
+  ov.querySelector(".nm").textContent=PANES[id].n;
+  $(id).appendChild(ov);
+  ov.querySelector(".hideBtn").addEventListener("click",e=>{e.stopPropagation();hidePane(id)});
+  ov.addEventListener("pointerdown",e=>{
+    if(e.target.closest(".hideBtn"))return;
+    if(portrait()&&!e.target.closest(".grip"))return; // en portrait on fait défiler, on glisse avec la poignée
+    e.preventDefault();startDrag(id,e,ov);
+  });
+});
+let drag=null;
+function startDrag(id,e,ov){
+  const gh=document.createElement("div");gh.className="ghost";gh.textContent=PANES[id].n;document.body.appendChild(gh);
+  drag={id,gh,target:null,zone:null};$(id).classList.add("dragSrc");
+  try{ov.setPointerCapture(e.pointerId)}catch(_){}
+  const mv=ev=>dragMove(ev.clientX,ev.clientY);
+  const up=()=>{ov.removeEventListener("pointermove",mv);ov.removeEventListener("pointerup",up);ov.removeEventListener("pointercancel",up);endDrag()};
+  ov.addEventListener("pointermove",mv);ov.addEventListener("pointerup",up);ov.addEventListener("pointercancel",up);
+  dragMove(e.clientX,e.clientY);
+}
+function dragMove(x,y){
+  if(!drag)return;drag.gh.style.left=x+"px";drag.gh.style.top=y+"px";
+  const ind=$("dropInd");drag.target=null;
+  const card=document.elementsFromPoint(x,y).map(el=>el.closest&&el.closest(".card")).find(c=>c&&c.id!==drag.id&&PANES[c.id]&&!c.hidden);
+  if(!card){ind.style.display="none";return}
+  const r=card.getBoundingClientRect(),rx=(x-r.left)/r.width,ry=(y-r.top)/r.height;
+  let z=rx<.25?"left":rx>.75?"right":ry<.3?"top":ry>.7?"bottom":"center";
+  if(portrait()&&(z==="left"||z==="right"))z=ry<.5?"top":"bottom";
+  drag.target=card.id;drag.zone=z;
+  const t=6;let L=r.left,T=r.top,W=r.width,H=r.height;
+  if(z==="left")W=W*.25;else if(z==="right"){L+=W*.75;W*=.25}else if(z==="top")H*=.3;else if(z==="bottom"){T+=H*.7;H*=.3}
+  Object.assign(ind.style,{display:"block",left:(L+t)+"px",top:(T+t)+"px",width:(W-2*t)+"px",height:(H-2*t)+"px"});
+}
+function endDrag(){
+  if(!drag)return;const d=drag;drag=null;
+  d.gh.remove();$("dropInd").style.display="none";$(d.id).classList.remove("dragSrc");
+  if(d.target)moveTo(d.id,d.target,d.zone);
+}
+$("layoutBtn").addEventListener("click",()=>setEditing(!window.editing));
+$("edDone").addEventListener("click",()=>setEditing(false));
+$("edReset").addEventListener("click",()=>{LAY=JSON.parse(JSON.stringify(LAYOUT_DEF));saveLayout();renderLayout()});
+renderLayout();
 </script>
 </body>
 </html>
