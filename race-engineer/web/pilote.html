@@ -201,6 +201,11 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .liters b{font-size:clamp(16px,min(10cqw,7.5cqh),56px)}
   .tyre .t{font-size:clamp(16px,min(14cqw,11cqh),90px)}
   .chronos b{font-size:clamp(13px,min(9.5cqw,16cqh),60px)}
+  /* 4e ligne (arrivée prévue) : lignes plus serrées */
+  .chronos:has(#finRow:not([hidden])){gap:min(10px,2.2cqh)}
+  .chronos:has(#finRow:not([hidden])) div{padding-top:min(8px,1.4cqh);padding-bottom:min(8px,1.4cqh)}
+  .chronos:has(#finRow:not([hidden])) b{font-size:clamp(11px,min(9.5cqw,11.5cqh),60px)}
+  .chronos:has(#finRow:not([hidden])) small{font-size:clamp(9px,6cqh,13px)}
   @container (max-height:560px){.hist,.histLbl{display:none}}
   @container (max-height:340px){.relays>div:nth-last-child(n+2){display:none}}
   @container (max-height:250px){.kv{display:none}}
