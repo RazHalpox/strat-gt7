@@ -61,6 +61,8 @@ nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--bg)}
 nav.tabs3 a.cog{display:flex;align-items:center;padding:6px 10px}
 nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
+<link rel="stylesheet" href="theme-gt3.css">
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -74,6 +76,12 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </header>
 <main>
   <h1><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>Réglages</h1>
+
+  <section class="panel">
+    <h2>Apparence</h2>
+    <div class="row"><label for="theme"><b>Thème</b><small>Racing GT3 : carbone, rouge course et chiffres façon écran de volant, sur tous les écrans de cet appareil</small></label>
+      <select id="theme"><option value="classic">Classique</option><option value="gt3">Racing GT3</option></select></div>
+  </section>
 
   <section class="panel">
     <h2>Arrêts (écran Pilote)</h2>
@@ -145,7 +153,8 @@ const OPTS_DEF = {
   tCold: 55,          // en dessous : froid (bleu)
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
-  slipPct: 15         // blocage / patinage affiché au-delà de ce % (écran Pilote)
+  slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
+  theme: "classic"    // apparence : "classic" ou "gt3" (Racing GT3)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
@@ -164,11 +173,13 @@ function tyreColorOpt(t) {
 const $=id=>document.getElementById(id);
 const BOOL=["fuelSafety","radio","voiceLapTime","voiceBest"];
 const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelWarn","fuelCrit","tCold","tHot","tOver","slipPct"];
-function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]))}
+function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]));$("theme").value=O.theme==="gt3"?"gt3":"classic";applyTheme(O.theme)}
+function applyTheme(v){if(v==="gt3")document.documentElement.setAttribute("data-theme","gt3");else document.documentElement.removeAttribute("data-theme")}
 let t;
 function store(){const O=opts();BOOL.forEach(k=>O[k]=$(k).checked);
   NUM.forEach(k=>{const v=parseFloat($(k).value);if(isFinite(v))O[k]=v});
   if(O.fuelCrit>O.fuelWarn)O.fuelCrit=O.fuelWarn;
+  O.theme=$("theme").value;applyTheme(O.theme);
   const ok=saveOpts(O);$("saved").textContent=ok?"✓ Enregistré":"Enregistrement impossible sur ce navigateur";clearTimeout(t);t=setTimeout(()=>$("saved").textContent="",1800)}
 document.querySelector("main").addEventListener("change",store);
 document.querySelector("main").addEventListener("input",e=>{if(e.target.type==="number")store()});

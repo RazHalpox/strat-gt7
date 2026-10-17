@@ -185,6 +185,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .tyre .t{font-size:42px}
 }
 </style>
+<link rel="stylesheet" href="theme-gt3.css">
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -271,7 +273,8 @@ const OPTS_DEF = {
   tCold: 55,          // en dessous : froid (bleu)
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
-  slipPct: 15         // blocage / patinage affiché au-delà de ce % (écran Pilote)
+  slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
+  theme: "classic"    // apparence : "classic" ou "gt3" (Racing GT3)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
@@ -369,7 +372,7 @@ function render(s){
 
   // compte-tours
   const hi=L.rpm_hi>1000?L.rpm_hi:8000,lo=Math.max(0,hi-4000),seg=$("rpm").children,on=Math.max(0,Math.min(24,Math.round((L.rpm-lo)/(hi-lo)*24)));
-  for(let i=0;i<24;i++)seg[i].style.background=i<on?(i<12?"var(--ok)":i<20?"var(--warn)":"var(--accent)"):"var(--panel-2)";
+  for(let i=0;i<24;i++)seg[i].style.background=i<on?(i<12?"var(--rpm-a,var(--ok))":i<20?"var(--rpm-b,var(--warn))":"var(--rpm-c,var(--accent))"):"var(--panel-2)";
   $("rpm").classList.toggle("flash",L.rpm>=hi||!!L.rev_limit);
 
   // carburant

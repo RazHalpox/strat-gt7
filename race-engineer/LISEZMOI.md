@@ -97,6 +97,7 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 ## ⚙ Réglages
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
+- **Apparence** : thème **Classique** ou **Racing GT3** (fond carbone, rouge course, chiffres italiques façon écran de volant), appliqué à tous les écrans de cet appareil ;
 - **Arrêts** : alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique / essence courte ;
 - **Écran Complet** : afficher ou masquer la bande radio ;
 - **Ingénieur vocal** : temps de chaque tour, meilleurs tours, point carburant (tous les N tours), vitesse de la voix ;

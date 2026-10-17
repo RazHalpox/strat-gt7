@@ -1,0 +1,68 @@
+/* Thème « Racing GT3 » : carbone, rouge course, chiffres italiques façon écran de volant.
+   Activé dans ⚙ Réglages › Apparence (html[data-theme=gt3]). Aucun logo ni livrée de marque. */
+@import url("https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&display=swap");
+
+html[data-theme=gt3]{
+  --bg:#050506; --panel:#101013; --panel-2:#1b1b1f; --line:#2b2b31; --fg:#f4f4f1; --muted:#8f8f97;
+  --accent:#e4002b; --ok:#2fe36c; --warn:#ffd200; --cold:#3aa8ff; --spin:#ff8a1f;
+  --soft:#ff2f46; --med:#ffd200; --hard:#ececec;
+  --rpm-a:#2fe36c; --rpm-b:#ff2a2a; --rpm-c:#2f7bff;
+  --f-display:"Saira Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --f-mono:"Saira Condensed","JetBrains Mono",ui-monospace,monospace;
+  --carbon:repeating-linear-gradient(45deg,rgba(255,255,255,.022) 0 2px,transparent 2px 4px),
+           repeating-linear-gradient(-45deg,rgba(0,0,0,.35) 0 2px,transparent 2px 4px);
+  background:var(--bg);
+}
+html[data-theme=gt3] body{background:var(--carbon),var(--bg)}
+
+/* ---- onglets et boutons : inclinés, rouge course ---- */
+html[data-theme=gt3] nav.tabs3{background:#0b0b0d;border-color:#2b2b31;border-radius:2px;gap:3px}
+html[data-theme=gt3] nav.tabs3 a{transform:skewX(-12deg);border-radius:1px;font-weight:700;font-style:italic;color:#9a9aa2}
+html[data-theme=gt3] nav.tabs3 a[aria-current=page]{background:var(--accent);color:#fff;box-shadow:0 0 14px rgba(228,0,43,.45)}
+html[data-theme=gt3] .pill,html[data-theme=gt3] .btn{transform:skewX(-10deg);border-radius:1px;font-style:italic}
+html[data-theme=gt3] .btn.on{background:var(--accent);border-color:var(--accent)}
+
+/* ---- cartes : graphite, coin coupé, bande rouge ---- */
+html[data-theme=gt3] .card,html[data-theme=gt3] .panel{
+  background:linear-gradient(180deg,#151518 0%,#0d0d10 100%);border:1px solid #26262c;border-radius:2px;
+  clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%);position:relative}
+html[data-theme=gt3] .card::after,html[data-theme=gt3] .panel::after{content:"";position:absolute;left:0;top:0;width:54px;height:3px;background:var(--accent);
+  transform:skewX(-30deg);transform-origin:left;pointer-events:none}
+html[data-theme=gt3] .lbl,html[data-theme=gt3] .panel h2{font-style:italic;letter-spacing:.14em;font-weight:700}
+html[data-theme=gt3] .kv div,html[data-theme=gt3] .chronos div,html[data-theme=gt3] .relays>div{background:#18181c;border-radius:1px;border-left:2px solid #34343b}
+
+/* ---- chiffres façon écran de volant ---- */
+html[data-theme=gt3] .big,html[data-theme=gt3] .fuel-laps,html[data-theme=gt3] .gear,html[data-theme=gt3] .speed,
+html[data-theme=gt3] .chronos b,html[data-theme=gt3] .tyre .t,html[data-theme=gt3] .liters b,html[data-theme=gt3] .mid,
+html[data-theme=gt3] .kv b,html[data-theme=gt3] .relays b,html[data-theme=gt3] .tyre{font-style:italic;font-weight:800;letter-spacing:0}
+html[data-theme=gt3] .gear{color:#fff;text-shadow:0 0 22px rgba(228,0,43,.35)}
+html[data-theme=gt3] .speed small,html[data-theme=gt3] .unit{font-style:italic}
+
+/* ---- compte-tours : segments inclinés, vert → rouge → bleu ---- */
+html[data-theme=gt3] .rpm{gap:4px}
+html[data-theme=gt3] .rpm i,html[data-theme=gt3] .shift i{transform:skewX(-24deg);border-radius:0}
+html[data-theme=gt3] .gauge,html[data-theme=gt3] .gauge i,html[data-theme=gt3] .stint .wear{border-radius:1px}
+
+/* ---- alertes, bandeaux, pneus ---- */
+html[data-theme=gt3] .stop,html[data-theme=gt3] .pitAlert{border-radius:1px;font-style:italic;font-weight:800;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+html[data-theme=gt3] .tyre{border-radius:3px}
+html[data-theme=gt3] .chip{font-style:italic}
+html[data-theme=gt3] .radio{border-radius:1px;font-style:italic}
+
+/* ---- Réglages ---- */
+html[data-theme=gt3] select,html[data-theme=gt3] input[type=number],html[data-theme=gt3] input[type=text]{border-radius:1px}
+html[data-theme=gt3] .sw i{border-radius:2px}
+
+/* ---- Stratégie (page claire d'habitude) : passe en sombre ---- */
+html[data-theme=gt3][data-page=strat]{
+  --bg:#050506; --surface:#121215; --fg:#f2f2ee; --muted:#9a9aa1; --line:#2b2b31;
+  --accent:#e4002b; --accent-soft:#3a0b15; --flag:#ffd200; --flag-soft:#2b2400; --ok:#2fe36c; --ok-soft:#0e2a18;
+  --input:#1b1b1f; --input-line:#3a3a41; --soft:#ff2f46; --med:#ffd200; --hard:#d9d9d9;
+  color-scheme:dark;
+}
+html[data-theme=gt3][data-page=strat] body{background:var(--carbon),var(--bg);color:var(--fg)}
+html[data-theme=gt3][data-page=strat] .topnav{background:#000}
+html[data-theme=gt3][data-page=strat] .topnav nav.tabs3 a[aria-current=page]{background:var(--accent);color:#fff}
+html[data-theme=gt3][data-page=strat] h1{font-style:italic;font-weight:800}
+html[data-theme=gt3][data-page=strat] nav.tabs button{font-style:italic}

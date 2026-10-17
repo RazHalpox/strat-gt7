@@ -157,6 +157,8 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
   table{font-size:13px}td,th{padding:5px 6px}
 }
 </style>
+<link rel="stylesheet" href="theme-gt3.css">
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -266,7 +268,8 @@ const OPTS_DEF = {
   tCold: 55,          // en dessous : froid (bleu)
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
-  slipPct: 15         // blocage / patinage affiché au-delà de ce % (écran Pilote)
+  slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
+  theme: "classic"    // apparence : "classic" ou "gt3" (Racing GT3)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
@@ -387,7 +390,7 @@ function render(s){
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.querySelector("span").textContent=fin(t)?Math.round(t):"–"});
   // pilotage
   const lo=L.rpm_lo||0,hi=L.rpm_hi||0,on=hi>lo?Math.max(0,Math.min(10,Math.round((L.rpm-(lo-1500))/((hi-(lo-1500))/10)))):0;
-  [...$("shift").children].forEach((el,i)=>{el.style.background=i<on?(L.rev_limit?"var(--accent)":i<4?"var(--ok)":i<8?"var(--warn)":"var(--accent)"):"var(--panel-2)"});
+  [...$("shift").children].forEach((el,i)=>{el.style.background=i<on?(L.rev_limit?"var(--accent)":i<4?"var(--rpm-a,var(--ok))":i<8?"var(--rpm-b,var(--warn))":"var(--rpm-c,var(--accent))"):"var(--panel-2)"});
   $("rpmTxt").textContent=Math.round(L.rpm).toLocaleString("fr-FR")+" tr/min";
   $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;
   $("speedBig").textContent=Math.round(L.speed)+" km/h";
