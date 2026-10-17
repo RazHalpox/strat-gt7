@@ -263,6 +263,7 @@ const OPTS_DEF = {
   voiceRate: 1.05,    // vitesse de la voix
   // Carburant
   consAvg: 5,         // conso moyenne calculée sur les N derniers tours sans arrêt
+  fuelDec: 1,         // décimales de la conso au tour en % (1, 2 ou 3)
   fuelWarn: 4,        // jauge jaune sous N tours de carburant
   fuelCrit: 2,        // jauge rouge sous N tours de carburant
   // Pneus (°C)
@@ -341,6 +342,8 @@ function readPlan(){try{return JSON.parse(localStorage.getItem("gt7-plan")||"nul
 // tour jusqu'auquel le carburant doit tenir : course au nombre de tours, sinon prochain arrêt ou fin du plan
 // carburant affiché en % du réservoir, à 1 décimale (1 % = 1 L avec un réservoir de 100 L)
 let FK=1;const P1=x=>fin(x)?f1(x*FK):"–";
+// conso au tour en % : 1, 2 ou 3 décimales (⚙ Réglages)
+let FDEC=1;const PC=x=>fin(x)?(Math.round(x*FK*10**FDEC)/10**FDEC).toLocaleString("fr-FR",{minimumFractionDigits:FDEC,maximumFractionDigits:FDEC}):"–";
 const CNS={S:"Soft",M:"Medium",H:"Hard"};
 // prochain arrêt du plan : on rentre à la fin du dernier tour d'un relais
 function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
@@ -383,11 +386,11 @@ function render(s){
   $("speed").textContent=Math.round(L.speed)+" km/h";
   // carburant
   const O=opts(),cons=avgFuel(laps,O.consAvg),pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN,left=cons>0?L.fuel/cons:NaN;
-  FK=L.fuel_cap>0?100/L.fuel_cap:1;$("fuelL").textContent=P1(L.fuel);$("fuelPct").textContent=fin(L.fuel)?f1(L.fuel)+" L":"–";
+  FK=L.fuel_cap>0?100/L.fuel_cap:1;FDEC=[1,2,3].includes(+O.fuelDec)?+O.fuelDec:1;$("fuelL").textContent=P1(L.fuel);$("fuelPct").textContent=fin(L.fuel)?f1(L.fuel)+" L":"–";
   $("fuelLaps").textContent=fin(left)?f1(left):"–";$("fuelLaps").className="fuel-laps"+(fin(left)&&left<=O.fuelCrit?" neg":fin(left)&&left<=O.fuelWarn?" wrn":"");
   $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";$("gauge").className="gauge"+(fin(left)&&left<=O.fuelCrit?" crit":fin(left)&&left<=O.fuelWarn?" low":"");
-  $("cons").textContent=fin(cons)?P1(cons)+" %":"–";
-  const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?P1(lastClean.fuel)+" %":"–";
+  $("cons").textContent=fin(cons)?PC(cons)+" %":"–";
+  const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?PC(lastClean.fuel)+" %":"–";
   // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
   const tgt=fuelTarget(L);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
   if(tgt&&fin(cons)){const need=(tgt.endLap-L.lap+lapRem(L,laps,cons))*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos"}
@@ -406,9 +409,9 @@ function render(s){
   $("water").textContent=fin(L.water)?Math.round(L.water)+" °C":"–";$("oil").textContent=fin(L.oil)?Math.round(L.oil)+" °C":"–";
   $("totLaps").textContent=L.total_laps>0?L.total_laps+" tours":"Durée";
   // historique (redessiné seulement quand un tour se termine)
-  if(laps.length!==lastLapsLen){lastLapsLen=laps.length;
+  if(laps.length+":"+FDEC!==lastLapsLen){lastLapsLen=laps.length+":"+FDEC;
     const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
-    $("hist").innerHTML=laps.slice().reverse().map(l=>`<tr class="${l.pit?"pit":l.ms===best?"best":""}"><td>${l.n}${l.pit?" · stand":""}</td><td>${lapFmt(l.ms)}</td><td>${l.ms===best?"meilleur":sgnS(l.ms-best)}</td><td>${fin(l.fuel)?P1(l.fuel)+" %":"–"}</td><td>${P1(l.fuel_end)} %</td></tr>`).join("");
+    $("hist").innerHTML=laps.slice().reverse().map(l=>`<tr class="${l.pit?"pit":l.ms===best?"best":""}"><td>${l.n}${l.pit?" · stand":""}</td><td>${lapFmt(l.ms)}</td><td>${l.ms===best?"meilleur":sgnS(l.ms-best)}</td><td>${fin(l.fuel)?PC(l.fuel)+" %":"–"}</td><td>${P1(l.fuel_end)} %</td></tr>`).join("");
     $("lapCount").textContent=laps.length?laps.length+(laps.length>1?" tours":" tour"):"";
     updateSendInfo(laps);
   }

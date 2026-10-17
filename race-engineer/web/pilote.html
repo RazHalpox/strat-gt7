@@ -343,6 +343,7 @@ const OPTS_DEF = {
   voiceRate: 1.05,    // vitesse de la voix
   // Carburant
   consAvg: 5,         // conso moyenne calculée sur les N derniers tours sans arrêt
+  fuelDec: 1,         // décimales de la conso au tour en % (1, 2 ou 3)
   fuelWarn: 4,        // jauge jaune sous N tours de carburant
   fuelCrit: 2,        // jauge rouge sous N tours de carburant
   // Pneus (°C)
@@ -395,6 +396,8 @@ $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").class
 let fuelShort=null;
 // carburant affiché en % du réservoir, à 1 décimale (1 % = 1 L avec un réservoir de 100 L)
 let FK=1;const P1=x=>fin(x)?f1(x*FK):"–";
+// conso au tour en % : 1, 2 ou 3 décimales (⚙ Réglages)
+let FDEC=1;const PC=x=>fin(x)?(Math.round(x*FK*10**FDEC)/10**FDEC).toLocaleString("fr-FR",{minimumFractionDigits:FDEC,maximumFractionDigits:FDEC}):"–";
 function engineer(laps,live,lapsLeft,nx){
   // premier contact : message de liaison, sans relire les tours déjà faits
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
@@ -457,15 +460,15 @@ function render(s){
   $("rpm").classList.toggle("flash",L.rpm>=hi||!!L.rev_limit);
 
   // carburant
-  FK=L.fuel_cap>0?100/L.fuel_cap:1;
+  FK=L.fuel_cap>0?100/L.fuel_cap:1;FDEC=[1,2,3].includes(+O.fuelDec)?+O.fuelDec:1;
   const cons=avgFuel(laps,O.consAvg),left=cons>0?L.fuel/cons:NaN,pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN;
   $("fuelLaps").textContent=fin(left)?f1(left):"–";
   $("fuelLaps").className="big"+(fin(left)&&left<=O.fuelCrit?" bad":fin(left)&&left<=O.fuelWarn?" wrn":"");
   $("fuelL").textContent=P1(L.fuel);$("fuelPct").textContent=fin(L.fuel)?f1(L.fuel)+" L":"–";
   $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";
   $("gaugeFill").style.background=fin(left)&&left<=O.fuelCrit?"var(--accent)":fin(left)&&left<=O.fuelWarn?"var(--warn)":"var(--ok)";
-  $("cons").textContent=fin(cons)?P1(cons)+" %":"–";
-  const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?P1(lc.fuel)+" %":"–";
+  $("cons").textContent=fin(cons)?PC(cons)+" %":"–";
+  const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?PC(lc.fuel)+" %":"–";
   // prochain arrêt prévu
   const nx=nextStop(L.lap),stop=$("stop"),rem=lapRem(L,laps,cons);if(nx&&!nx.done)nx.live=liveAdd(nx,L,cons,rem);
   // essence courte : ne tiendra pas jusqu'à l'arrêt prévu (ou jusqu'à l'arrivée au dernier relais)
@@ -485,20 +488,20 @@ function render(s){
    else pa.hidden=true}
   // conso des derniers tours
   const hl=laps.filter(l=>fin(l.fuel)&&!l.pit).slice(-10);
-  if(hl.length!==render._hl||(hl.length&&hl[hl.length-1].n!==render._hn)){render._hl=hl.length;render._hn=hl.length?hl[hl.length-1].n:null;
+  if(hl.length!==render._hl||FDEC!==render._fd||(hl.length&&hl[hl.length-1].n!==render._hn)){render._fd=FDEC;render._hl=hl.length;render._hn=hl.length?hl[hl.length-1].n:null;
     const mx=Math.max(...hl.map(l=>l.fuel),0.1),mn=Math.min(...hl.map(l=>l.fuel),mx);
     $("hist").innerHTML=hl.map(l=>{const h=20+80*((l.fuel-mn*0.9)/(mx-mn*0.9||1));const c=fin(cons)&&l.fuel>cons*1.03?"#ffc833":fin(cons)&&l.fuel<cons*0.97?"#4fa8ff":"#3ddc84";
-      return`<div><i style="height:${Math.max(8,Math.min(100,h))}%;border-top-color:${c};background:linear-gradient(${c}55,${c}11)"></i><span>${P1(l.fuel)}</span></div>`}).join("")}
+      return`<div><i style="height:${Math.max(8,Math.min(100,h))}%;border-top-color:${c};background:linear-gradient(${c}55,${c}11)"></i><span>${PC(l.fuel)}</span></div>`}).join("")}
   // conso moyenne de chaque relais (un relais se termine au tour où tu passes au stand)
-  const rlKey=laps.length+":"+(laps.length?laps[laps.length-1].n:"")+":"+(localStorage.getItem("gt7-plan")||"");
+  const rlKey=FDEC+":"+laps.length+":"+(laps.length?laps[laps.length-1].n:"")+":"+(localStorage.getItem("gt7-plan")||"");
   if(rlKey!==render._rl){render._rl=rlKey;
     const st=[];let cur=null;
     laps.forEach(l=>{if(!cur){cur={from:l.n,to:l.n,f:[]};st.push(cur)}cur.to=l.n;
       if(!l.pit&&fin(l.fuel)&&l.fuel>0.05)cur.f.push(l.fuel);if(l.pit)cur=null});
     const plan=readPlan(),rows=plan&&plan.rows||[];
-    const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+P1(all.reduce((a,b)=>a+b,0)/all.length)+" %":"";
+    const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+PC(all.reduce((a,b)=>a+b,0)/all.length)+" %":"";
     if(st.length){$("relays").innerHTML=st.map((r,i)=>{const pr=rows.find(x=>r.from>=x.from&&r.from<=x.to),g=pr?pr.g:"",avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN,live=i===st.length-1&&cur;
-      return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?P1(avg):"–"}<small>%/t</small></b></div>`}).slice(-4).join("")}}
+      return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?PC(avg):"–"}<small>%/t</small></b></div>`}).slice(-4).join("")}}
 
   // centre
   $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;

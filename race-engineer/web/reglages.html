@@ -107,6 +107,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <h2>Carburant</h2>
     <div class="row"><label for="consAvg"><b>Conso moyenne calculée sur</b><small>Les tours avec un arrêt au stand sont ignorés</small></label>
       <select id="consAvg"><option value="3">3 tours</option><option value="5">5 tours</option><option value="10">10 tours</option></select></div>
+    <div class="row"><label for="fuelDec"><b>Précision de la conso</b><small>Chiffres après la virgule pour la conso au tour (ex. 7,3 ou 7,326 %/t), sur Pilote et Complet</small></label>
+      <select id="fuelDec"><option value="1">1 décimale</option><option value="2">2 décimales</option><option value="3">3 décimales</option></select></div>
     <div class="row"><label for="fuelWarn"><b>Jauge jaune sous</b><small>tours de carburant restants</small></label><input type="number" id="fuelWarn" min="1" max="20" step="1"></div>
     <div class="row"><label for="fuelCrit"><b>Jauge rouge sous</b><small>tours de carburant restants</small></label><input type="number" id="fuelCrit" min="1" max="20" step="1"></div>
   </section>
@@ -149,6 +151,7 @@ const OPTS_DEF = {
   voiceRate: 1.05,    // vitesse de la voix
   // Carburant
   consAvg: 5,         // conso moyenne calculée sur les N derniers tours sans arrêt
+  fuelDec: 1,         // décimales de la conso au tour en % (1, 2 ou 3)
   fuelWarn: 4,        // jauge jaune sous N tours de carburant
   fuelCrit: 2,        // jauge rouge sous N tours de carburant
   // Pneus (°C)
@@ -174,7 +177,7 @@ function tyreColorOpt(t) {
 <script>
 const $=id=>document.getElementById(id);
 const BOOL=["fuelSafety","planBAuto","radio","voiceLapTime","voiceBest"];
-const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelWarn","fuelCrit","tCold","tHot","tOver","slipPct"];
+const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelDec","fuelWarn","fuelCrit","tCold","tHot","tOver","slipPct"];
 function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]));$("theme").value=O.theme==="gt3"?"gt3":"classic";applyTheme(O.theme)}
 function applyTheme(v){if(v==="gt3")document.documentElement.setAttribute("data-theme","gt3");else document.documentElement.removeAttribute("data-theme")}
 let t;

@@ -66,7 +66,7 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 ## L'écran Pilote (pendant la course)
 
 Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Il s'adapte à l'iPad et au téléphone, en paysage comme en portrait.
-- **Carburant** (à gauche) : tours restants en gros, niveau en **% du réservoir** (1 décimale), jauge, conso moyenne et du dernier tour en %, bandeau du prochain arrêt de ta stratégie (gomme et carburant à remettre, recalculé en direct avec ta vraie conso), la conso de tes 10 derniers tours, et ta **conso moyenne de chaque relais** (avec sa gomme et la moyenne de la course).
+- **Carburant** (à gauche) : tours restants en gros, niveau en **% du réservoir** (1 décimale), jauge, conso moyenne et du dernier tour en %, bandeau du prochain arrêt de ta stratégie (gomme et carburant à remettre, recalculé en direct avec ta vraie conso), la conso de tes 10 derniers tours, et ta **conso moyenne de chaque relais** (avec sa gomme et la moyenne de la course), précision de la conso au tour (1, 2 ou 3 décimales, ex. 7,326 %/t) ;
 - **Alertes stand** : quelques tours avant l'arrêt (jaune), au tour du BOX BOX (rouge), ou si l'essence ne tient pas jusqu'à l'arrêt ou l'arrivée (« Essence courte »), l'alerte clignote aussi en gros au-dessus du rapport engagé.
 - **Pneus** (à droite) : gomme et relais en cours selon ta stratégie, usure du relais (tours faits / vie de la gomme), température des 4 pneus en couleur, et alertes **BLOQUE** (roue bloquée au freinage) ou **PATINE** (roue qui patine à l'accélération).
 - **Au centre** : rapport engagé, vitesse, tour, position, turbo, et tes chronos (tour en cours, dernier, meilleur).
