@@ -63,10 +63,11 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 
 ---
 
-## L'écran Pilote (iPad en paysage)
+## L'écran Pilote (pendant la course)
 
-Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Pense à tourner l'iPad en paysage.
-- **Carburant** (à gauche) : tours restants en gros, litres, jauge, conso moyenne et du dernier tour, bandeau du prochain arrêt de ta stratégie (gomme et litres à remettre), la conso de tes 10 derniers tours, et ta **conso moyenne de chaque relais** (avec la gomme de ta stratégie et la moyenne de la course).
+Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Il s'adapte à l'iPad et au téléphone, en paysage comme en portrait.
+- **Carburant** (à gauche) : tours restants en gros, niveau en **% du réservoir** (1 décimale), jauge, conso moyenne et du dernier tour en %, bandeau du prochain arrêt de ta stratégie (gomme et carburant à remettre, recalculé en direct avec ta vraie conso), la conso de tes 10 derniers tours, et ta **conso moyenne de chaque relais** (avec sa gomme et la moyenne de la course).
+- **Alertes stand** : quelques tours avant l'arrêt (jaune), au tour du BOX BOX (rouge), ou si l'essence ne tient pas jusqu'à l'arrêt ou l'arrivée (« Essence courte »), l'alerte clignote aussi en gros au-dessus du rapport engagé.
 - **Pneus** (à droite) : gomme et relais en cours selon ta stratégie, usure du relais (tours faits / vie de la gomme), température des 4 pneus en couleur, et alertes **BLOQUE** (roue bloquée au freinage) ou **PATINE** (roue qui patine à l'accélération).
 - **Au centre** : rapport engagé, vitesse, tour, position, turbo, et tes chronos (tour en cours, dernier, meilleur).
 - En haut, la barre de régime clignote au rupteur.
@@ -76,13 +77,13 @@ Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Pense à tourn
 ## Le dashboard complet
 
 - **Chrono** : tour en cours, dernier tour, meilleur tour, écart, position, moyenne des 3 derniers tours.
-- **Carburant** : litres, jauge, **tours restants** (calculés avec ta conso réelle), conso par tour, et carburant manquant pour finir si la course est au nombre de tours.
+- **Carburant** : niveau en % du réservoir, jauge, **tours restants** (calculés avec ta conso réelle), conso par tour en %, et ce qu'il manque jusqu'au prochain arrêt ou pour finir (« OK » si ça passe).
 - **Pneus** : température des 4 pneus. Bleu = froid, vert = bon, jaune puis rouge = chaud. Ces seuils sont indicatifs.
 - **Pilotage** : rapport, vitesse, régime avec témoins de passage, accélérateur et frein, TCS / ASM / rupteur, températures eau et huile.
 - **Historique** : chaque tour avec son temps, son écart au meilleur et sa conso. Les tours avec arrêt au stand sont marqués et exclus des moyennes.
 
 ### L'ingénieur vocal
-Appuie sur **🎧 Ingénieur off** pour l'activer. Il annonce à chaque tour ton temps, tes meilleurs tours et le carburant restant, et il te prévient quand il faut rentrer au stand. Monte le son du téléphone, ou connecte un casque.
+Appuie sur **🎧 Ingénieur off** pour l'activer. Il annonce à chaque tour ton temps, tes meilleurs tours et le carburant restant. Il suit ta stratégie : « Arrêt dans X tours, on passe en Medium », puis « Box box, ce tour-ci, Medium, 22 pour cent », et il te prévient si l'essence ne tiendra pas. Monte le son du téléphone, ou connecte un casque.
 
 ### Envoyer vers la stratégie
 Après quelques tours sans arrêt :
@@ -96,7 +97,7 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 ## ⚙ Réglages
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
-- **Arrêts (écran Pilote)** : alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique ;
+- **Arrêts** : alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique / essence courte ;
 - **Écran Complet** : afficher ou masquer la bande radio ;
 - **Ingénieur vocal** : temps de chaque tour, meilleurs tours, point carburant (tous les N tours), vitesse de la voix ;
 - **Carburant** : nombre de tours pour la conso moyenne, seuils jaune et rouge de la jauge ;
@@ -106,7 +107,7 @@ Les réglages sont enregistrés sur l'appareil (iPad, téléphone) où tu les mo
 
 ## Garder l'écran allumé
 
-Règle la mise en veille de l'appareil pendant tes courses :
+Dans l'appli Android, l'écran reste allumé tout seul. Dans un navigateur (iPhone, iPad, PC), règle la mise en veille de l'appareil pendant tes courses :
 - **iPhone / iPad** : Réglages → Luminosité et affichage → Verrouillage auto → **Jamais** (pense à le remettre après).
 - **Android** : Paramètres → Affichage → Mise en veille de l'écran → la durée la plus longue.
 
