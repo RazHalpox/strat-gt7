@@ -332,12 +332,11 @@ function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
   for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,stop:nx.stop,n:i+1}}}
   return{done:true}}
 // litres à remettre, recalculés en direct : essence qu'il restera à l'arrêt (tour en cours compté en entier)
-// + tours du relais suivant + marge de la stratégie, arrondi au litre supérieur
-function stratMargin(){try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");const v=parseFloat(o&&o.S&&o.S.fuelMargin);return v>=0?v:1}catch(e){return 1}}
+// + tours du relais suivant, arrondi au litre supérieur
 function liveAdd(nx,L,cons){const p=readPlan(),row=p&&p.rows&&p.rows[nx.n];
   if(!row||!fin(cons)||!(cons>0)||!fin(L.fuel))return null;
   const laps=row.laps||row.to-row.from+1,atStop=L.fuel-(nx.inLaps+1)*cons,cap=L.fuel_cap>0?L.fuel_cap:100;
-  const need=(laps+stratMargin())*cons-atStop;return need>0?Math.ceil(Math.min(need,cap-Math.max(0,atStop))-1e-9):0}
+  const need=laps*cons-atStop;return need>0?Math.ceil(Math.min(need,cap-Math.max(0,atStop))-1e-9):0}
 // litres à annoncer : le calcul en direct, sinon le plan (arrondi au litre supérieur)
 function addL(nx){if(fin(nx.live))return nx.live;const st=nx.stop||{};return st.full?Math.ceil(st.add-1e-9):0}
 function stopTxt(nx){const a=addL(nx);return`${CN[nx.g]||nx.g} · ${a>0?"+"+a+" L":"pneus seuls"}`}
