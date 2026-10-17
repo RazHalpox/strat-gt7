@@ -46,6 +46,7 @@ h1 span{color:var(--accent)}
 .meta b{color:var(--fg);font-weight:600;font-family:var(--f-mono)}
 nav.tabs{display:flex;gap:2px;border-bottom:3px solid var(--fg);margin-bottom:20px}
 nav.tabs button{background:transparent;border:0;color:var(--muted);font:600 18px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:10px 16px 8px;cursor:pointer;border-radius:4px 4px 0 0}
+@media (max-width:480px){nav.tabs button{font-size:15px;padding:9px 10px 7px;letter-spacing:.03em}}
 nav.tabs button[aria-selected=true]{background:var(--fg);color:var(--surface)}
 nav.tabs button:hover:not([aria-selected=true]){color:var(--fg)}
 .stack{display:flex;flex-direction:column;gap:16px;min-width:0}
@@ -104,6 +105,13 @@ tr.pit td{background:var(--accent-soft);font-size:13px}
 .mini.armed{background:var(--flag);border-color:var(--flag);color:#13171c}
 .note.bad{color:var(--accent)}
 .saveline{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.race{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.race>button.rh{all:unset;box-sizing:border-box;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;width:100%;padding:10px 12px;cursor:pointer;font-size:14px}
+.race>button.rh:focus-visible{outline:2px solid var(--accent)}
+.race>button.rh b{font-family:var(--f-display);font-size:16px;text-transform:uppercase;letter-spacing:.04em}
+.race .rd{padding:0 12px 12px;display:flex;flex-direction:column;gap:10px}
+.race .rd h3{margin:6px 0 0;font:600 13px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.race.sel{border-color:var(--accent)}
 .saveline input{flex:1;min-width:200px}
 .sv-acts{display:flex;gap:6px;justify-content:flex-end}
 .sv-sub{display:block;font:400 12px var(--f-body);color:var(--muted)}
@@ -153,6 +161,7 @@ nav.tabs3 a.cog{display:flex;align-items:center;padding:6px 10px}
 nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
+<script src="learn.js"></script>
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
 </head>
 <body>
@@ -172,6 +181,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <nav class="tabs" role="tablist">
   <button role="tab" id="tab-strat" data-tab="strat">Stratégie</button>
   <button role="tab" id="tab-par" data-tab="par">Paramètres</button>
+  <button role="tab" id="tab-log" data-tab="log">Carnet</button>
 </nav>
 
 <!-- ============ STRATÉGIE ============ -->
@@ -238,7 +248,24 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </section>
 
 <!-- ============ PARAMÈTRES ============ -->
+<section id="v-log" class="stack" hidden>
+  <section class="panel">
+    <h2>Carnet de courses</h2>
+    <p class="note" style="margin-top:0">Chaque course roulée avec l'écran Pilote ou Complet ouvert est enregistrée sur cet appareil (les 20 dernières). Touche une course pour voir ses relais, ses arrêts et ses tours.</p>
+    <div id="log" class="stack" style="gap:8px"></div>
+  </section>
+</section>
 <section id="v-par" class="stack" hidden>
+  <section class="panel" id="learnPanel">
+    <h2>Mesuré en course</h2>
+    <p class="note" id="learnSrc" style="margin-top:0"></p>
+    <div class="tbl" id="learnTbl"><table style="min-width:560px">
+      <thead><tr><th class="l">Réglage</th><th>Actuel</th><th>Mesuré</th><th class="l"></th><th></th></tr></thead>
+      <tbody id="learn"></tbody>
+    </table></div>
+    <div class="saveline" style="margin:12px 0 0;align-items:center"><button type="button" class="mini on" id="learnAll">Tout utiliser</button><span class="hint" id="learnMsg"></span></div>
+    <p class="note">Mesures prises automatiquement par les écrans Pilote et Complet pendant ta course : rythme moyen et usure par gomme (vie = tours avant de perdre 1,5 s par tour), temps perdu à chaque arrêt, vitesse de ravitaillement. Choisis la course dans l'onglet Carnet.</p>
+  </section>
   <p class="note" style="margin:0"><span class="example">Valeurs d'exemple</span>Les chiffres pré-remplis servent à montrer les calculs. Remplace-les par tes propres mesures.</p>
   <div class="two">
     <div class="stack">
@@ -389,7 +416,8 @@ function solve(k,P){let best=null;for(const seq of sequences(k,P)){const r=bestF
 /* ---- affichage ---- */
 function render(){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
-  $("v-strat").hidden=tab!=="strat";$("v-par").hidden=tab!=="par";
+  $("v-strat").hidden=tab!=="strat";$("v-par").hidden=tab!=="par";$("v-log").hidden=tab!=="log";
+  if(tab==="par")renderLearn();if(tab==="log")renderLog();
   $("w-duree").hidden=S.mode!=="time";$("w-laps").hidden=S.mode!=="laps";$("w-pitFull").hidden=S.pitMode!=="fixed";
   const P=derive();
   $("meta").innerHTML=`<span>${P.mode==="time"?`Durée <b>${f0(num(S.duree))} min</b>`:`Course <b>${f0(P.L)} tours</b>`}</span><span>Refuel <b>${f1(P.rate)} L/s</b></span><span>Réservoir <b>${f0(P.tank)} L</b></span>`;
@@ -464,6 +492,64 @@ document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target
 function pickRow(tr){if(tr.dataset.n==="m"){S.manual=true}else{S.manual=false;selN=+tr.dataset.n}touched=true;save();render()}
 $("strats").addEventListener("click",e=>{const tr=e.target.closest("tr[data-n]");if(tr)pickRow(tr)});
 $("strats").addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-n]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();const n=tr.dataset.n;pickRow(tr);$("strats").querySelector(`tr[data-n="${n}"]`)?.focus()}});
+
+/* ---- mesures en course (onglet Paramètres) et carnet ---- */
+let learnId=null;
+const fmtCur=(v,u)=>v==null||v===""||(typeof v==="number"&&!fin(v))?"–":(typeof v==="number"?f2(v).replace(/,00$/,""):v)+(u?" "+u:"");
+function learnRace(){const rs=Learn.races();return rs.find(r=>r.id===learnId)||rs[0]||null}
+function renderLearn(){
+  const r=learnRace(),tb=$("learn");
+  if(!r){$("learnSrc").textContent="Pas encore de course enregistrée : roule avec l'écran Pilote ou Complet ouvert, les mesures apparaîtront ici.";$("learnTbl").hidden=true;$("learnAll").hidden=true;return}
+  const A=Learn.analyze(r),items=Learn.suggest(A,S);
+  $("learnSrc").textContent=`D'après ta course du ${new Date(r.date).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · ${A?A.laps:0} tours.`;
+  $("learnTbl").hidden=!items.length;$("learnAll").hidden=!items.some(i=>i.val!=null);
+  if(!items.length){$("learnSrc").textContent+=" Pas assez de tours propres pour mesurer.";return}
+  tb.innerHTML="";
+  items.forEach(it=>{const tr=document.createElement("tr");
+    tr.innerHTML=`<td class="lbl"></td><td></td><td><b></b></td><td class="l hint"></td><td></td>`;
+    tr.children[0].textContent=it.label;tr.children[1].textContent=fmtCur(it.cur,it.unit);
+    tr.children[2].firstChild.textContent=it.val==null?"–":fmtCur(it.val,it.unit);tr.children[3].textContent=it.info||it.note||"";
+    if(it.val!=null){const b=document.createElement("button");b.type="button";b.className="mini";b.textContent="Utiliser";
+      b.addEventListener("click",()=>{it.apply(S);touched=true;selN=null;save();fillForm();render();$("learnMsg").textContent=`✓ ${it.label} mis à jour.`});tr.children[4].appendChild(b)}
+    tb.appendChild(tr)});
+}
+$("learnAll").addEventListener("click",()=>{const r=learnRace();if(!r)return;const items=Learn.suggest(Learn.analyze(r),S).filter(i=>i.val!=null);
+  items.forEach(i=>i.apply(S));touched=true;selN=null;save();fillForm();render();$("learnMsg").textContent=`✓ ${items.length} réglage${items.length>1?"s":""} mis à jour.`});
+const sec=x=>fin(x)?clock(x):"–";
+const lapS=ms=>ms>0?Learn.lapStr(ms/1000):"–";
+let openRace=null,raceDel=null;
+function raceCSV(r){const A=Learn.analyze(r),lines=["tour;temps;conso_L;carburant_fin_L;arret;gomme"];
+  r.laps.forEach(l=>{const g=(r.plan||[]).find(x=>l.n>=x.from&&l.n<=x.to);lines.push([l.n,lapS(l.ms),fin(l.fuel)?String(Math.round(l.fuel*1000)/1000).replace(".",","):"",fin(l.fuel_end)?String(l.fuel_end).replace(".",","):"",l.pit?"oui":"",g?g.g:""].join(";"))});
+  if(A&&A.stops.length){lines.push("","arret_tour;temps_perdu_s;carburant_ajoute_L;immobile_s");A.stops.forEach(x=>lines.push([x.lap,fin(x.loss)?x.loss.toFixed(1).replace(".",","):"",fin(x.added)?x.added.toFixed(1).replace(".",","):"",fin(x.still)?String(x.still).replace(".",","):""].join(";")))}
+  return lines.join("\n")}
+function exportRace(r){const name=`course-gt7-${new Date(r.date).toISOString().slice(0,16).replace(/[:T]/g,"-")}.csv`,csv=raceCSV(r);
+  if(window.AndroidApp&&AndroidApp.shareText){try{AndroidApp.shareText(name,csv);return}catch(e){}}
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function renderLog(){
+  const rs=Learn.races(),box=$("log");box.innerHTML="";
+  if(!rs.length){box.innerHTML='<p class="note">Aucune course enregistrée pour l\'instant.</p>';return}
+  const cur=learnRace();
+  rs.forEach(r=>{const A=Learn.analyze(r)||{stints:[],stops:[]},d=document.createElement("div");d.className="race"+(cur&&cur.id===r.id?" sel":"");
+    const chips=A.stints.map(s=>s.g?chip(s.g):"").join("");
+    d.innerHTML=`<button type="button" class="rh" aria-expanded="${openRace===r.id}"><b>${new Date(r.date).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</b>
+      <span>${A.laps||0} tours</span><span>meilleur <b style="font-size:14px">${fin(A.best)?Learn.lapStr(A.best):"–"}</b></span><span>conso ${fin(A.cons)?f2(A.cons)+" L/t":"–"}</span><span>${A.stops.length} arrêt${A.stops.length>1?"s":""}</span><span class="chips">${chips}</span>${cur&&cur.id===r.id?'<span class="tag">Mesures utilisées</span>':""}</button>`;
+    if(openRace===r.id){const rd=document.createElement("div");rd.className="rd";
+      rd.innerHTML=`<h3>Relais</h3><div class="tbl"><table style="min-width:520px"><thead><tr><th class="l">Relais</th><th class="l">Gomme</th><th>Tours</th><th>Moyenne</th><th>Usure</th><th>Conso</th></tr></thead><tbody>${
+        A.stints.map((s,i)=>`<tr><td>Relais ${i+1} <span class="hint">T${s.from}–T${s.to}</span></td><td class="l">${s.g?chip(s.g)+" "+CN[s.g]:"?"}</td><td>${s.n}</td><td>${fin(s.avg)?Learn.lapStr(s.avg):"–"}</td><td>${fin(s.slope)?(s.slope>=0?"+":"")+f2(s.slope)+" s/t":"–"}</td><td>${fin(s.cons)?f2(s.cons)+" L":"–"}</td></tr>`).join("")}</tbody></table></div>
+        <h3>Arrêts</h3>${A.stops.length?`<div class="tbl"><table style="min-width:420px"><thead><tr><th class="l">Tour</th><th>Temps perdu</th><th>Carburant ajouté</th><th>Immobile</th><th>Ravitaillement</th></tr></thead><tbody>${
+        A.stops.map(x=>`<tr><td>T${x.lap}</td><td>${fin(x.loss)?f1(x.loss)+" s":"–"}</td><td>${fin(x.added)?f1(x.added)+" L":"–"}</td><td>${fin(x.still)?f1(x.still)+" s":"–"}</td><td>${fin(x.rate)?f1(x.rate)+" L/s":"–"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note" style="margin:0">Aucun arrêt.</p>'}
+        <h3>Tours</h3><div class="tbl" style="max-height:320px;overflow:auto"><table style="min-width:360px"><thead><tr><th class="l">Tour</th><th>Temps</th><th>Conso</th><th>Carburant fin</th></tr></thead><tbody>${
+        r.laps.slice().reverse().map(l=>`<tr><td>T${l.n}${l.pit?' <span class="hint">stand</span>':""}</td><td>${lapS(l.ms)}</td><td>${fin(l.fuel)?f2(l.fuel)+" L":"–"}</td><td>${fin(l.fuel_end)?f1(l.fuel_end)+" L":"–"}</td></tr>`).join("")}</tbody></table></div>
+        <div class="saveline" style="margin:0"><button type="button" class="mini on" data-a="use">Utiliser ses mesures</button><button type="button" class="mini" data-a="csv">Exporter (CSV)</button><button type="button" class="mini" data-a="del">Supprimer</button></div>`;
+      rd.addEventListener("click",e=>{const b=e.target.closest("button[data-a]");if(!b)return;
+        if(b.dataset.a==="use"){learnId=r.id;tab="par";save();render()}
+        else if(b.dataset.a==="csv")exportRace(r);
+        else if(b.dataset.a==="del"){if(raceDel!==r.id){raceDel=r.id;b.classList.add("armed");b.textContent="Confirmer";setTimeout(()=>{if(raceDel===r.id){raceDel=null;renderLog()}},4000);return}
+          raceDel=null;Learn.removeRace(r.id);if(learnId===r.id)learnId=null;openRace=null;renderLog()}});
+      d.appendChild(rd)}
+    d.querySelector(".rh").addEventListener("click",()=>{openRace=openRace===r.id?null:r.id;renderLog()});
+    box.appendChild(d)});
+}
 /* ---- choix des gommes à la main ---- */
 const ORDER={hms:["H","M","S"],smh:["S","M","H"]};
 function presetSeq(order,k){k=Math.max(3,k);const out=[],base=Math.floor(k/3),extra=k%3;

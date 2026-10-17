@@ -35,7 +35,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:8px;fle
 .brand{font:700 24px var(--f-display);text-transform:uppercase;letter-spacing:.03em;display:flex;align-items:center;gap:10px}
 .brand i{width:12px;height:22px;background:var(--accent);transform:skewX(-15deg);display:inline-block}
 .brand span{color:var(--accent)}
-.hdr-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hdr-right{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
+.hdr-right .btn,.hdr-right .pill{white-space:nowrap}
+@media (max-width:1000px){.hdr-right{gap:5px}.hdr-right .btn{padding:6px 8px}}
 .pill{font:600 13px var(--f-display);letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;display:inline-flex;align-items:center;gap:6px}
 .pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
 .pill.live{background:rgba(61,220,132,.14);color:var(--ok)}
@@ -158,6 +160,10 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
 }
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
+<script src="race.js"></script>
+<script src="learn.js"></script>
+<script src="replan.js"></script>
+<script src="planb.js"></script>
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
 </head>
 <body>
@@ -205,6 +211,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
       <div><small>Dernier tour</small><b id="consLast">–</b></div>
       <div><small id="toFinishLbl">Pour finir</small><b id="toFinish">–</b></div>
     </div>
+    <p class="note wrn" id="fuelTip" hidden style="margin:8px 0 0;font-weight:600"></p>
   </section>
 
   <section class="card c3">
@@ -222,7 +229,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
         <div class="flags" id="flags"></div></div>
       <div class="bars"><div class="vbar thr" title="Accélérateur"><i id="thr"></i></div><div class="vbar brk" title="Frein"><i id="brk"></i></div></div>
     </div>
-    <div class="kv"><div><small>Eau</small><b id="water">–</b></div><div><small>Huile</small><b id="oil">–</b></div><div><small>Type de course</small><b id="totLaps">–</b></div></div>
+    <div class="kv"><div><small>Eau</small><b id="water">–</b></div><div><small>Huile</small><b id="oil">–</b></div><div><small id="totLbl">Arrivée</small><b id="totLaps">–</b></div></div>
   </section>
 
   <section class="card c5">
@@ -328,11 +335,15 @@ function engineer(laps,live,lapsLeft){
   const nx=nextStop(live&&live.lap),cons=avgFuel(laps,O.consAvg);let alert=false;
   if(nx&&!nx.done&&nx.inLaps===0){const a=stopAddPct(nx,live,cons,laps);t+=` Box box, ce tour-ci. ${CNS[nx.g]||""}${a>0?`, ${a} pour cent`:", pneus seuls"}.`;alert=true}
   else if(nx&&!nx.done&&O.warnLaps>0&&nx.inLaps<=O.warnLaps){t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CNS[nx.g]||""}.`;alert=true}
-  if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft),tgt=fuelTarget(live||{}),lapsTo=tgt&&live?tgt.endLap-live.lap+lapRem(live,laps,cons):NaN,short=fin(lapsTo)&&lapsLeft<lapsTo-0.05;
+  if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft),tgt=fuelTarget(live||{},laps),lapsTo=tgt&&live?tgt.endLap-live.lap+lapRem(live,laps,cons):NaN,short=fin(lapsTo)&&lapsLeft<lapsTo-0.05;
     if(O.fuelSafety&&n<=1&&(short||!tgt))t+=" Carburant critique, rentre au stand ce tour-ci.";
-    else if(O.fuelSafety&&short)t+=` Attention, essence pour ${n} tours seulement${nx&&!nx.done?", l'arrêt prévu est trop loin":" pour finir"}.`;
+    else if(O.fuelSafety&&short){const tg=Race.target(live.fuel,lapsTo);
+      t+=` Attention, essence pour ${n} tours seulement${nx&&!nx.done?", l'arrêt prévu est trop loin":" pour finir"}.${fin(tg)&&tg>=cons*0.88?` Vise ${PC(tg)} pour cent par tour.`:nx&&!nx.done?" Rentre plus tôt.":""}`}
     else if(!nx&&n<O.fuelWarn)t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;
     else if(O.voiceFuelEvery>0&&last.n%O.voiceFuelEvery===0)t+=` Carburant pour ${n} tours.`;}
+  // arrivée prévue (course à la durée) : annoncée quand elle change
+  const pr=Race.predict(live||{},laps);
+  if(pr&&laps.length>=3&&pr.finalLap!==engineer._fin){if(engineer._fin!=null)t+=` Arrivée prévue au tour ${pr.finalLap}.`;engineer._fin=pr.finalLap}
   t=t.trim();if(!t)t=`Tour ${last.n} terminé.`;
   radio(t);if(t!==`Tour ${last.n} terminé.`)say(t);
 }
@@ -347,7 +358,7 @@ let FDEC=1;const PC=x=>fin(x)?(Math.round(x*FK*10**FDEC)/10**FDEC).toLocaleStrin
 const CNS={S:"Soft",M:"Medium",H:"Hard"};
 // prochain arrêt du plan : on rentre à la fin du dernier tour d'un relais
 function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
-  for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,laps:nx.laps||nx.to-nx.from+1,stop:nx.stop}}}
+  for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,laps:nx.laps||nx.to-nx.from+1,from:nx.from,last:i+1===p.rows.length-1,stop:nx.stop}}}
   return{done:true}}
 // part du tour en cours qui reste à faire, mesurée à l'essence déjà brûlée depuis la ligne (0 à 1).
 // Sans tour précédent, ou après un ravitaillement dans ce tour : on compte le tour entier (prudent).
@@ -356,20 +367,21 @@ function lapRem(L,laps,cons){if(!L||!fin(cons)||!(cons>0)||!fin(L.fuel)||!fin(L.
   const used=p.fuel_end-L.fuel;if(used<0)return 1;return Math.max(0,Math.min(1,1-used/cons))}
 // carburant à remettre, en % : recalculé en direct avec la vraie conso (sinon celui du plan), arrondi au plus proche
 function stopAddPct(nx,L,cons,laps){let a;
-  if(L&&fin(cons)&&cons>0&&fin(L.fuel)){const atStop=L.fuel-(nx.inLaps+lapRem(L,laps,cons))*cons,cap=L.fuel_cap>0?L.fuel_cap:100,need=nx.laps*cons-atStop;a=need>0?Math.min(need,cap-Math.max(0,atStop)):0}
+  if(L&&fin(cons)&&cons>0&&fin(L.fuel)){const atStop=L.fuel-(nx.inLaps+lapRem(L,laps,cons))*cons,cap=L.fuel_cap>0?L.fuel_cap:100,fl=nx.last?Race.finishLap(L,laps||[]):NaN,nl=fin(fl)&&fl>=nx.from?fl-nx.from+1:nx.laps,need=nl*cons-atStop;a=need>0?Math.min(need,cap-Math.max(0,atStop)):0}
   else{const st=nx.stop||{};a=st.full?st.add:0}
   return Math.round(a*FK)}
-function fuelTarget(L){
+function fuelTarget(L,laps){
   if(L.total_laps>0)return{endLap:L.total_laps,label:"Pour finir"};
   const p=readPlan();if(!p||!p.rows||!p.rows.length||!fin(L.lap))return null;
   for(let i=0;i<p.rows.length-1;i++)if(p.rows[i].to>=L.lap)return{endLap:p.rows[i].to,label:"Jusqu'à l'arrêt"};
-  return{endLap:p.rows[p.rows.length-1].to,label:"Pour finir"};
+  const f=Race.finishLap(L,laps||[]);return{endLap:fin(f)?f:p.rows[p.rows.length-1].to,label:"Pour finir"};
 }
 function O_radioSync(){const r=$("radio");if(r&&!opts().radio)r.hidden=true;else if(r&&$("radioText").textContent)r.hidden=false;return true}
 /* ---- affichage ---- */
 const tyreColor=tyreColorOpt;
 let lastLapsLen=-1;
 function render(s){
+  try{Learn.update(s)}catch(e){}
   const st=$("status"),mode=s.mode,L=s.live||{},laps=s.laps||[];
   st.className="pill "+(mode==="live"?"live":mode==="demo"?"demo":"wait");
   st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":"En attente";
@@ -392,9 +404,15 @@ function render(s){
   $("cons").textContent=fin(cons)?PC(cons)+" %":"–";
   const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?PC(lastClean.fuel)+" %":"–";
   // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
-  const tgt=fuelTarget(L);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
-  if(tgt&&fin(cons)){const need=(tgt.endLap-L.lap+lapRem(L,laps,cons))*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos"}
+  const tgt=fuelTarget(L,laps);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
+  $("fuelTip").hidden=true;
+  if(tgt&&fin(cons)){const lt=tgt.endLap-L.lap+lapRem(L,laps,cons),need=lt*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos";
+    // conso à viser pour tenir sans arrêt de plus
+    const tg=Race.target(L.fuel,lt);
+    if(need>0&&fin(tg)){$("fuelTip").hidden=false;$("fuelTip").textContent=tg>=cons*0.88?`Vise ${PC(tg)} %/t (−${PC(cons-tg)}) pour tenir jusqu'au T${tgt.endLap}`:`Il faudrait ${PC(tg)} %/t pour tenir jusqu'au T${tgt.endLap} : économie trop forte, rentre plus tôt`}}
   else{$("toFinish").textContent="–";$("toFinish").className=""}
+  // Plan B (bouton, voie des stands, arrêt hors plan)
+  window.__S={L,laps,cons,rem:lapRem(L,laps,cons)};PlanB.tick(L,laps,cons,O);
   // pneus
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.querySelector("span").textContent=fin(t)?Math.round(t):"–"});
   // pilotage
@@ -407,7 +425,11 @@ function render(s){
   $("thr").style.height=Math.round(L.throttle)+"%";$("brk").style.height=Math.round(L.brake)+"%";
   $("flags").innerHTML=[["TCS",L.tcs],["ASM",L.asm],["RUPTEUR",L.rev_limit],["PAUSE",L.paused]].map(([n,v])=>`<span class="flag${v?" on":""}">${n}</span>`).join("");
   $("water").textContent=fin(L.water)?Math.round(L.water)+" °C":"–";$("oil").textContent=fin(L.oil)?Math.round(L.oil)+" °C":"–";
-  $("totLaps").textContent=L.total_laps>0?L.total_laps+" tours":"Durée";
+  {const pr=Race.predict(L,laps);
+    if(L.total_laps>0){$("totLbl").textContent="Arrivée";$("totLaps").textContent="T"+L.total_laps;$("totLaps").className=""}
+    else if(pr){$("totLbl").textContent=pr.over<10?`Arrivée · +1 t à ${Math.max(0,Math.round(pr.over))} s`:pr.under<10?`Arrivée · −1 t à ${Math.max(0,Math.round(pr.under))} s`:"Arrivée prévue";
+      $("totLaps").textContent="≈ T"+pr.finalLap;$("totLaps").className=pr.over<10||pr.under<10?"wrn":""}
+    else{$("totLbl").textContent="Arrivée";$("totLaps").textContent="Durée";$("totLaps").className=""}}
   // historique (redessiné seulement quand un tour se termine)
   if(laps.length+":"+FDEC!==lastLapsLen){lastLapsLen=laps.length+":"+FDEC;
     const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));

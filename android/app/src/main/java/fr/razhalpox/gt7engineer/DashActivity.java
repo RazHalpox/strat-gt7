@@ -2,6 +2,7 @@ package fr.razhalpox.gt7engineer;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -48,6 +49,19 @@ public class DashActivity extends Activity {
 
         @JavascriptInterface
         public void checkUpdate() { runOnUiThread(() -> Updater.check(DashActivity.this, false)); }
+
+        /** Carnet de courses : envoie le CSV d'une course (mail, Discord, Drive…). */
+        @JavascriptInterface
+        public void shareText(String name, String text) {
+            runOnUiThread(() -> {
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_SUBJECT, name);
+                i.putExtra(Intent.EXTRA_TITLE, name);
+                i.putExtra(Intent.EXTRA_TEXT, text);
+                startActivity(Intent.createChooser(i, "Exporter la course"));
+            });
+        }
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
