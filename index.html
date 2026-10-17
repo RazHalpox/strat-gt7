@@ -194,7 +194,7 @@ img{max-width:100%}
       <thead><tr><th>Relais</th><th class="l">Gomme</th><th>Tours</th><th>Durée</th><th>Carbu à mettre</th><th class="l">Arrêt</th><th>Temps</th></tr></thead>
       <tbody id="plan"></tbody>
     </table></div>
-    <p class="note">Le carburant indiqué est celui à mettre à l'arrêt <b>avant</b> le relais : ce qu'il faut pour le finir, arrondi au litre supérieur. S'il reste assez d'essence, l'arrêt se fait en pneus seuls.</p>
+    <p class="note">Le carburant indiqué est celui à mettre à l'arrêt <b>avant</b> le relais : ce qu'il faut pour le finir, arrondi au litre le plus proche. S'il reste assez d'essence, l'arrêt se fait en pneus seuls.</p>
   </section>
   <section class="panel">
     <h2>Stratégies sauvegardées</h2>
@@ -349,7 +349,7 @@ function simulate(seq,caps,L,P,bal){
   let fuel=P.start,drive=0,pits=0,lapNo=1;const rows=[];
   for(let i=0;i<k;i++){
     let stop=null;
-    if(i){const need=s[i]*P.c-fuel;const add=need>1e-9?Math.min(Math.ceil(need-1e-9),Math.floor(P.tank-fuel)):0;
+    if(i){const need=s[i]*P.c-fuel;const add=need>1e-9?Math.min(need,P.tank-fuel):0;
       const t=P.stopTime(add);fuel+=add;pits+=t;stop={add,full:add>0,t}}
     const d=s[i]*seq[i].lap;rows.push({i,g:seq[i].k,laps:s[i],from:lapNo,to:lapNo+s[i]-1,dur:d,start:drive+pits,stop});
     lapNo+=s[i];drive+=d;fuel-=s[i]*P.c;
@@ -425,7 +425,7 @@ function render(){
   $("planTitle").textContent=`Plan de relais · ${plural(nStops(sel),"arrêt")}`;
   $("tlTitle").textContent=`Déroulé de la course · ${plural(nStops(sel),"arrêt")}`;
   $("plan").innerHTML=sel.rows.map(x=>`<tr><td>Relais ${x.i+1} <span class="hint">T${x.from}–T${x.to}</span></td><td class="l">${chip(x.g)} ${CN[x.g]}</td><td><b>${x.laps}</b></td><td>${clock(x.dur)}</td>
-    <td>${x.stop?(x.stop.full?`+${f1(x.stop.add)} L`:"0 L"):'<span class="hint">départ</span>'}</td>
+    <td>${x.stop?(x.stop.full?`+${f0(x.stop.add)} L`:"0 L"):'<span class="hint">départ</span>'}</td>
     <td class="l">${x.stop?(x.stop.full?'<span class="tag full">Pneus + carbu</span>':'<span class="tag tyre">Pneus seuls</span>'):""}</td>
     <td>${x.stop?f1(x.stop.t)+" s":""}</td></tr>`).join("");
   // frise
