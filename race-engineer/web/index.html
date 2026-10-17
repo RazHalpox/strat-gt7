@@ -196,7 +196,7 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
   <section class="card c4">
     <p class="lbl"><span>Carburant</span><span id="fuelPct">–</span></p>
     <div class="row"><div><div class="fuel-laps" id="fuelLaps">–</div><div class="sm">tours restants</div></div>
-      <div style="text-align:right"><div class="mid" id="fuelL">–</div><div class="sm">L</div></div></div>
+      <div style="text-align:right"><div class="mid" id="fuelL">–</div><div class="sm">% réservoir</div></div></div>
     <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
     <div class="kv">
       <div><small>Conso / tour</small><b id="cons">–</b></div>
@@ -330,6 +330,8 @@ function engineer(laps,live,lapsLeft){
 /* ---- plan de la stratégie (enregistré par l'onglet Stratégie sur cet appareil) ---- */
 function readPlan(){try{return JSON.parse(localStorage.getItem("gt7-plan")||"null")}catch(e){return null}}
 // tour jusqu'auquel le carburant doit tenir : course au nombre de tours, sinon prochain arrêt ou fin du plan
+// carburant affiché en % du réservoir, à 1 décimale (1 % = 1 L avec un réservoir de 100 L)
+let FK=1;const P1=x=>fin(x)?f1(x*FK):"–";
 function fuelTarget(L){
   if(L.total_laps>0)return{endLap:L.total_laps,label:"Pour finir"};
   const p=readPlan();if(!p||!p.rows||!p.rows.length||!fin(L.lap))return null;
@@ -357,14 +359,14 @@ function render(s){
   $("speed").textContent=Math.round(L.speed)+" km/h";
   // carburant
   const O=opts(),cons=avgFuel(laps,O.consAvg),pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN,left=cons>0?L.fuel/cons:NaN;
-  $("fuelL").textContent=f1(L.fuel);$("fuelPct").textContent=fin(pct)?Math.round(pct)+" %":"–";
+  FK=L.fuel_cap>0?100/L.fuel_cap:1;$("fuelL").textContent=P1(L.fuel);$("fuelPct").textContent=fin(L.fuel)?f1(L.fuel)+" L":"–";
   $("fuelLaps").textContent=fin(left)?f1(left):"–";$("fuelLaps").className="fuel-laps"+(fin(left)&&left<=O.fuelCrit?" neg":fin(left)&&left<=O.fuelWarn?" wrn":"");
   $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";$("gauge").className="gauge"+(fin(left)&&left<=O.fuelCrit?" crit":fin(left)&&left<=O.fuelWarn?" low":"");
-  $("cons").textContent=fin(cons)?f2(cons)+" L":"–";
-  const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?f2(lastClean.fuel)+" L":"–";
+  $("cons").textContent=fin(cons)?P1(cons)+" %":"–";
+  const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?P1(lastClean.fuel)+" %":"–";
   // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
   const tgt=fuelTarget(L);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
-  if(tgt&&fin(cons)){const need=(tgt.endLap-L.lap+1)*cons-L.fuel;$("toFinish").textContent=need>0?"+"+f1(need)+" L":"OK";$("toFinish").className=need>0?"wrn":"pos"}
+  if(tgt&&fin(cons)){const need=(tgt.endLap-L.lap+1)*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos"}
   else{$("toFinish").textContent="–";$("toFinish").className=""}
   // pneus
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.querySelector("span").textContent=fin(t)?Math.round(t):"–"});
@@ -382,7 +384,7 @@ function render(s){
   // historique (redessiné seulement quand un tour se termine)
   if(laps.length!==lastLapsLen){lastLapsLen=laps.length;
     const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
-    $("hist").innerHTML=laps.slice().reverse().map(l=>`<tr class="${l.pit?"pit":l.ms===best?"best":""}"><td>${l.n}${l.pit?" · stand":""}</td><td>${lapFmt(l.ms)}</td><td>${l.ms===best?"meilleur":sgnS(l.ms-best)}</td><td>${fin(l.fuel)?f2(l.fuel)+" L":"–"}</td><td>${f1(l.fuel_end)} L</td></tr>`).join("");
+    $("hist").innerHTML=laps.slice().reverse().map(l=>`<tr class="${l.pit?"pit":l.ms===best?"best":""}"><td>${l.n}${l.pit?" · stand":""}</td><td>${lapFmt(l.ms)}</td><td>${l.ms===best?"meilleur":sgnS(l.ms-best)}</td><td>${fin(l.fuel)?P1(l.fuel)+" %":"–"}</td><td>${P1(l.fuel_end)} %</td></tr>`).join("");
     $("lapCount").textContent=laps.length?laps.length+(laps.length>1?" tours":" tour"):"";
     updateSendInfo(laps);
   }

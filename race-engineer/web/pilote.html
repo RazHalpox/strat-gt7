@@ -209,7 +209,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div class="lbl"><span>Carburant</span><span id="fuelPct">–</span></div>
     <div class="fuelTop">
       <div><div class="big" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
-      <div class="liters"><b id="fuelL">–</b><span class="unit">litres</span></div>
+      <div class="liters"><b id="fuelL">–</b><span class="unit">% réservoir</span></div>
     </div>
     <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
     <div class="kv">
@@ -217,7 +217,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
       <div><small>Dernier tour</small><b id="consLast">–</b></div>
     </div>
     <div class="stop" id="stop"><span id="stopTitle">Pas de plan</span><small id="stopText">Choisis un plan dans Stratégie</small></div>
-    <div class="lbl histLbl" style="font-size:12px"><span>Conso des derniers tours (L)</span></div>
+    <div class="lbl histLbl" style="font-size:12px"><span>Conso des derniers tours (%)</span></div>
     <div class="hist" id="hist"></div>
     <div class="lbl" style="font-size:12px"><span>Conso par relais</span><span id="raceAvg"></span></div>
     <div class="relays" id="relays"><div><span class="chip X">–</span><span class="who">Après le 1er tour</span><b>–</b></div></div>
@@ -314,6 +314,8 @@ function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=M
 $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
   $("voiceBtn").textContent=voiceOn?"🎧 On":"🎧 Off";if(voiceOn)say("Radio check. Je suis avec toi.")});
 let fuelShort=null;
+// carburant affiché en % du réservoir, à 1 décimale (1 % = 1 L avec un réservoir de 100 L)
+let FK=1;const P1=x=>fin(x)?f1(x*FK):"–";
 function engineer(laps,live,lapsLeft,nx){
   // premier contact : message de liaison, sans relire les tours déjà faits
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
@@ -322,11 +324,11 @@ function engineer(laps,live,lapsLeft,nx){
   const O=opts(),best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   let t=O.voiceLapTime?`Tour ${last.n}, ${sayLap(last.ms)}.`:"",alert=false;
   if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
-  if(nx&&!nx.done&&nx.inLaps===0){t+=` Box box, ce tour-ci. ${CN[nx.g]}${addL(nx)>0?`, ${addL(nx)} litres`:", pneus seuls"}.`;alert=true}
+  if(nx&&!nx.done&&nx.inLaps===0){t+=` Box box, ce tour-ci. ${CN[nx.g]}${addL(nx)>0?`, ${Math.round(addL(nx)*FK)} pour cent`:", pneus seuls"}.`;alert=true}
   else if(nx&&!nx.done&&O.warnLaps>0&&nx.inLaps<=O.warnLaps){t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CN[nx.g]}.`;alert=true}
   if(fuelShort&&fin(lapsLeft)&&Math.floor(lapsLeft)>1){const n=Math.floor(lapsLeft);
     t+=fuelShort.toStop?` Attention, essence pour ${n} tours seulement, l'arrêt prévu est trop loin. Rentre plus tôt ou économise.`
-      :` Attention, il manque ${fuelShort.miss} litres pour finir. Économise ou ravitaille.`;alert=true}
+      :` Attention, il manque ${Math.round(fuelShort.miss*FK)} pour cent pour finir. Économise ou ravitaille.`;alert=true}
   if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft);
     if(n<=1&&O.fuelSafety)t+=" Carburant critique, rentre au stand ce tour-ci.";
     else if(!nx&&n<O.fuelWarn)t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;
@@ -350,7 +352,7 @@ function liveAdd(nx,L,cons){const p=readPlan(),row=p&&p.rows&&p.rows[nx.n];
   const need=laps*cons-atStop;return need>0?Math.round(Math.min(need,cap-Math.max(0,atStop))):0}
 // litres à annoncer : le calcul en direct, sinon le plan (arrondi au litre le plus proche)
 function addL(nx){if(fin(nx.live))return nx.live;const st=nx.stop||{};return st.full?Math.round(st.add):0}
-function stopTxt(nx){const a=addL(nx);return`${CN[nx.g]||nx.g} · ${a>0?"+"+a+" L":"pneus seuls"}`}
+function stopTxt(nx){const a=addL(nx);return`${CN[nx.g]||nx.g} · ${a>0?"+"+Math.round(a*FK)+" %":"pneus seuls"}`}
 
 
 /* ---- relais en cours d'après le plan de la stratégie ---- */
@@ -371,14 +373,15 @@ function render(s){
   $("rpm").classList.toggle("flash",L.rpm>=hi||!!L.rev_limit);
 
   // carburant
+  FK=L.fuel_cap>0?100/L.fuel_cap:1;
   const cons=avgFuel(laps,O.consAvg),left=cons>0?L.fuel/cons:NaN,pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN;
   $("fuelLaps").textContent=fin(left)?f1(left):"–";
   $("fuelLaps").className="big"+(fin(left)&&left<=O.fuelCrit?" bad":fin(left)&&left<=O.fuelWarn?" wrn":"");
-  $("fuelL").textContent=f1(L.fuel);$("fuelPct").textContent=fin(pct)?Math.round(pct)+" %":"–";
+  $("fuelL").textContent=P1(L.fuel);$("fuelPct").textContent=fin(L.fuel)?f1(L.fuel)+" L":"–";
   $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";
   $("gaugeFill").style.background=fin(left)&&left<=O.fuelCrit?"var(--accent)":fin(left)&&left<=O.fuelWarn?"var(--warn)":"var(--ok)";
-  $("cons").textContent=fin(cons)?f2(cons):"–";
-  const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?f2(lc.fuel):"–";
+  $("cons").textContent=fin(cons)?P1(cons)+" %":"–";
+  const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?P1(lc.fuel)+" %":"–";
   // prochain arrêt prévu
   const nx=nextStop(L.lap),stop=$("stop");if(nx&&!nx.done)nx.live=liveAdd(nx,L,cons);
   // essence courte : ne tiendra pas jusqu'à l'arrêt prévu (ou jusqu'à l'arrivée au dernier relais)
@@ -390,7 +393,7 @@ function render(s){
     if(nx.inLaps===0){stop.className="stop crit";$("stopTitle").textContent="Box box · ce tour-ci";$("stopText").textContent=txt}
     else if(fuelShort){stop.className="stop crit";$("stopTitle").textContent=`Essence courte · ${f1(left)} tours`;$("stopText").textContent=`Arrêt prévu T${nx.endLap} : rentre plus tôt ou économise · ${txt}`}
     else{stop.className="stop"+(O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}
-  else if(fuelShort){stop.className="stop warn";$("stopTitle").textContent=`Essence courte pour finir · ${f1(left)} tours`;$("stopText").textContent=`Il manque ${fuelShort.miss} L : économise ou ravitaille`}
+  else if(fuelShort){stop.className="stop warn";$("stopTitle").textContent=`Essence courte pour finir · ${f1(left)} tours`;$("stopText").textContent=`Il manque ${Math.round(fuelShort.miss*FK)} % : économise ou ravitaille`}
   else{stop.className="stop";$("stopTitle").textContent=nx&&nx.done?"Dernier relais":"Pas de plan";$("stopText").textContent=nx&&nx.done?"Plus d'arrêt prévu":"Choisis un plan dans Stratégie"}
   // la même alerte, en gros et clignotante au-dessus du rapport engagé
   {const lvl=stop.classList.contains("crit")?"crit":stop.classList.contains("warn")?"warn":"",pa=$("pitAlert");
@@ -401,7 +404,7 @@ function render(s){
   if(hl.length!==render._hl||(hl.length&&hl[hl.length-1].n!==render._hn)){render._hl=hl.length;render._hn=hl.length?hl[hl.length-1].n:null;
     const mx=Math.max(...hl.map(l=>l.fuel),0.1),mn=Math.min(...hl.map(l=>l.fuel),mx);
     $("hist").innerHTML=hl.map(l=>{const h=20+80*((l.fuel-mn*0.9)/(mx-mn*0.9||1));const c=fin(cons)&&l.fuel>cons*1.03?"#ffc833":fin(cons)&&l.fuel<cons*0.97?"#4fa8ff":"#3ddc84";
-      return`<div><i style="height:${Math.max(8,Math.min(100,h))}%;border-top-color:${c};background:linear-gradient(${c}55,${c}11)"></i><span>${f2(l.fuel)}</span></div>`}).join("")}
+      return`<div><i style="height:${Math.max(8,Math.min(100,h))}%;border-top-color:${c};background:linear-gradient(${c}55,${c}11)"></i><span>${P1(l.fuel)}</span></div>`}).join("")}
   // conso moyenne de chaque relais (un relais se termine au tour où tu passes au stand)
   const rlKey=laps.length+":"+(laps.length?laps[laps.length-1].n:"")+":"+(localStorage.getItem("gt7-plan")||"");
   if(rlKey!==render._rl){render._rl=rlKey;
@@ -409,9 +412,9 @@ function render(s){
     laps.forEach(l=>{if(!cur){cur={from:l.n,to:l.n,f:[]};st.push(cur)}cur.to=l.n;
       if(!l.pit&&fin(l.fuel)&&l.fuel>0.05)cur.f.push(l.fuel);if(l.pit)cur=null});
     const plan=readPlan(),rows=plan&&plan.rows||[];
-    const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+f2(all.reduce((a,b)=>a+b,0)/all.length)+" L":"";
+    const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+P1(all.reduce((a,b)=>a+b,0)/all.length)+" %":"";
     if(st.length){$("relays").innerHTML=st.map((r,i)=>{const pr=rows.find(x=>r.from>=x.from&&r.from<=x.to),g=pr?pr.g:"",avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN,live=i===st.length-1&&cur;
-      return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?f2(avg):"–"}<small>L/t</small></b></div>`}).slice(-4).join("")}}
+      return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?P1(avg):"–"}<small>%/t</small></b></div>`}).slice(-4).join("")}}
 
   // centre
   $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;
