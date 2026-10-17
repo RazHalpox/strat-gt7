@@ -15,7 +15,7 @@ Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télé
 2. Ouvre le fichier téléchargé. Android demande d'autoriser l'installation depuis Chrome (ou « Fichiers ») : accepte, puis **Installer**.
 3. Si Play Protect affiche un avertissement (appli inconnue), touche **Plus de détails → Installer quand même**.
 
-Pour mettre à jour, refais la même chose : la nouvelle version s'installe par-dessus et garde tes réglages et ta stratégie.
+**Mises à jour :** l'appli vérifie toute seule au démarrage s'il existe une nouvelle version et propose de l'installer (bouton **Rechercher une mise à jour** sur l'accueil, ou ⚙ Réglages › Appli Android). La première fois, Android demande d'autoriser l'appli à installer des applis. La nouvelle version s'installe par-dessus et garde tes réglages et ta stratégie.
 
 **En course**
 1. Ouvre **GT7 Engineer**, tape l'adresse IP de la PS5 (ou laisse vide pour la recherche automatique), puis **Démarrer**.

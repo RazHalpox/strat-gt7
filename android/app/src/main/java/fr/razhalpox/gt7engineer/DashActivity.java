@@ -41,6 +41,15 @@ public class DashActivity extends Activity {
         }
     }
 
+    /** Infos et mise à jour de l'appli, pour la page Réglages. */
+    public class App {
+        @JavascriptInterface
+        public String version() { return Updater.installedName(DashActivity.this); }
+
+        @JavascriptInterface
+        public void checkUpdate() { runOnUiThread(() -> Updater.check(DashActivity.this, false)); }
+    }
+
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +75,7 @@ public class DashActivity extends Activity {
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         s.setTextZoom(100); // la taille de police du téléphone ne doit pas déformer les écrans
         web.addJavascriptInterface(new Voice(), "AndroidTTS");
+        web.addJavascriptInterface(new App(), "AndroidApp");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest req, WebResourceError err) {

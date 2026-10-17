@@ -110,6 +110,11 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div class="row"><label for="slipPct"><b>Blocage / patinage au-delà de</b><small>% d'écart entre la roue et la voiture (écran Pilote)</small></label><input type="number" id="slipPct" min="5" max="60" step="1"></div>
   </section>
 
+  <section class="panel" id="appPanel" hidden>
+    <h2>Appli Android</h2>
+    <div class="row"><label for="updBtn"><b>Mise à jour</b><small id="appVer">L'appli vérifie aussi toute seule au démarrage</small></label><button class="btn" type="button" id="updBtn">Rechercher</button></div>
+  </section>
+
   <div class="foot">
     <span class="saved" id="saved" role="status"></span>
     <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span>Réglages enregistrés sur cet appareil.</span><button class="btn" type="button" id="reset">Valeurs par défaut</button></span>
@@ -172,6 +177,10 @@ $("reset").addEventListener("click",()=>{const b=$("reset");
   if(!armed){armed=true;b.classList.add("armed");b.textContent="Confirmer";setTimeout(()=>{if(armed){armed=false;b.classList.remove("armed");b.textContent="Valeurs par défaut"}},4000);return}
   armed=false;b.classList.remove("armed");b.textContent="Valeurs par défaut";saveOpts(Object.assign({},OPTS_DEF));fill();$("saved").textContent="✓ Valeurs par défaut remises"});
 fill();
+// dans l'appli Android : version installée et mise à jour depuis GitHub
+if(window.AndroidApp){try{$("appPanel").hidden=false;
+  $("appVer").textContent="Version installée : "+AndroidApp.version()+" · l'appli vérifie aussi toute seule au démarrage";
+  $("updBtn").addEventListener("click",()=>AndroidApp.checkUpdate())}catch(e){}}
 </script>
 </body>
 </html>

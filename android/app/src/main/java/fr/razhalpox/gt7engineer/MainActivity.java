@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
 
         TextView title = text("GT7 Race Engineer", 28, FG, true);
         col.addView(title);
-        col.addView(text("v1.3 · appli Android, sans PC", 14, MUTED, false));
+        col.addView(text("v" + Updater.installedName(this) + " · appli Android, sans PC", 14, MUTED, false));
 
         status = text("", 16, MUTED, true);
         status.setPadding(dp(14), dp(12), dp(14), dp(12));
@@ -158,6 +158,12 @@ public class MainActivity extends Activity {
         llp.topMargin = dp(22);
         col.addView(lanInfo, llp);
 
+        Button updBtn = button("Rechercher une mise à jour", PANEL2, FG);
+        LinearLayout.LayoutParams ulp = (LinearLayout.LayoutParams) updBtn.getLayoutParams();
+        ulp.topMargin = dp(18);
+        col.addView(updBtn, ulp);
+        updBtn.setOnClickListener(v -> Updater.check(this, false));
+
         TextView foot = text("Le téléphone, la PS5 (et l'iPad) doivent être sur le même Wi-Fi. "
                 + "La réception continue écran éteint : arrête-la ici ou depuis la notification.", 12, MUTED, false);
         foot.setPadding(0, dp(14), 0, 0);
@@ -165,6 +171,7 @@ public class MainActivity extends Activity {
 
         setContentView(scroll);
         TelemetryService.ensureWeb(this);
+        Updater.autoCheck(this);
     }
 
     private void openDash() {

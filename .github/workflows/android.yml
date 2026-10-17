@@ -33,10 +33,19 @@ jobs:
           # clé de signature de l'appli (toujours la même, pour que les mises à jour s'installent par-dessus)
           KS_FILE: ${{ github.workspace }}/android/gt7-release.jks
           KS_PASS: ppkKTaw6zlDSmHcOb2-7Uklv
+          BUILD_NUMBER: ${{ github.run_number }}
         run: gradle assembleRelease --no-daemon --stacktrace
 
       - name: Renommer
         run: cp android/app/build/outputs/apk/release/app-release.apk gt7-race-engineer.apk
+
+      - name: Fiche de version (lue par la mise à jour intégrée)
+        env:
+          RUN: ${{ github.run_number }}
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          python3 -c "import json,os;m=(os.environ.get('MSG') or '').split(chr(10))[0];n=int(os.environ['RUN']);json.dump({'versionCode':100+n,'versionName':'1.3.%d'%n,'notes':m},open('version.json','w'),ensure_ascii=False)"
+          cat version.json
 
       - uses: actions/upload-artifact@v4
         with:
@@ -48,7 +57,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete android --yes --cleanup-tag || true
-          gh release create android gt7-race-engineer.apk \
+          gh release create android gt7-race-engineer.apk version.json \
             --title "GT7 Race Engineer pour Android" \
-            --notes "Appli Android (v1.3, compilée depuis ${GITHUB_SHA::7}). Ouvre ce lien sur ton téléphone Android et installe gt7-race-engineer.apk." \
+            --notes "Appli Android (v1.3.${{ github.run_number }}, compilée depuis ${GITHUB_SHA::7}). Ouvre ce lien sur ton téléphone Android et installe gt7-race-engineer.apk." \
             --latest=false
