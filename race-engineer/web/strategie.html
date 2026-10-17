@@ -176,6 +176,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 
 <!-- ============ STRATÉGIE ============ -->
 <section id="v-strat" class="stack">
+  <div id="replanNote" class="warn" hidden></div>
   <div id="alert" class="warn" hidden></div>
   <div class="kpis" id="kpis"></div>
   <section class="panel" id="tyrePanel">
@@ -296,7 +297,7 @@ const CN={S:"Soft",M:"Medium",H:"Hard"};
 const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,rate:4,mDeb:100,mFin:86,mTours:5,pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,manual:false,seq:[],
   S:{lap:"1:44.200",life:12,req:true},M:{lap:"1:45.000",life:20,req:true},H:{lap:"1:45.900",life:30,req:true}};
 const clone=o=>JSON.parse(JSON.stringify(o));
-let S=clone(DEF),tab="strat",selN=null;
+let S=clone(DEF),tab="strat",selN=null,touched=false;
 try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");if(o&&o.S){const d=clone(DEF);S=Object.assign(d,o.S);COMPS.forEach(c=>S[c.k]=Object.assign(clone(DEF[c.k]),o.S[c.k]||{}));tab=o.tab||tab}}catch(e){}
 const save=()=>{try{localStorage.setItem("gt7-endu-v1",JSON.stringify({S,tab}))}catch(e){}};
 const $=id=>document.getElementById(id);
@@ -320,11 +321,11 @@ const FIELDS=["mode","duree","laps","tank","start","rate","mDeb","mFin","mTours"
 function fillForm(){FIELDS.forEach(f=>$(f).value=S[f]);COMPS.forEach(c=>{["lap","life"].forEach(f=>$(`${c.k}-${f}`).value=S[c.k][f]);$(`${c.k}-req`).checked=!!S[c.k].req})}
 document.addEventListener("input",e=>{const el=e.target,id=el.id;if(!id)return;
   if(FIELDS.includes(id))S[id]=el.value;else{const m=id.match(/^([SMH])-(lap|life|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
-  selN=null;save();render()});
+  selN=null;touched=true;save();render()});
 let armed=false;
 $("reset").addEventListener("click",()=>{const b=$("reset");
   if(!armed){armed=true;b.classList.add("armed");b.textContent="Confirmer le reset";setTimeout(()=>{if(armed){armed=false;b.classList.remove("armed");b.textContent="Reset"}},5000);return}
-  armed=false;b.classList.remove("armed");b.textContent="Reset";S=clone(DEF);selN=null;save();fillForm();render()});
+  armed=false;b.classList.remove("armed");b.textContent="Reset";S=clone(DEF);selN=null;touched=true;save();fillForm();render()});
 
 /* ---- calculs ---- */
 function derive(){
@@ -425,8 +426,14 @@ function render(){
   if(selN===null||!list.find(r=>nStops(r)===selN))selN=nStops(best);
   const useManual=!!(S.manual&&manualR);
   const sel=useManual?manualR:list.find(r=>nStops(r)===selN)||best;lastSel=sel;lastP=P;
-  // plan partagé avec l'écran Pilote (même appareil, même adresse du PC)
-  try{localStorage.setItem("gt7-plan",JSON.stringify({t:Date.now(),stops:nStops(sel),rows:sel.rows.map(x=>({g:x.g,from:x.from,to:x.to,laps:x.laps,
+  // plan partagé avec l'écran Pilote (même appareil, même adresse du PC) ;
+  // un Plan B recalculé en course reste actif tant que tu ne changes rien ici
+  let cur=null;try{cur=JSON.parse(localStorage.getItem("gt7-plan")||"null")}catch(e){}
+  const keepB=!touched&&cur&&cur.replan;
+  $("replanNote").hidden=!keepB;
+  if(keepB){$("replanNote").innerHTML=`<b>Plan B actif</b> sur les écrans de course, recalculé au T${cur.replan.at} : ${cur.rows.filter(r=>r.from>cur.replan.at).map(r=>`${CN[r.g]} T${r.from}–T${r.to}`).join(", ")}. <button type="button" class="reset" id="dropB" style="margin-left:8px">Revenir au plan ci-dessous</button>`;
+    $("dropB").addEventListener("click",()=>{touched=true;render()})}
+  else try{localStorage.setItem("gt7-plan",JSON.stringify({t:Date.now(),stops:nStops(sel),rows:sel.rows.map(x=>({g:x.g,from:x.from,to:x.to,laps:x.laps,
     stop:x.stop?{add:Math.round(x.stop.add*10)/10,full:x.stop.full}:null}))}))}catch(e){}
   const manualRow=manualR?(()=>{const r=manualR,mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
     const gap=d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:r.time>best.time+0.05?`+${f1(r.time-best.time)} s`:"–";
@@ -454,7 +461,7 @@ function render(){
   $("bar").innerHTML=segs+(P.mode==="time"?`<div class="flagline" style="left:${P.T/scale*100}%"><span class="flaglbl">${clock(P.T)}</span></div>`:"");
 }
 document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(!b)return;tab=b.dataset.tab;save();render()});
-function pickRow(tr){if(tr.dataset.n==="m"){S.manual=true}else{S.manual=false;selN=+tr.dataset.n}save();render()}
+function pickRow(tr){if(tr.dataset.n==="m"){S.manual=true}else{S.manual=false;selN=+tr.dataset.n}touched=true;save();render()}
 $("strats").addEventListener("click",e=>{const tr=e.target.closest("tr[data-n]");if(tr)pickRow(tr)});
 $("strats").addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-n]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();const n=tr.dataset.n;pickRow(tr);$("strats").querySelector(`tr[data-n="${n}"]`)?.focus()}});
 /* ---- choix des gommes à la main ---- */
@@ -475,7 +482,7 @@ $("tyrePanel").addEventListener("click",e=>{const b=e.target.closest("button");i
   else if(ORDER[b.dataset.act]){S.seq=presetSeq(ORDER[b.dataset.act],Math.max(S.seq.length,lastBest?lastBest.seq.length:3))}
   else if(b.dataset.act==="best"&&lastBest){S.seq=lastBest.seq.map(g=>g.k)}
   else return;
-  save();render()});
+  touched=true;save();render()});
 
 /* ---- stratégies sauvegardées (gardées à part : un Reset ne les efface pas) ---- */
 const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -503,7 +510,7 @@ let delArmed=null;
 $("saved").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const a=readSaved();
   if(b.dataset.load){const x=a.find(y=>y.id===b.dataset.load);if(!x)return;
     S=Object.assign(clone(DEF),clone(x.snap));COMPS.forEach(c=>S[c.k]=Object.assign(clone(DEF[c.k]),x.snap[c.k]||{}));
-    S.manual=true;S.seq=x.seq.slice();selN=null;save();fillForm();render();window.scrollTo({top:0,behavior:"smooth"});return}
+    S.manual=true;S.seq=x.seq.slice();selN=null;touched=true;save();fillForm();render();window.scrollTo({top:0,behavior:"smooth"});return}
   if(b.dataset.del){if(delArmed!==b.dataset.del){delArmed=b.dataset.del;b.classList.add("armed");b.textContent="Supprimer ?";setTimeout(()=>{if(delArmed===b.dataset.del){delArmed=null;renderSaved()}},4000);return}
     delArmed=null;writeSaved(a.filter(y=>y.id!==b.dataset.del));renderSaved()}});
 
