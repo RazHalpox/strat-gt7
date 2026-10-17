@@ -396,11 +396,16 @@ function readPlan(){try{return JSON.parse(localStorage.getItem("gt7-plan")||"nul
 function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
   for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,stop:nx.stop,n:i+1}}}
   return{done:true}}
-// litres à remettre, recalculés en direct : essence qu'il restera à l'arrêt (tour en cours compté en entier)
+// part du tour en cours qui reste à faire, mesurée à l'essence déjà brûlée depuis la ligne (0 à 1).
+// Sans tour précédent, ou après un ravitaillement dans ce tour : on compte le tour entier (prudent).
+function lapRem(L,laps,cons){if(!L||!fin(cons)||!(cons>0)||!fin(L.fuel)||!fin(L.lap))return 1;
+  const p=(laps||[]).find(l=>l.n===L.lap-1);if(!p||!fin(p.fuel_end))return 1;
+  const used=p.fuel_end-L.fuel;if(used<0)return 1;return Math.max(0,Math.min(1,1-used/cons))}
+// litres à remettre, recalculés en direct : essence qu'il restera à l'arrêt (reste du tour en cours + tours avant l'arrêt)
 // + tours du relais suivant, arrondi au litre le plus proche
-function liveAdd(nx,L,cons){const p=readPlan(),row=p&&p.rows&&p.rows[nx.n];
+function liveAdd(nx,L,cons,rem){const p=readPlan(),row=p&&p.rows&&p.rows[nx.n];
   if(!row||!fin(cons)||!(cons>0)||!fin(L.fuel))return null;
-  const laps=row.laps||row.to-row.from+1,atStop=L.fuel-(nx.inLaps+1)*cons,cap=L.fuel_cap>0?L.fuel_cap:100;
+  const laps=row.laps||row.to-row.from+1,atStop=L.fuel-(nx.inLaps+(fin(rem)?rem:1))*cons,cap=L.fuel_cap>0?L.fuel_cap:100;
   const need=laps*cons-atStop;return need>0?Math.round(Math.min(need,cap-Math.max(0,atStop))):0}
 // litres à annoncer : le calcul en direct, sinon le plan (arrondi au litre le plus proche)
 function addL(nx){if(fin(nx.live))return nx.live;const st=nx.stop||{};return st.full?Math.round(st.add):0}
@@ -435,10 +440,10 @@ function render(s){
   $("cons").textContent=fin(cons)?P1(cons)+" %":"–";
   const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?P1(lc.fuel)+" %":"–";
   // prochain arrêt prévu
-  const nx=nextStop(L.lap),stop=$("stop");if(nx&&!nx.done)nx.live=liveAdd(nx,L,cons);
+  const nx=nextStop(L.lap),stop=$("stop"),rem=lapRem(L,laps,cons);if(nx&&!nx.done)nx.live=liveAdd(nx,L,cons,rem);
   // essence courte : ne tiendra pas jusqu'à l'arrêt prévu (ou jusqu'à l'arrivée au dernier relais)
   const pl=readPlan(),finishLap=L.total_laps>0?L.total_laps:(pl&&pl.rows&&pl.rows.length?pl.rows[pl.rows.length-1].to:NaN);
-  const lapsTo=nx&&!nx.done?nx.inLaps+1:(nx&&nx.done&&fin(finishLap)?finishLap-L.lap+1:NaN);
+  const lapsTo=nx&&!nx.done?nx.inLaps+rem:(nx&&nx.done&&fin(finishLap)?finishLap-L.lap+rem:NaN);
   fuelShort=O.fuelSafety&&fin(left)&&fin(lapsTo)&&left<lapsTo-0.05?{left,lapsTo,miss:Math.ceil((lapsTo-left)*cons),toStop:!!(nx&&!nx.done)}:null;
   if(O.fuelSafety&&fin(left)&&left<1.5&&(fuelShort||!nx)&&!(nx&&!nx.done&&nx.inLaps===0)){stop.className="stop crit";$("stopTitle").textContent="Box box · carburant critique";$("stopText").textContent="Rentre au stand ce tour-ci"}
   else if(nx&&!nx.done){const txt=stopTxt(nx);

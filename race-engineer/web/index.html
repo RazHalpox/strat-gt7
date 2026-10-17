@@ -324,9 +324,9 @@ function engineer(laps,live,lapsLeft){
   if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
   // arrêts de la stratégie (comme l'écran Pilote)
   const nx=nextStop(live&&live.lap),cons=avgFuel(laps,O.consAvg);let alert=false;
-  if(nx&&!nx.done&&nx.inLaps===0){const a=stopAddPct(nx,live,cons);t+=` Box box, ce tour-ci. ${CNS[nx.g]||""}${a>0?`, ${a} pour cent`:", pneus seuls"}.`;alert=true}
+  if(nx&&!nx.done&&nx.inLaps===0){const a=stopAddPct(nx,live,cons,laps);t+=` Box box, ce tour-ci. ${CNS[nx.g]||""}${a>0?`, ${a} pour cent`:", pneus seuls"}.`;alert=true}
   else if(nx&&!nx.done&&O.warnLaps>0&&nx.inLaps<=O.warnLaps){t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CNS[nx.g]||""}.`;alert=true}
-  if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft),tgt=fuelTarget(live||{}),lapsTo=tgt&&live?tgt.endLap-live.lap+1:NaN,short=fin(lapsTo)&&lapsLeft<lapsTo-0.05;
+  if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft),tgt=fuelTarget(live||{}),lapsTo=tgt&&live?tgt.endLap-live.lap+lapRem(live,laps,cons):NaN,short=fin(lapsTo)&&lapsLeft<lapsTo-0.05;
     if(O.fuelSafety&&n<=1&&(short||!tgt))t+=" Carburant critique, rentre au stand ce tour-ci.";
     else if(O.fuelSafety&&short)t+=` Attention, essence pour ${n} tours seulement${nx&&!nx.done?", l'arrêt prévu est trop loin":" pour finir"}.`;
     else if(!nx&&n<O.fuelWarn)t+=` Carburant pour ${n} tours. Prépare l'arrêt.`;
@@ -345,9 +345,14 @@ const CNS={S:"Soft",M:"Medium",H:"Hard"};
 function nextStop(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return null;
   for(let i=0;i<p.rows.length-1;i++){const r=p.rows[i];if(r.to>=lap){const nx=p.rows[i+1];return{inLaps:r.to-lap,endLap:r.to,g:nx.g,laps:nx.laps||nx.to-nx.from+1,stop:nx.stop}}}
   return{done:true}}
+// part du tour en cours qui reste à faire, mesurée à l'essence déjà brûlée depuis la ligne (0 à 1).
+// Sans tour précédent, ou après un ravitaillement dans ce tour : on compte le tour entier (prudent).
+function lapRem(L,laps,cons){if(!L||!fin(cons)||!(cons>0)||!fin(L.fuel)||!fin(L.lap))return 1;
+  const p=(laps||[]).find(l=>l.n===L.lap-1);if(!p||!fin(p.fuel_end))return 1;
+  const used=p.fuel_end-L.fuel;if(used<0)return 1;return Math.max(0,Math.min(1,1-used/cons))}
 // carburant à remettre, en % : recalculé en direct avec la vraie conso (sinon celui du plan), arrondi au plus proche
-function stopAddPct(nx,L,cons){let a;
-  if(L&&fin(cons)&&cons>0&&fin(L.fuel)){const atStop=L.fuel-(nx.inLaps+1)*cons,cap=L.fuel_cap>0?L.fuel_cap:100,need=nx.laps*cons-atStop;a=need>0?Math.min(need,cap-Math.max(0,atStop)):0}
+function stopAddPct(nx,L,cons,laps){let a;
+  if(L&&fin(cons)&&cons>0&&fin(L.fuel)){const atStop=L.fuel-(nx.inLaps+lapRem(L,laps,cons))*cons,cap=L.fuel_cap>0?L.fuel_cap:100,need=nx.laps*cons-atStop;a=need>0?Math.min(need,cap-Math.max(0,atStop)):0}
   else{const st=nx.stop||{};a=st.full?st.add:0}
   return Math.round(a*FK)}
 function fuelTarget(L){
@@ -384,7 +389,7 @@ function render(s){
   const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?P1(lastClean.fuel)+" %":"–";
   // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
   const tgt=fuelTarget(L);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
-  if(tgt&&fin(cons)){const need=(tgt.endLap-L.lap+1)*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos"}
+  if(tgt&&fin(cons)){const need=(tgt.endLap-L.lap+lapRem(L,laps,cons))*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos"}
   else{$("toFinish").textContent="–";$("toFinish").className=""}
   // pneus
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColor(t);el.querySelector("span").textContent=fin(t)?Math.round(t):"–"});
