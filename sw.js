@@ -1,6 +1,6 @@
 // Fonctionnement hors ligne : la page et ses fichiers sont gardés sur le téléphone.
 // Change VERSION à chaque mise à jour de index.html pour que l'iPhone récupère la nouvelle version.
-const VERSION = "strat-gt7-v7";
+const VERSION = "strat-gt7-v8";
 const APP = ["./", "./index.html", "./manifest.webmanifest",
   "./icons/apple-touch-icon.png", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png"];
 

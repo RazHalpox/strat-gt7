@@ -101,6 +101,13 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 /* centre */
 #cCore{grid-area:core;align-items:center;justify-content:center;text-align:center}
 .gear{font:700 clamp(110px,15vw,210px)/.85 var(--f-mono)}
+/* alerte stand, au-dessus du rapport engagé, clignotante */
+.pitAlert{align-self:stretch;border-radius:6px;padding:6px 10px;margin-bottom:6px;font:700 clamp(17px,2.1vw,26px)/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.04em;animation:pa 1s steps(2,end) infinite}
+.pitAlert small{display:block;font-size:.62em;letter-spacing:.06em;margin-top:2px;opacity:.9}
+.pitAlert.warn{background:var(--warn);color:#07090c}
+.pitAlert.crit{background:var(--accent);color:#fff}
+@keyframes pa{50%{opacity:.15}}
+@media (prefers-reduced-motion:reduce){.pitAlert{animation:none}}
 .speed{font:700 38px var(--f-mono);font-variant-numeric:tabular-nums}
 .speed small{font:600 16px var(--f-display);color:var(--muted);margin-left:4px}
 .coreRow{display:flex;gap:16px;justify-content:center;font:600 18px var(--f-display);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
@@ -149,6 +156,9 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .relays .chip{width:20px;height:20px;font-size:11px;border-width:2px}
   .relays .who{font-size:11px}.relays b{font-size:15px}
   .gear{font-size:clamp(56px,30vh,150px)}
+  .pitAlert{font-size:13px;padding:3px 8px;margin-bottom:3px}.pitAlert small{font-size:10px}
+  .pitAlert:not([hidden])~.gear{font-size:clamp(40px,19vh,110px)}
+  #cCore:has(.pitAlert:not([hidden])) .coreRow{font-size:11px}
   .speed{font-size:clamp(18px,7vh,32px)}.speed small{font-size:12px}
   .coreRow{font-size:12px;gap:10px}
   .chronos{gap:3px}.chronos div{padding:2px 8px}.chronos small{font-size:10px}.chronos b{font-size:clamp(14px,5.5vh,24px)}
@@ -214,6 +224,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   </section>
 
   <section class="card" id="cCore">
+    <div class="pitAlert" id="pitAlert" hidden role="alert"><span id="paTitle"></span><small id="paText"></small></div>
     <div class="gear" id="gear">N</div>
     <div class="speed"><span id="speed">0</span><small>km/h</small></div>
     <div class="coreRow"><span>Tour <b id="lap">–</b></span><span>Pos <b id="pos">–</b></span><span>Turbo <b id="boost">–</b></span></div>
@@ -381,6 +392,10 @@ function render(s){
     else{stop.className="stop"+(O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}
   else if(fuelShort){stop.className="stop warn";$("stopTitle").textContent=`Essence courte pour finir · ${f1(left)} tours`;$("stopText").textContent=`Il manque ${fuelShort.miss} L : économise ou ravitaille`}
   else{stop.className="stop";$("stopTitle").textContent=nx&&nx.done?"Dernier relais":"Pas de plan";$("stopText").textContent=nx&&nx.done?"Plus d'arrêt prévu":"Choisis un plan dans Stratégie"}
+  // la même alerte, en gros et clignotante au-dessus du rapport engagé
+  {const lvl=stop.classList.contains("crit")?"crit":stop.classList.contains("warn")?"warn":"",pa=$("pitAlert");
+   if(lvl){pa.hidden=false;pa.className="pitAlert "+lvl;$("paTitle").textContent=$("stopTitle").textContent;$("paText").textContent=$("stopText").textContent}
+   else pa.hidden=true}
   // conso des derniers tours
   const hl=laps.filter(l=>fin(l.fuel)&&!l.pit).slice(-10);
   if(hl.length!==render._hl||(hl.length&&hl[hl.length-1].n!==render._hn)){render._hl=hl.length;render._hn=hl.length?hl[hl.length-1].n:null;

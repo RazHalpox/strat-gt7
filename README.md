@@ -33,7 +33,6 @@ Sur Android, ouvre le lien dans Chrome, puis **⋮ → Ajouter à l'écran d'acc
 
 ### 1. Régler le salon (onglet Paramètres)
 - **Type de course** : à la durée (ex. 60 min) ou au nombre de tours.
-- **Usure des pneus** et **Consommation carburant** : les multiplicateurs du salon GT7 (1× à 10×), pour mémoire : ils ne changent pas les calculs.
 - **Refuel rate** : la vitesse de ravitaillement du salon, en litres par seconde.
 - **Réservoir** et **carburant au départ**, en litres.
 
