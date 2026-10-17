@@ -88,6 +88,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div class="row"><label for="warnLaps"><b>Alerte d'arrêt</b><small>Bannière jaune « Arrêt dans X tours » avant chaque arrêt de ta stratégie</small></label>
       <select id="warnLaps"><option value="0">Désactivée</option><option value="1">1 tour avant</option><option value="2">2 tours avant</option><option value="3">3 tours avant</option><option value="4">4 tours avant</option><option value="5">5 tours avant</option></select></div>
     <div class="row"><label for="fuelSafety"><b>Alerte carburant critique</b><small>BOX BOX si l'essence ne tient pas jusqu'à l'arrêt prévu</small></label><span class="sw"><input type="checkbox" id="fuelSafety"><i></i></span></div>
+    <div class="row"><label for="planBAuto"><b>Plan B automatique</b><small>Quand tu entres aux stands hors de ta stratégie, le Plan B s'ouvre tout seul et l'ingénieur annonce le meilleur choix. Le bouton Plan B de l'écran Pilote marche toujours.</small></label><span class="sw"><input type="checkbox" id="planBAuto"><i></i></span></div>
   </section>
 
   <section class="panel">
@@ -138,6 +139,7 @@ const OPTS_DEF = {
   warnLaps: 3,        // bannière « Arrêt dans X tours » : combien de tours avant l'arrêt prévu
   boxFlash: true,     // BOX BOX clignotant
   fuelSafety: true,   // BOX BOX « Carburant critique » si l'essence ne tient pas jusqu'à l'arrêt prévu
+  planBAuto: true,    // Plan B ouvert tout seul dans la voie des stands (et après un arrêt hors plan)
   // Écran Complet
   radio: true,        // bande radio avec les messages de l'ingénieur
   // Ingénieur vocal
@@ -171,7 +173,7 @@ function tyreColorOpt(t) {
 </script>
 <script>
 const $=id=>document.getElementById(id);
-const BOOL=["fuelSafety","radio","voiceLapTime","voiceBest"];
+const BOOL=["fuelSafety","planBAuto","radio","voiceLapTime","voiceBest"];
 const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelWarn","fuelCrit","tCold","tHot","tOver","slipPct"];
 function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]));$("theme").value=O.theme==="gt3"?"gt3":"classic";applyTheme(O.theme)}
 function applyTheme(v){if(v==="gt3")document.documentElement.setAttribute("data-theme","gt3");else document.documentElement.removeAttribute("data-theme")}

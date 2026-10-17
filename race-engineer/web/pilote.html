@@ -333,6 +333,7 @@ const OPTS_DEF = {
   warnLaps: 3,        // bannière « Arrêt dans X tours » : combien de tours avant l'arrêt prévu
   boxFlash: true,     // BOX BOX clignotant
   fuelSafety: true,   // BOX BOX « Carburant critique » si l'essence ne tient pas jusqu'à l'arrêt prévu
+  planBAuto: true,    // Plan B ouvert tout seul dans la voie des stands (et après un arrêt hors plan)
   // Écran Complet
   radio: true,        // bande radio avec les messages de l'ingénieur
   // Ingénieur vocal
@@ -524,7 +525,7 @@ function render(s){
   else{$("tyreRelay").textContent="sans plan";$("stintTxt").textContent="–";$("wear").style.width="0"}
 
   engineer(laps,L,left,nx);
-  window.__S={L,laps,cons,rem};pitLaneCheck(L);planBCheck(L,laps,cons);
+  window.__S={L,laps,cons,rem};if(O.planBAuto!==false){pitLaneCheck(L);planBCheck(L,laps,cons)}
 }
 
 function connect(){

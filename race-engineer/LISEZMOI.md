@@ -98,7 +98,7 @@ Ouvre ensuite **Stratégie →** : tes valeurs sont déjà remplies. Complète l
 
 Sur Pilote, le bouton **Plan B** recalcule la fin de la course si tu rentres **à la fin du tour en cours** : il part de ton tour, de ton essence, des gommes déjà roulées et des règles de Stratégie, et propose la meilleure option pour chaque gomme (gomme à monter, essence à remettre ou pneus seuls, arrêts suivants). Touche une option : le bandeau passe en « Box box · ce tour-ci » avec ce choix, et tout le plan des écrans est mis à jour.
 
-**Automatique dans la voie des stands :** quand tu entres dans la voie des stands à un tour qui n'est pas un arrêt prévu, l'appli le reconnaît au limiteur (vitesse figée), ouvre le Plan B toute seule et l'ingénieur annonce le meilleur choix. Il ne reste qu'à toucher l'option.
+**Automatique dans la voie des stands :** quand tu entres dans la voie des stands à un tour qui n'est pas un arrêt prévu, l'appli le reconnaît au limiteur (vitesse figée), ouvre le Plan B toute seule et l'ingénieur annonce le meilleur choix. Il ne reste qu'à toucher l'option. Tu peux couper ce déclenchement automatique dans ⚙ Réglages › Arrêts › **Plan B automatique** (le bouton Plan B reste utilisable).
 
 En dernier recours, si un arrêt hors plan est passé inaperçu, l'appli demande ensuite quelle gomme tu as montée et recalcule la suite.
 
@@ -117,7 +117,7 @@ Les colonnes s'alignent toutes seules et les chiffres s'adaptent à la taille de
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
 - **Apparence** : thème **Classique** ou **Racing GT3** (fond carbone, rouge course, chiffres italiques façon écran de volant), appliqué à tous les écrans de cet appareil ;
-- **Arrêts** : alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique / essence courte ;
+- **Arrêts** : Plan B automatique (on/off), alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique / essence courte ;
 - **Écran Complet** : afficher ou masquer la bande radio ;
 - **Ingénieur vocal** : temps de chaque tour, meilleurs tours, point carburant (tous les N tours), vitesse de la voix ;
 - **Carburant** : nombre de tours pour la conso moyenne, seuils jaune et rouge de la jauge ;
