@@ -480,7 +480,7 @@ def main():
             return
     print()
     print("  ==============================================")
-    print("   GT7 RACE ENGINEER v1.3 - relais telemetrie")
+    print("   GT7 RACE ENGINEER V2 - relais telemetrie")
     print("  ==============================================")
     if replay:
         print(f"  RELECTURE x{speed:g} : {os.path.basename(replay)}")

@@ -1,0 +1,110 @@
+/* Thème « Nuit d'endurance » : le relais de 3 h du matin.
+   Habitacle sombre, instruments rétroéclairés couleur ambre, rien qui éblouit quand on roule dans le noir.
+   Une seule audace : les chiffres ambre, légèrement lumineux comme des cadrans. Tout le reste reste calme.
+   Police B612 (dessinée pour les écrans de cockpit), embarquée dans l'appli, licence OFL (fonts/OFL-B612.txt).
+   Activé dans ⚙ Réglages › Apparence (html[data-theme=nuit]). */
+@font-face{font-family:"B612";src:url(fonts/B612-Regular.woff) format("woff");font-weight:400 500;font-style:normal;font-display:swap}
+@font-face{font-family:"B612";src:url(fonts/B612-Bold.woff) format("woff");font-weight:600 900;font-style:normal;font-display:swap}
+
+html[data-theme=nuit]{
+  --nuit:#070d18; --habitacle:#0e1828; --ambre:#ffb347; --ambre-doux:rgba(255,179,71,.14);
+  --bg:#070d18; --panel:#0e1828; --panel-2:#142238; --line:#1f3150; --fg:#e8e1d3; --muted:#8796ad;
+  --accent:#ff6b5b; --ok:#5ad6a0; --warn:#ffe27a; --cold:#6cb8ff; --spin:#ff9f5a;
+  --soft:#ff6b5b; --med:#ffe27a; --hard:#e8e1d3;
+  --rpm-a:#5ad6a0; --rpm-b:#ffb347; --rpm-c:#ff6b5b;
+  --f-display:"B612",system-ui,sans-serif;
+  --f-body:"B612",system-ui,sans-serif;
+  --f-mono:"B612",ui-monospace,monospace; /* chiffres B612 : tous de même largeur, ponctuation étroite */
+  background:var(--bg);
+}
+/* un halo très léger en haut de l'écran, comme l'éclairage du tableau de bord */
+html[data-theme=nuit] body{background:radial-gradient(120% 60% at 50% -10%,#10203a 0%,rgba(7,13,24,0) 60%),var(--bg)}
+
+/* ---- étiquettes calmes : minuscules, sans espacement forcé ---- */
+html[data-theme=nuit] .lbl,html[data-theme=nuit] .unit,html[data-theme=nuit] .kv small,html[data-theme=nuit] .chronos small,
+html[data-theme=nuit] .legend,html[data-theme=nuit] .relays .who,html[data-theme=nuit] .coreRow,html[data-theme=nuit] .speed small,
+html[data-theme=nuit] .panel h2,html[data-theme=nuit] .sm,html[data-theme=nuit] .pill,html[data-theme=nuit] .tyre small{
+  text-transform:none;letter-spacing:.01em}
+html[data-theme=nuit] .lbl{font-weight:500;color:var(--muted)}
+html[data-theme=nuit] .lbl b{color:var(--fg)}
+
+/* ---- navigation et boutons : discrets, l'onglet actif en ambre ---- */
+html[data-theme=nuit] nav.tabs3{background:rgba(14,24,40,.85);border-color:var(--line);border-radius:999px;padding:3px}
+html[data-theme=nuit] nav.tabs3 a{text-transform:none;letter-spacing:0;border-radius:999px;font-weight:500;color:var(--muted)}
+html[data-theme=nuit] nav.tabs3 a[aria-current=page]{background:var(--ambre);color:#1a1205;font-weight:700}
+html[data-theme=nuit] .btn{text-transform:none;letter-spacing:0;border-radius:999px;background:transparent;border-color:var(--line);font-weight:500}
+html[data-theme=nuit] .btn.on{background:var(--ambre);border-color:var(--ambre);color:#1a1205}
+html[data-theme=nuit] #planBBtn{border-color:rgba(255,226,122,.5);color:var(--warn)}
+html[data-theme=nuit] .pill{border-radius:999px;font-weight:500}
+html[data-theme=nuit] .pill.live{background:rgba(90,214,160,.12)}
+
+/* ---- cartes : habitacle sombre, bord fin éclairé par le haut ---- */
+html[data-theme=nuit] .card,html[data-theme=nuit] .panel{background:linear-gradient(180deg,#101c2f 0%,#0c1626 100%);border:1px solid var(--line);
+  border-radius:12px;box-shadow:inset 0 1px 0 rgba(255,179,71,.07)}
+html[data-theme=nuit] .kv div,html[data-theme=nuit] .chronos div,html[data-theme=nuit] .relays>div{background:rgba(20,34,56,.75);border-radius:8px}
+
+/* ---- l'audace : les chiffres des cadrans en ambre, légèrement lumineux ---- */
+html[data-theme=nuit] .gear,
+html[data-theme=nuit] .big:not(.bad):not(.wrn),
+html[data-theme=nuit] .fuel-laps:not(.neg):not(.wrn),
+html[data-theme=nuit] #cur,html[data-theme=nuit] #curLap{color:var(--ambre);text-shadow:0 0 18px rgba(255,170,60,.35),0 0 2px rgba(255,170,60,.5)}
+html[data-theme=nuit] .gear{font-weight:700}
+html[data-theme=nuit] .big,html[data-theme=nuit] .fuel-laps,html[data-theme=nuit] .liters b,html[data-theme=nuit] .mid,
+html[data-theme=nuit] .chronos b,html[data-theme=nuit] .kv b,html[data-theme=nuit] .relays b,html[data-theme=nuit] .speed{font-weight:700;letter-spacing:-.02em}
+html[data-theme=nuit] .tyre .t{font-weight:700}
+
+/* ---- compte-tours : points ronds comme des LED ---- */
+html[data-theme=nuit] .rpm{gap:5px}
+html[data-theme=nuit] .rpm i,html[data-theme=nuit] .shift i{border-radius:999px}
+html[data-theme=nuit] .gauge{border-radius:999px}
+html[data-theme=nuit] .gauge i{border-radius:999px}
+
+/* ---- alertes : jaune phare et rouge feu, sans dureté ---- */
+html[data-theme=nuit] .stop,html[data-theme=nuit] .pitAlert{border-radius:10px;text-transform:none;letter-spacing:0}
+html[data-theme=nuit] .stop.warn,html[data-theme=nuit] .pitAlert.warn{background:var(--warn);color:#1a1405}
+html[data-theme=nuit] .tyre{border-radius:12px}
+
+/* ---- Plan B, disposition ---- */
+html[data-theme=nuit] .pbBox{border-radius:16px;border-color:rgba(255,226,122,.55);background:#0e1828}
+html[data-theme=nuit] .pbBox h2{text-transform:none;letter-spacing:0;color:var(--warn)}
+html[data-theme=nuit] .pbOpt{border-radius:12px;background:#142238}
+html[data-theme=nuit] .pbOpt b{text-transform:none;letter-spacing:0}
+html[data-theme=nuit] .editBar{border-radius:12px;border-color:var(--ambre)}
+html[data-theme=nuit] .editBar b{text-transform:none;letter-spacing:0;color:var(--ambre)}
+html[data-theme=nuit] .edOv{border-color:var(--ambre);border-radius:12px}
+html[data-theme=nuit] .edOv .nm{text-transform:none;letter-spacing:0}
+html[data-theme=nuit] .edOv .grip{background:var(--ambre);color:#1a1205;border-radius:999px;text-transform:none;letter-spacing:0}
+html[data-theme=nuit] .dropInd{background:var(--ambre-doux);border-color:var(--ambre);border-radius:12px}
+html[data-theme=nuit] .ghost{background:var(--ambre);color:#1a1205;border-radius:999px;text-transform:none;letter-spacing:0}
+
+/* ---- Réglages ---- */
+html[data-theme=nuit] select,html[data-theme=nuit] input[type=number],html[data-theme=nuit] input[type=text]{border-radius:8px}
+html[data-theme=nuit] h1{text-transform:none;letter-spacing:0}
+
+/* ---- Stratégie (page claire d'habitude) : passe en nuit ---- */
+html[data-theme=nuit][data-page=strat]{
+  --bg:#070d18; --surface:#0e1828; --fg:#e8e1d3; --muted:#8796ad; --line:#1f3150;
+  --accent:#ffb347; --accent-soft:#2a2112; --flag:#ffe27a; --flag-soft:#2a2610; --ok:#5ad6a0; --ok-soft:#0f2a22;
+  --input:#142238; --input-line:#2a4166; --soft:#ff6b5b; --med:#ffe27a; --hard:#e8e1d3;
+  color-scheme:dark;
+}
+html[data-theme=nuit][data-page=strat] body{color:var(--fg)}
+html[data-theme=nuit][data-page=strat] .topnav{background:transparent}
+html[data-theme=nuit][data-page=strat] h1{text-transform:none}
+html[data-theme=nuit][data-page=strat] nav.tabs{border-bottom:1px solid var(--line);gap:6px}
+html[data-theme=nuit][data-page=strat] nav.tabs button{text-transform:none;letter-spacing:0;border-radius:999px;font-weight:500}
+html[data-theme=nuit][data-page=strat] nav.tabs button[aria-selected=true]{background:var(--ambre);color:#1a1205;font-weight:700}
+html[data-theme=nuit][data-page=strat] .modebar{border-radius:999px}
+html[data-theme=nuit][data-page=strat] .modebar button{text-transform:none;letter-spacing:0}
+html[data-theme=nuit][data-page=strat] .modebar button[aria-pressed=true]{background:var(--ambre);color:#1a1205}
+html[data-theme=nuit][data-page=strat] .panel h2::before{display:none}
+html[data-theme=nuit][data-page=strat] .kpis{border-radius:12px}
+html[data-theme=nuit][data-page=strat] .k b{color:var(--ambre)}
+html[data-theme=nuit][data-page=strat] .mini,html[data-theme=nuit][data-page=strat] .reset{border-radius:999px;text-transform:none;letter-spacing:0}
+html[data-theme=nuit][data-page=strat] .mini.on{background:var(--ambre);border-color:var(--ambre);color:#1a1205}
+html[data-theme=nuit][data-page=strat] th{text-transform:none;letter-spacing:0;border-bottom:1px solid var(--line)}
+html[data-theme=nuit][data-page=strat] .race{border-radius:12px}
+html[data-theme=nuit][data-page=strat] .race.sel{border-color:var(--ambre)}
+html[data-theme=nuit][data-page=strat] .race .rd h3{text-transform:none;letter-spacing:0}
+html[data-theme=nuit][data-page=strat] .tag{border-radius:999px;text-transform:none;letter-spacing:0}
+html[data-theme=nuit][data-page=strat] .tag.full,html[data-theme=nuit][data-page=strat] .tag.tyre{color:var(--fg)}

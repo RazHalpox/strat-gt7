@@ -62,7 +62,8 @@ nav.tabs3 a.cog{display:flex;align-items:center;padding:6px 10px}
 nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
-<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
+<link rel="stylesheet" href="theme-nuit.css">
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -79,8 +80,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 
   <section class="panel">
     <h2>Apparence</h2>
-    <div class="row"><label for="theme"><b>Thème</b><small>Racing GT3 : carbone, rouge course et chiffres façon écran de volant, sur tous les écrans de cet appareil</small></label>
-      <select id="theme"><option value="classic">Classique</option><option value="gt3">Racing GT3</option></select></div>
+    <div class="row"><label for="theme"><b>Thème</b><small>Racing GT3 : carbone, rouge course, chiffres façon écran de volant. Nuit d'endurance : habitacle sombre et cadrans ambre qui n'éblouissent pas la nuit. S'applique à tous les écrans de cet appareil.</small></label>
+      <select id="theme"><option value="classic">Classique</option><option value="gt3">Racing GT3</option><option value="nuit">Nuit d'endurance</option></select></div>
   </section>
 
   <section class="panel">
@@ -130,7 +131,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <span class="saved" id="saved" role="status"></span>
     <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span>Réglages enregistrés sur cet appareil.</span><button class="btn" type="button" id="reset">Valeurs par défaut</button></span>
   </div>
-  <p style="text-align:center;margin:18px 0 0;font-size:12px;letter-spacing:.08em;color:var(--muted)">GT7 Race Engineer · v1.3</p>
+  <p style="text-align:center;margin:18px 0 0;font-size:12px;letter-spacing:.08em;color:var(--muted)">GT7 Race Engineer · V2</p>
 </main>
 </div>
 <script>
@@ -159,7 +160,7 @@ const OPTS_DEF = {
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
   slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
-  theme: "classic"    // apparence : "classic" ou "gt3" (Racing GT3)
+  theme: "classic"    // apparence : "classic", "gt3" (Racing GT3) ou "nuit" (Nuit d'endurance)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
@@ -178,8 +179,8 @@ function tyreColorOpt(t) {
 const $=id=>document.getElementById(id);
 const BOOL=["fuelSafety","planBAuto","radio","voiceLapTime","voiceBest"];
 const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelDec","fuelWarn","fuelCrit","tCold","tHot","tOver","slipPct"];
-function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]));$("theme").value=O.theme==="gt3"?"gt3":"classic";applyTheme(O.theme)}
-function applyTheme(v){if(v==="gt3")document.documentElement.setAttribute("data-theme","gt3");else document.documentElement.removeAttribute("data-theme")}
+function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]));$("theme").value=["gt3","nuit"].includes(O.theme)?O.theme:"classic";applyTheme(O.theme)}
+function applyTheme(v){if(v==="gt3"||v==="nuit")document.documentElement.setAttribute("data-theme",v);else document.documentElement.removeAttribute("data-theme")}
 let t;
 function store(){const O=opts();BOOL.forEach(k=>O[k]=$(k).checked);
   NUM.forEach(k=>{const v=parseFloat($(k).value);if(isFinite(v))O[k]=v});

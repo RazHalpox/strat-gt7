@@ -1,4 +1,4 @@
-# GT7 Race Engineer · v1.3
+# GT7 Race Engineer · V2
 
 Ton ingénieur de course pour Gran Turismo 7 : télémétrie en direct sur ton téléphone, ingénieur vocal en français, et ton calculateur de stratégie d'endurance rempli automatiquement avec ta vraie conso et tes vrais temps.
 
@@ -135,7 +135,7 @@ Le relais PC enregistre aussi chaque réception dans le dossier `enregistrements
 ## ⚙ Réglages
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
-- **Apparence** : thème **Classique** ou **Racing GT3** (fond carbone, rouge course, chiffres italiques façon écran de volant), appliqué à tous les écrans de cet appareil ;
+- **Apparence** : thème **Classique**, **Racing GT3** (fond carbone, rouge course, chiffres italiques façon écran de volant) ou **Nuit d'endurance** (habitacle sombre, cadrans ambre qui n'éblouissent pas quand tu roules dans le noir), appliqué à tous les écrans de cet appareil. Les polices sont intégrées à l'appli : même rendu avec ou sans internet ;
 - **Arrêts** : Plan B automatique (on/off), alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique / essence courte ;
 - **Carburant** : précision de la conso au tour (1, 2 ou 3 décimales, ex. 7,326 %/t), sur Pilote et Complet ;
 - **Écran Complet** : afficher ou masquer la bande radio ;

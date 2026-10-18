@@ -76,6 +76,9 @@ public final class WebServer {
         if (p.endsWith(".css")) return "text/css; charset=utf-8";
         if (p.endsWith(".png")) return "image/png";
         if (p.endsWith(".svg")) return "image/svg+xml";
+        if (p.endsWith(".woff")) return "font/woff";
+        if (p.endsWith(".woff2")) return "font/woff2";
+        if (p.endsWith(".txt")) return "text/plain; charset=utf-8";
         if (p.endsWith(".json") || p.endsWith(".webmanifest")) return "application/manifest+json";
         return "application/octet-stream";
     }

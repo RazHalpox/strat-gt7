@@ -235,11 +235,12 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 @media (orientation:portrait){.edOv{touch-action:pan-y}body.editing .edOv{touch-action:pan-y}}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
+<link rel="stylesheet" href="theme-nuit.css">
 <script src="race.js"></script>
 <script src="learn.js"></script>
 <script src="replan.js"></script>
 <script src="planb.js"></script>
-<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -335,7 +336,7 @@ const OPTS_DEF = {
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
   slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
-  theme: "classic"    // apparence : "classic" ou "gt3" (Racing GT3)
+  theme: "classic"    // apparence : "classic", "gt3" (Racing GT3) ou "nuit" (Nuit d'endurance)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }

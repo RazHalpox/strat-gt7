@@ -13,7 +13,7 @@ android {
         // numéro de compilation GitHub : chaque nouvelle version est plus haute que la précédente (mise à jour intégrée)
         def build = (System.getenv('BUILD_NUMBER') ?: '0').toInteger()
         versionCode 100 + build
-        versionName build > 0 ? "1.3.${build}" : '1.3'
+        versionName build > 0 ? "2.0.${build}" : "2.0"
     }
 
     signingConfigs {

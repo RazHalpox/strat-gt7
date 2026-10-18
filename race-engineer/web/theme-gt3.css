@@ -1,6 +1,11 @@
 /* Thème « Racing GT3 » : carbone, rouge course, chiffres italiques façon écran de volant.
    Activé dans ⚙ Réglages › Apparence (html[data-theme=gt3]). Aucun logo ni livrée de marque. */
-@import url("https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&display=swap");
+/* police embarquée dans l'appli (fonctionne sans internet) : Saira Condensed, licence OFL (fonts/OFL-SairaCondensed.txt) */
+@font-face{font-family:"Saira Condensed";src:url(fonts/SairaCondensed-Medium.woff) format("woff");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Saira Condensed";src:url(fonts/SairaCondensed-SemiBold.woff) format("woff");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Saira Condensed";src:url(fonts/SairaCondensed-Bold.woff) format("woff");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Saira Condensed";src:url(fonts/SairaCondensed-ExtraBold.woff) format("woff");font-weight:800;font-style:normal;font-display:swap}
+
 
 html[data-theme=gt3]{
   --bg:#050506; --panel:#101013; --panel-2:#1b1b1f; --line:#2b2b31; --fg:#f4f4f1; --muted:#8f8f97;
@@ -66,3 +71,49 @@ html[data-theme=gt3][data-page=strat] .topnav{background:#000}
 html[data-theme=gt3][data-page=strat] .topnav nav.tabs3 a[aria-current=page]{background:var(--accent);color:#fff}
 html[data-theme=gt3][data-page=strat] h1{font-style:italic;font-weight:800}
 html[data-theme=gt3][data-page=strat] nav.tabs button{font-style:italic}
+
+/* ---- Plan B, mode Disposition, conseils (même langage que les cartes) ---- */
+html[data-theme=gt3] .pb{background:rgba(0,0,0,.72)}
+html[data-theme=gt3] .pbBox{border-radius:2px;border:1px solid #2b2b31;border-top:3px solid var(--accent);background:linear-gradient(180deg,#17171b 0%,#0d0d10 100%);
+  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%)}
+html[data-theme=gt3] .pbBox h2{color:#fff;font-style:italic;font-weight:800;letter-spacing:.06em}
+html[data-theme=gt3] .pbBox .sub{font-style:italic;color:var(--muted)}
+html[data-theme=gt3] .pbOpt{border-radius:1px;border:1px solid #26262c;border-left:3px solid #3a3a41;background:#18181c}
+html[data-theme=gt3] .pbOpt:hover,html[data-theme=gt3] .pbOpt:focus-visible{border-color:var(--accent);border-left-color:var(--accent)}
+html[data-theme=gt3] .pbOpt.best{border-color:#1f5f39;border-left-color:var(--ok)}
+html[data-theme=gt3] .pbOpt b,html[data-theme=gt3] .pbOpt em{font-style:italic;font-weight:800}
+html[data-theme=gt3] .pbOpt small{font-style:italic}
+html[data-theme=gt3] .editBar{border-radius:1px;border-color:var(--accent);background:#0d0d10}
+html[data-theme=gt3] .editBar b{font-style:italic}
+html[data-theme=gt3] .edOv{border-radius:2px;border-color:var(--accent);background:rgba(5,5,6,.78)}
+html[data-theme=gt3] .edOv .nm{font-style:italic;font-weight:800}
+html[data-theme=gt3] .edOv .grip{transform:skewX(-10deg);border-radius:1px;font-style:italic}
+html[data-theme=gt3] .dropInd{border-radius:1px;background:rgba(228,0,43,.3)}
+html[data-theme=gt3] .ghost{border-radius:1px;transform:translate(-50%,-50%) skewX(-10deg);font-style:italic}
+html[data-theme=gt3] #fuelTip,html[data-theme=gt3] .radio{font-style:italic}
+html[data-theme=gt3] #finLap{font-style:italic;font-weight:800}
+
+/* ---- Stratégie : onglets et choix actifs en rouge course, comme la barre du haut ---- */
+html[data-theme=gt3][data-page=strat] nav.tabs{border-bottom-color:var(--accent);gap:4px}
+html[data-theme=gt3][data-page=strat] nav.tabs button{font-style:italic;font-weight:700;border-radius:1px;transform:skewX(-10deg)}
+html[data-theme=gt3][data-page=strat] nav.tabs button[aria-selected=true]{background:var(--accent);color:#fff}
+html[data-theme=gt3][data-page=strat] .modebar{border-radius:1px;border-color:#3a3a41}
+html[data-theme=gt3][data-page=strat] .modebar button{font-style:italic}
+html[data-theme=gt3][data-page=strat] .modebar button[aria-pressed=true]{background:var(--accent);color:#fff}
+html[data-theme=gt3][data-page=strat] .panel{border-radius:2px}
+html[data-theme=gt3][data-page=strat] .kpis{border-radius:2px}
+html[data-theme=gt3][data-page=strat] .k b{font-style:italic;font-weight:800}
+html[data-theme=gt3][data-page=strat] .mini,html[data-theme=gt3][data-page=strat] .reset{border-radius:1px;font-style:italic}
+html[data-theme=gt3][data-page=strat] .race{border-radius:2px;background:#121215}
+html[data-theme=gt3][data-page=strat] .race>button.rh b{font-style:italic;font-weight:800}
+html[data-theme=gt3][data-page=strat] .race .rd h3{font-style:italic}
+html[data-theme=gt3][data-page=strat] th{border-bottom-color:#3a3a41}
+html[data-theme=gt3][data-page=strat] .tag{border-radius:1px;font-style:italic}
+
+/* Saira est plus haute que les polices de secours : lignes de chiffres resserrées pour que tout tienne dans les fenêtres */
+html[data-theme=gt3] .chronos b,html[data-theme=gt3] .kv b,html[data-theme=gt3] .relays b,html[data-theme=gt3] .liters b,
+html[data-theme=gt3] .speed,html[data-theme=gt3] .chronos small,html[data-theme=gt3] .kv small,html[data-theme=gt3] .relays .who,
+html[data-theme=gt3] .lbl,html[data-theme=gt3] .coreRow{line-height:1}
+html[data-theme=gt3] .chronos div{padding-top:5px;padding-bottom:5px}
+html[data-theme=gt3] .relays>div{padding-top:3px;padding-bottom:3px}
+html[data-theme=gt3] .relays .chip{width:24px;height:24px}

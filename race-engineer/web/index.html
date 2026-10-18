@@ -113,7 +113,8 @@ select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);
 header{display:grid!important;grid-template-columns:1fr auto 1fr;grid-template-areas:". nav tools";align-items:center;gap:8px}
 header nav.tabs3{grid-area:nav}
 header .tools,header .hdr-right{grid-area:tools;justify-self:end}
-@media (max-width:760px){header{grid-template-columns:1fr;grid-template-areas:"nav" "tools"}header nav.tabs3,header .tools,header .hdr-right{justify-self:center}}
+@media (max-width:1000px) and (orientation:landscape){header{grid-template-columns:auto 1fr;grid-template-areas:"nav tools"}}
+@media (max-width:760px) and (orientation:portrait),(max-width:600px){header{grid-template-columns:1fr;grid-template-areas:"nav" "tools"}header nav.tabs3,header .tools,header .hdr-right{justify-self:center}}
 
 /* ---- téléphone en paysage : 3 colonnes compactes, l'essentiel sur le premier écran ---- */
 @media (orientation:landscape) and (max-height:540px){
@@ -160,11 +161,12 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
 }
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
+<link rel="stylesheet" href="theme-nuit.css">
 <script src="race.js"></script>
 <script src="learn.js"></script>
 <script src="replan.js"></script>
 <script src="planb.js"></script>
-<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme","gt3")}catch(e){}</script>
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -278,7 +280,7 @@ const OPTS_DEF = {
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
   slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
-  theme: "classic"    // apparence : "classic" ou "gt3" (Racing GT3)
+  theme: "classic"    // apparence : "classic", "gt3" (Racing GT3) ou "nuit" (Nuit d'endurance)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
