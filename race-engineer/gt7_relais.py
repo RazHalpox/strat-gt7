@@ -97,7 +97,7 @@ def parse_gt7(p):
     radius = [f(0xB4), f(0xB8), f(0xBC), f(0xC0)]  # rayon des pneus, m
     wheel = [abs(f(0xA4)), abs(f(0xA8)), abs(f(0xAC)), abs(f(0xB0))]  # rotation des roues, rad/s
     return {
-        "x": f(0x04), "z": f(0x0C),
+        "x": f(0x04), "y": f(0x08), "z": f(0x0C),
         "slip": wheel_slip(wheel, radius, v),
         "boost": f(0x50) - 1.0,
         "oil_p": f(0x54),
@@ -246,6 +246,7 @@ class RaceState:
             cur = int((now - self._lap_t0) * 1000) if self._lap_t0 and not d["paused"] else None
             tp = self._teleport(d, now)
             self.live = dict(d, cur_ms=cur, pit_lane=self._pit_lane(d, now) or tp)
+        COACH.push(d, now)
 
     def snapshot(self):
         with self.lock:
@@ -254,6 +255,34 @@ class RaceState:
                     "live": self.live, "laps": self.laps, "t": time.time()}
 
 
+class CoachFeed:
+    """Coach de tour : chaque image de la PS5 (60 par seconde), en version compacte, pour l'ecran coach.html.
+    [t (ms), x, y, z, vitesse km/h, gaz %, frein %, tour, dernier tour (ms), rapport, drapeaux, regime]
+    drapeaux : 1 = en piste, 2 = pause, 4 = chargement. Meme format que l'appli Android (Coach.java)."""
+    SIZE = 1200   # 20 s d'avance
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.ring = [None] * self.SIZE
+        self.seq = 0
+
+    def push(self, d, now):
+        r = lambda v, n: round(float(v or 0), n)
+        flags = (1 if d.get("on_track") else 0) | (2 if d.get("paused") else 0) | (4 if d.get("loading") else 0)
+        s = [int(now * 1000), r(d.get("x"), 2), r(d.get("y"), 2), r(d.get("z"), 2), r(d.get("speed"), 2),
+             r(d.get("throttle"), 1), r(d.get("brake"), 1), int(d.get("lap") or 0), int(d.get("last_ms") or 0),
+             int(d.get("gear") or 0), flags, int(d.get("rpm") or 0)]
+        with self.lock:
+            self.ring[self.seq % self.SIZE] = s
+            self.seq += 1
+
+    def since(self, since):
+        with self.lock:
+            start = max(since, self.seq - self.SIZE)
+            return [self.ring[i % self.SIZE] for i in range(start, self.seq)], self.seq
+
+
+COACH = CoachFeed()
 STATE = RaceState()
 
 
@@ -425,7 +454,7 @@ def demo_loop():
             "throttle": max(0, min(100, 60 + 45 * x)), "brake": max(0, min(100, -80 * x)) if x < -0.6 else 0,
             "on_track": True, "paused": False, "loading": False,
             "rev_limit": rpm > 7400, "asm": False, "tcs": x > 0.9, "car": 0,
-            "x": posx, "z": posz,
+            "x": posx, "y": 6 * math.sin(ang * 3), "z": posz,
             "slip": [round(lock, 1), round(lock * 0.8, 1), round(spin * 0.4, 1), round(spin, 1)],
             "boost": max(-0.6, 1.4 * x), "oil_p": 4.5 + x,
         }, now)
@@ -489,6 +518,27 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 while True:
                     msg = json.dumps(STATE.snapshot(), separators=(",", ":"))
+                    self.wfile.write(("data: " + msg + "\n\n").encode("utf-8"))
+                    self.wfile.flush()
+                    time.sleep(0.1)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError):
+                return
+        if urlparse(self.path).path == "/coach":
+            # Coach de tour : toutes les images de la PS5 (60/s), envoyees par paquets toutes les 100 ms
+            self.send_response(200)
+            try:
+                self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except OSError:
+                pass
+            self.send_header("Content-Type", "text/event-stream")
+            self.send_header("Connection", "keep-alive")
+            self.end_headers()
+            since = max(0, COACH.seq - 30)
+            try:
+                while True:
+                    frames, since = COACH.since(since)
+                    mode = STATE.snapshot()["mode"]
+                    msg = json.dumps({"mode": mode, "s": frames}, separators=(",", ":"))
                     self.wfile.write(("data: " + msg + "\n\n").encode("utf-8"))
                     self.wfile.flush()
                     time.sleep(0.1)

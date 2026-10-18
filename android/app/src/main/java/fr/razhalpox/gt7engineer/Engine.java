@@ -169,7 +169,7 @@ public final class Engine {
             f.throttle = Math.max(0, Math.min(100, 60 + 45 * x));
             f.brake = x < -0.6 ? Math.max(0, Math.min(100, -80 * x)) : 0;
             f.onTrack = true; f.revLimit = rpm > 7400; f.tcs = x > 0.9;
-            f.x = 600 * Math.cos(ang); f.z = 250 * Math.sin(ang * 2) * 0.6 + 300 * Math.sin(ang);
+            f.y = 6 * Math.sin(ang * 3); f.x = 600 * Math.cos(ang); f.z = 250 * Math.sin(ang * 2) * 0.6 + 300 * Math.sin(ang);
             f.slip = new double[]{r1(lock), r1(lock * 0.8), r1(spin * 0.4), r1(spin)};
             f.boost = Math.max(-0.6, 1.4 * x); f.oilP = 4.5 + x;
             state.update(f, now);

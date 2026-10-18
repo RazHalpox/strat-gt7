@@ -65,7 +65,7 @@ public final class Gt7 {
 
     /** Une image de la télémétrie, au même format que le relais Python. */
     public static final class Frame {
-        public double x, z, boost, oilP, rpm, fuel, fuelCap, speed, water, oil, throttle, brake;
+        public double x, y, z, boost, oilP, rpm, fuel, fuelCap, speed, water, oil, throttle, brake;
         public double[] tyres = new double[4], slip = new double[4];
         public int pkt, lap, totalLaps, bestMs, lastMs, pos, cars, rpmLo, rpmHi, gear, gearSug, car;
         public boolean onTrack, paused, loading, revLimit, asm, tcs;
@@ -74,7 +74,7 @@ public final class Gt7 {
     public static Frame parse(ByteBuffer p) {
         Frame f = new Frame();
         double v = p.getFloat(0x4C);
-        f.x = p.getFloat(0x04); f.z = p.getFloat(0x0C);
+        f.x = p.getFloat(0x04); f.y = p.getFloat(0x08); f.z = p.getFloat(0x0C);
         for (int i = 0; i < 4; i++) {
             double w = Math.abs(p.getFloat(0xA4 + i * 4));
             double r = p.getFloat(0xB4 + i * 4);

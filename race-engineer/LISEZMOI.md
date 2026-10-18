@@ -175,3 +175,22 @@ Dans l'appli Android, l'écran reste allumé tout seul. Dans un navigateur (iPho
 ---
 
 À savoir : le format de la télémétrie GT7 n'est pas documenté officiellement par Polyphony. Le programme s'appuie sur le format décrit par la communauté. Les données transitent uniquement sur ton réseau local : rien ne part sur Internet.
+
+---
+
+## Le Coach de tour
+
+Ouvre `http://IP-DU-TÉLÉPHONE-OU-DU-PC:8777/coach.html`, ou l'onglet **Coach**. Le voyant passe à **En direct** quand GT7 envoie la télémétrie.
+
+1. Tape le circuit et la voiture (pour t'y retrouver), choisis un objectif (5, 10, 15 ou 20 tours) et touche **Lancer l'enregistrement**.
+2. Roule en essais libres ou en contre-la-montre. Chaque tour s'ajoute à la bande des temps ; le tour en cours est en rouge.
+3. Après trois tours complets, le rapport apparaît plus bas et se met à jour à chaque tour.
+
+**Tour de référence :** dans GT7, ouvre le classement de l'épreuve et lance le replay d'un pilote du top 10, puis touche **Capturer depuis un replay**. La page attend le passage de la ligne, garde le tour le plus rapide et s'arrête seule après deux tours.
+
+**Bon à savoir**
+- Le Coach a besoin de la nouvelle version du relais PC ou de l'appli Android (flux 60 images/s). Avec une ancienne version, le voyant reste sur « Relais injoignable ».
+- Les tours sont gardés dans le navigateur : si tu recharges la page, touche **Reprendre la session**. **Télécharger les tours** les exporte en CSV.
+- Si le circuit apparaît à l'envers dans la vue 3D, touche **⇋ Miroir** (le choix est retenu).
+- Un tour où tu passes par les stands ou qui coupe la piste est gardé dans la liste mais pas analysé. Tu peux retirer un tour avec ✕ dans le tableau.
+

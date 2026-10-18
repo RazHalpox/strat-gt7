@@ -117,7 +117,7 @@ public final class Recorder {
 
     static Gt7.Frame fromJson(JSONObject o) {
         Gt7.Frame f = new Gt7.Frame();
-        f.x = o.optDouble("x", 0); f.z = o.optDouble("z", 0);
+        f.x = o.optDouble("x", 0); f.y = o.optDouble("y", 0); f.z = o.optDouble("z", 0);
         f.slip = arr4(o.optJSONArray("slip")); f.tyres = arr4(o.optJSONArray("tyres"));
         f.boost = o.optDouble("boost", Double.NaN); f.oilP = o.optDouble("oil_p", 0);
         f.pkt = o.optInt("pkt"); f.rpm = o.optDouble("rpm", 0); f.fuel = o.optDouble("fuel", 0); f.fuelCap = o.optDouble("fuel_cap", 100);

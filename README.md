@@ -33,6 +33,7 @@ Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme
 | Complet | Tout le détail, la radio de l'ingénieur, l'historique, l'envoi de ta conso vers la stratégie | En essais, ou en course pour plus d'infos |
 | Stratégie | Le meilleur plan d'arrêts, tes mesures en course, le carnet de courses | Avant et après la course |
 | ⚙ Réglages | Thème, alertes, Plan B automatique, voix, seuils carburant et pneus | Une fois, puis quand tu veux |
+| Coach | Analyse tes tours : où est le temps, quoi changer à chaque virage, piste en 3D, comparaison à un tour de référence | En essais ou en contre-la-montre |
 
 ## Trois thèmes
 
@@ -42,6 +43,18 @@ Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme
 | --- | --- |
 | ![Thème Racing GT3](docs/pilote-gt3.jpg) | ![Thème Nuit d'endurance](docs/pilote-nuit.jpg) |
 | Carbone, rouge course, chiffres façon écran de volant | Habitacle sombre et cadrans ambre qui n'éblouissent pas quand tu roules dans le noir (police B612, dessinée pour les cockpits) |
+
+## Le Coach de tour
+
+Roule 5 à 20 tours en essais ou en contre-la-montre avec l'onglet **Coach** ouvert (`http://IP-DU-RELAIS:8777/coach.html`). Il reçoit toutes les images de la PS5 (60 par seconde), trouve les virages dans ta propre trajectoire et mesure à chacun ton point de freinage, ta vitesse mini, ta remise des gaz et ta roue libre. Le rapport apparaît après trois tours et se met à jour à chaque passage sur la ligne :
+
+- **Où est le temps** : ce que tu gagnes par tour en refaisant ton meilleur passage dans chaque virage, et ton meilleur tour théorique.
+- **À essayer à la prochaine session** : des conseils chiffrés, classés par le temps qu'ils valent (« Freine 12 m plus tard : 85 m avant la corde au tour 6, 97 m d'habitude »).
+- **Graphiques** : vitesse de tous les tours superposés, virages pas encore maîtrisés, tour contre tour, frein et accélérateur de chaque virage freiné.
+- **Piste en 3D** avec le relief, colorée par la vitesse, les pédales ou l'écart à la référence, et lecture du tour.
+- **Tour de référence** : lance le replay d'un pilote du top 10 dans GT7, touche *Capturer depuis un replay*, et le rapport te compare à lui virage par virage.
+
+Tout est calculé sur l'appareil, rien n'est envoyé. Les tours se téléchargent en CSV et se rechargent plus tard (les enregistrements de course `.jsonl.gz` s'ouvrent aussi). Sur https://razhalpox.github.io/strat-gt7/race-engineer/web/coach.html, sans relais, on peut analyser des fichiers.
 
 ---
 

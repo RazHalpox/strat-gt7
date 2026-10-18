@@ -107,6 +107,7 @@ public final class RaceState {
         boolean tp = teleport(d, now);
         pitLane = pitLaneCheck(d, now) || tp;
         live = d;
+        Coach.push(d, now);
     }
 
     /** Télémétrie reçue il y a moins de 2,5 s. */
@@ -125,6 +126,7 @@ public final class RaceState {
     /** Champs d'une image de télémétrie, au même format que le relais Python (sans l'accolade de fin). */
     static void frameFields(StringBuilder b, Gt7.Frame d) {
         b.append("{\"x\":"); num(b, d.x);
+        b.append(",\"y\":"); num(b, d.y);
         b.append(",\"z\":"); num(b, d.z);
         b.append(",\"slip\":"); arr(b, d.slip);
         b.append(",\"boost\":"); num(b, d.boost);

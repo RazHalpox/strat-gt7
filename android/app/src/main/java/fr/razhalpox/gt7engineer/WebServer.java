@@ -159,6 +159,22 @@ public final class WebServer {
                 }
                 return;
             }
+            if (path.equals("/coach")) {
+                // Coach de tour : toutes les images de la PS5 (60/s), envoyées par paquets toutes les 100 ms
+                sock.setSoTimeout(0);
+                sock.setTcpNoDelay(true);
+                out.write(("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-store\r\n"
+                        + "Connection: keep-alive\r\nAccess-Control-Allow-Origin: *\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+                out.flush();
+                long[] since = {Math.max(0, Coach.seq() - 30)};
+                while (running) {
+                    String m = state.isFresh() || "demo".equals(state.mode) ? state.mode : "attente";
+                    out.write(("data: " + Coach.since(since, m) + "\n\n").getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                    Thread.sleep(100);
+                }
+                return;
+            }
             if (path.equals("/sync")) {
                 String json;
                 if ("POST".equals(method)) {

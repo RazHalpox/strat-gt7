@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GT7 Race Engineer – Coach de tour</title>
+<meta name="theme-color" content="#0c0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GT7 Coach">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Coach de tour : même habillage sombre que Pilote, Complet et Réglages */
+:root{
+  --bg:#0c0f13; --panel:#151a21; --panel-2:#1c232c; --line:#27303b; --fg:#e9edf1; --muted:#8e99a5;
+  --accent:#ff3b4e; --ok:#3ddc84; --warn:#ffc833; --cold:#4fa8ff; --gold:#f5b335;
+  --brk:#4fa8ff; --gas:#3ddc84;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+.wrap{padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+header{display:flex;justify-content:center;margin-bottom:14px}
+nav.tabs3{display:flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px;flex-wrap:wrap;justify-content:center}
+nav.tabs3 a{color:var(--muted);text-decoration:none;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:6px 12px;border-radius:4px}
+nav.tabs3 a[aria-current=page]{background:var(--fg);color:var(--bg)}
+nav.tabs3 a.cog{display:flex;align-items:center;padding:6px 10px}
+nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+main{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+h1{font:700 34px/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;margin:0}
+h1 em{font-style:normal;color:var(--accent)}
+h2{font:700 22px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
+h2 em{font-style:normal;color:var(--accent)}
+h3{font:600 14px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+p{margin:4px 0 10px}
+.lead{color:var(--muted);max-width:62ch}
+.kicker{font:600 13px var(--f-display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.btn{background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:9px 14px;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;min-height:40px}
+.btn.go{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.small{min-height:32px;padding:5px 10px;font-size:13px}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
+label.f{display:flex;flex-direction:column;gap:4px;font:600 13px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex:1 1 180px}
+input[type=text]{font:500 16px var(--f-body);background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:8px 10px;width:100%}
+select{font:500 15px var(--f-mono);background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
+.seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:2px;gap:2px}
+.seg button{background:none;border:0;color:var(--muted);font:600 15px var(--f-mono);padding:6px 12px;border-radius:3px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.pill{display:inline-flex;align-items:center;gap:7px;font:600 13px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:4px 10px}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.pill.live i{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.pill.wait i{background:var(--warn)}
+.pill.off i{background:var(--accent)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:6px}
+@media (max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}}
+.steps div{border-top:2px solid var(--line);padding-top:8px;color:var(--muted);font-size:14px}
+.steps b{display:block;color:var(--fg);font:700 17px var(--f-display);text-transform:uppercase;letter-spacing:.04em}
+.steps span{font:700 13px var(--f-mono);color:var(--accent);margin-right:6px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.hidden{display:none!important}
+/* bande des tours */
+.strip{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.lap{font:600 15px var(--f-mono);background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:5px 9px;display:flex;flex-direction:column;align-items:flex-start;min-width:92px}
+.lap small{font:600 11px var(--f-display);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.lap.best{border-color:var(--ok);color:var(--ok)}
+.lap.cur{border-color:var(--accent);color:var(--accent)}
+.lap.bad{opacity:.5}
+.big{font:700 44px/1 var(--f-mono)}
+.progress{height:6px;background:var(--panel-2);border-radius:3px;overflow:hidden;margin:6px 0}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+/* tuiles */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.tile b{display:block;font:700 26px/1.1 var(--f-mono)}
+.tile small{font:600 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+/* graphiques */
+.chart{position:relative;width:100%;touch-action:pan-y}
+.chart canvas{display:block;width:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font:600 12px var(--f-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:4px 0 8px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.readout{position:absolute;top:4px;right:8px;font:500 12px var(--f-mono);color:var(--fg);background:rgba(12,15,19,.82);border:1px solid var(--line);border-radius:4px;padding:3px 7px;pointer-events:none;white-space:pre;display:none}
+/* piste 3D */
+.track3d{position:relative;background:#080a0d;border:1px solid var(--line);border-radius:6px;overflow:hidden;touch-action:none}
+.track3d canvas{display:block;width:100%;height:min(62vh,520px);cursor:grab}
+.track3d .hud{position:absolute;left:10px;bottom:8px;font:600 15px var(--f-mono);color:var(--fg);text-shadow:0 1px 3px #000}
+.track3d .hint{position:absolute;right:10px;bottom:8px;font:600 11px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.track3d .card{position:absolute;top:10px;right:10px;background:rgba(21,26,33,.94);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:13px;max-width:260px}
+.track3d .card b{font:700 18px var(--f-display);text-transform:uppercase}
+.scrub{width:100%;margin-top:8px;accent-color:var(--accent)}
+/* conseils */
+.tips{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.tips li{background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:10px 12px}
+.tips li.gold{border-left-color:var(--gold)}
+.tips .h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.tips .h b{font:700 20px var(--f-display);text-transform:uppercase}
+.tips .h span{font:600 15px var(--f-mono);color:var(--warn)}
+.tips p{margin:4px 0 0;font-size:14px}
+/* virages freinés */
+.corners{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.cbox{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.cbox .h{display:flex;justify-content:space-between;align-items:baseline}
+.cbox .h b{font:700 20px var(--f-display)}
+.cbox .h span{font:500 12px var(--f-mono);color:var(--muted)}
+.cbox dl{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;margin:6px 0 0;font-size:13px}
+.cbox dt{color:var(--muted)}
+.cbox dd{margin:0;font-family:var(--f-mono)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font:600 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px;border-bottom:1px solid var(--line)}
+td{padding:6px;border-bottom:1px solid var(--line);font-family:var(--f-mono)}
+td.best{color:var(--ok)}
+.scroll{overflow-x:auto}
+.foot{color:var(--muted);font-size:13px;text-align:center;max-width:70ch;margin:10px auto 0}
+.drop{border:1px dashed var(--line);border-radius:6px;padding:10px;text-align:center;color:var(--muted);font-size:14px}
+.drop.on{border-color:var(--accent);color:var(--fg)}
+</style>
+<link rel="stylesheet" href="theme-gt3.css">
+<link rel="stylesheet" href="theme-nuit.css">
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <nav class="tabs3" aria-label="Écrans">
+    <a href="pilote.html">Pilote</a>
+    <a href="./">Complet</a>
+    <a href="strategie.html">Stratégie</a>
+    <a href="coach.html" aria-current="page">Coach</a>
+    <a href="reglages.html" class="cog" aria-label="Réglages" title="Réglages"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path fill="currentColor" d="M18.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L14 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L5.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></a>
+  </nav>
+</header>
+<main>
+
+<!-- ============ accueil ============ -->
+<section class="panel" id="setup">
+  <div class="row" style="justify-content:space-between">
+    <span class="kicker">Coach de tour</span>
+    <span class="pill" id="conn"><i></i><span>Recherche du relais…</span></span>
+  </div>
+  <h1 style="margin-top:6px">Roule quelques tours. <em>Sache quoi changer.</em></h1>
+  <p class="lead">Le coach trouve les virages dans ta propre trajectoire, mesure ce que tu fais à chacun, tour après tour, et te dit où est le temps et quoi essayer à la prochaine session. Tout reste sur ton appareil : les tours sont analysés ici, rien n'est envoyé.</p>
+  <div class="row" style="margin-top:10px;align-items:flex-end">
+    <label class="f">Circuit<input type="text" id="track" placeholder="ex. Spa-Francorchamps" autocomplete="off"></label>
+    <label class="f">Voiture<input type="text" id="car" placeholder="ex. Porsche 911 RSR Gr.3" autocomplete="off"></label>
+    <div><div class="kicker" style="margin-bottom:4px">Objectif</div>
+      <div class="seg" id="target" role="group" aria-label="Nombre de tours visé">
+        <button data-n="5" aria-pressed="false">5</button><button data-n="10" aria-pressed="true">10</button><button data-n="15" aria-pressed="false">15</button><button data-n="20" aria-pressed="false">20</button>
+      </div></div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn go" id="start">▶ Lancer l'enregistrement</button>
+    <label class="btn" for="files">Charger des fichiers</label>
+    <input type="file" id="files" accept=".csv,.jsonl,.gz,.json,text/csv" multiple class="hidden">
+    <button class="btn hidden" id="resume">Reprendre la session</button>
+  </div>
+  <p class="small muted" id="connHelp" style="margin-top:8px"></p>
+  <div class="steps">
+    <div><b><span>1</span>Lance le relais</b>L'appli Android ou <code>lancer.bat</code> sur le PC, comme pour l'écran Pilote. Ouvre cette page depuis son adresse (<code>…:8777/coach.html</code>).</div>
+    <div><b><span>2</span>Roule</b>Choisis un circuit et une voiture, va en Contre-la-montre ou en Essais libres. Les tours ratés et le tour de sortie sont gardés : le rapport les utilise tous et te dit lequel était le meilleur.</div>
+    <div><b><span>3</span>Lis le rapport</b>Il apparaît après trois tours et se met à jour à chaque passage sur la ligne. L'objectif n'est qu'un repère : continue au-delà, le rapport s'affine.</div>
+  </div>
+</section>
+
+<!-- ============ enregistrement ============ -->
+<section class="panel hidden" id="rec">
+  <div class="row" style="justify-content:space-between">
+    <span class="kicker" id="recTitle">Enregistrement</span>
+    <span class="pill" id="conn2"><i></i><span></span></span>
+  </div>
+  <div class="row" style="justify-content:space-between;align-items:flex-end;margin-top:6px">
+    <div><div class="big" id="count">0 / 10</div><div class="small muted">tours complets</div></div>
+    <div style="text-align:right"><div class="big" id="curTime" style="color:var(--accent)">–</div><div class="small muted" id="curLabel">tour en cours</div></div>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+  <div class="strip" id="strip"></div>
+  <p class="small muted" id="recMsg">En attente du premier tour complet. Le tour en cours s'affiche en rouge. Le rapport apparaît tout seul après trois tours, puis se met à jour à chaque tour.</p>
+  <div class="row">
+    <button class="btn" id="pause">⏸ Pause</button>
+    <button class="btn" id="analyse">Analyser maintenant</button>
+    <button class="btn" id="dl">Télécharger les tours</button>
+    <button class="btn" id="reset">↺ Recommencer</button>
+  </div>
+</section>
+
+<!-- ============ tour de référence ============ -->
+<section class="panel" id="refPanel">
+  <span class="kicker">Se mesurer à un pilote plus rapide</span>
+  <h2 style="margin-top:4px">Tour de <em>référence</em></h2>
+  <p class="lead">GT7 envoie la télémétrie pendant un replay comme pendant que tu roules : tu peux donc enregistrer le tour d'un pilote du top 10 avec le même relais, et le rapport te compare à lui virage par virage.</p>
+  <ol class="small muted" style="padding-left:18px;margin:6px 0 10px">
+    <li>Dans GT7, ouvre le classement de l'épreuve ou du contre-la-montre que tu roules et lance le replay d'un pilote du top 10.</li>
+    <li>Touche <b>Capturer depuis un replay</b>, puis laisse tourner. La page attend que la voiture passe la ligne et enregistre le tour à partir de là.</li>
+    <li>Elle garde le tour complet le plus rapide et s'arrête seule après deux tours. Si le replay n'a qu'un tour, touche Arrêter à la fin.</li>
+  </ol>
+  <div class="row" style="align-items:flex-end">
+    <label class="f">Son nom<input type="text" id="refName" placeholder="ex. le n°1 du classement" autocomplete="off"></label>
+    <button class="btn" id="cap">⏺ Capturer depuis un replay</button>
+    <label class="btn" for="refFile">Charger un fichier</label>
+    <input type="file" id="refFile" accept=".csv,.jsonl,.gz,.json,text/csv" class="hidden">
+    <button class="btn hidden" id="refDrop">Retirer la référence</button>
+  </div>
+  <p class="small" id="refMsg" style="margin-top:8px"></p>
+</section>
+
+<!-- ============ rapport ============ -->
+<section id="report" class="hidden" style="display:flex;flex-direction:column;gap:12px">
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><span class="kicker">Rapport</span><span class="small muted" id="repSub"></span></div>
+    <h2 style="margin-top:4px">Tes <em>tours</em></h2>
+    <div class="tiles" id="tiles" style="margin-top:8px"></div>
+    <div id="empty" class="hidden" style="margin-top:10px">
+      <h3>Aucun virage trouvé dans ces tours</h3>
+      <p class="muted small">Rien dans ces données ne ressemble à un virage. Le plus souvent, les tours n'ont pas été enregistrés en piste : un menu, un replay arrêté ou une session coupée en cours. Touche Recommencer et roule quelques tours depuis la ligne.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p3d">
+    <h2>La piste <em>en trois dimensions</em></h2>
+    <p class="muted small">Ton meilleur tour en ruban, avec le relief. Fais glisser pour tourner, pince ou molette pour zoomer, touche un virage pour ses chiffres. Lecture pour voir le tour défiler.</p>
+    <div class="row" style="margin:6px 0">
+      <div class="seg" id="mode3d"><button data-m="speed" aria-pressed="true">Vitesse</button><button data-m="pedals" aria-pressed="false">Pédales</button><button data-m="relief" aria-pressed="false">Relief</button><button data-m="ref" aria-pressed="false" class="hidden" id="mRef">Écart réf.</button></div>
+      <button class="btn small" id="play">▶ Lire le tour</button>
+      <button class="btn small" id="spin">⟳ Rotation</button>
+      <button class="btn small" id="mirror" title="Inverser gauche/droite si le circuit apparaît à l'envers">⇋ Miroir</button>
+    </div>
+    <div class="track3d"><canvas id="c3d"></canvas><div class="hud" id="hud3d">0:00.000 · 0 km/h</div><div class="hint">Glisser : tourner · Pincer : zoomer · Toucher un virage</div><div class="card hidden" id="card3d"></div></div>
+    <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0" aria-label="Position dans le tour">
+  </div>
+
+  <div class="panel hidden" id="pRef">
+    <h2>Contre <em>la référence</em></h2>
+    <p class="muted small" id="refSub"></p>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Tu perds du temps</span><span><i style="background:var(--ok)"></i>Tu en gagnes</span></div>
+    <div class="chart" id="chRef"></div>
+  </div>
+
+  <div class="panel">
+    <h2>La vitesse, <em>tour par tour</em></h2>
+    <p class="muted small">Tous tes tours posés sur la même portion de piste. En bleu, ton meilleur. Là où les courbes s'écartent, tes tours diffèrent.</p>
+    <div class="legend"><span><i style="background:var(--cold)"></i>Meilleur tour</span><span><i style="background:var(--muted)"></i>Autres tours</span><span id="lgRef" class="hidden"><i style="background:var(--warn)"></i>Référence</span></div>
+    <div class="chart" id="chSpeed"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Où tes tours <em>diffèrent</em></h2>
+      <p class="muted small">Écart entre ton passage le plus rapide et le plus lent dans chaque virage. Les barres hautes sont les virages pas encore maîtrisés. En or, celui qui ouvre la plus longue ligne droite : c'est là que la vitesse de sortie vaut le plus.</p>
+      <div class="chart" id="chSpread"></div>
+    </div>
+    <div class="panel">
+      <h2>Où est <em>le temps</em></h2>
+      <p class="muted small">Ce que tu gagnerais par tour si tu refaisais à chaque fois ton meilleur passage dans ce virage, du plus rentable au moins rentable.</p>
+      <div class="chart" id="chGain"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Tour <em>contre tour</em></h2>
+    <p class="muted small">Choisis deux de tes tours et vois exactement où ils se séparent. Ils sont posés sur la même portion de piste : on compare ce que tu as fait au même endroit, pas au même instant.</p>
+    <div class="row" style="margin:6px 0">
+      <label class="small muted">Comparer <select id="lapA"></select></label>
+      <label class="small muted">avec <select id="lapB"></select></label>
+    </div>
+    <div class="legend"><span><i style="background:var(--cold)"></i><span id="lgA">A</span></span><span><i style="background:var(--warn)"></i><span id="lgB">B</span></span></div>
+    <div class="chart" id="chLapV"></div>
+    <h3 style="margin-top:10px">Écart cumulé (B par rapport à A)</h3>
+    <div class="chart" id="chLapD"></div>
+  </div>
+
+  <div class="panel">
+    <h2>À essayer <em>à la prochaine session</em></h2>
+    <p class="muted small">Classé par le temps que chaque point vaut probablement. Tout est mesuré dans ta propre télémétrie.</p>
+    <ul class="tips" id="tips"></ul>
+  </div>
+
+  <div class="panel">
+    <h2>Chaque virage freiné, <em>pédales et chiffres</em></h2>
+    <p class="muted small">Frein en bleu, accélérateur en vert, selon la distance à la corde ; ton meilleur tour en gras, les autres en pâle. Un mur vertical, c'est une attaque franche ; une pente, un freinage progressif. Si le bleu s'arrête avant la ligne de corde, tu as lâché le frein avant d'entrer dans le virage ; l'espace avant que le vert monte, c'est de la roue libre.</p>
+    <div class="corners" id="corners"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Tous <em>les tours</em></h2>
+    <div class="scroll"><table id="lapTable"></table></div>
+  </div>
+</section>
+
+<p class="foot">L'analyse tourne dans ton navigateur, les tours ne sont envoyés nulle part. Projet indépendant, sans lien avec Polyphony Digital ni Sony Interactive Entertainment.</p>
+</main>
+</div>
+<script src="coach-analyse.js"></script>
+<script src="coach.js"></script>
+</body>
+</html>
