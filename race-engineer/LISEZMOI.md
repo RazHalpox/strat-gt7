@@ -22,7 +22,7 @@ Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télé
 2. Lance une course ou un essai dans GT7 : les écrans Pilote, Complet, Stratégie et ⚙ sont les mêmes que sur le PC, avec l'ingénieur vocal.
 3. Le bouton retour ramène à l'accueil ; la réception continue. Arrête-la avec **Arrêter la réception** ou depuis la notification.
 
-**Avec un iPad en plus :** pendant que l'appli tourne, l'iPad peut ouvrir l'adresse affichée sur l'accueil de l'appli (`http://IP-DU-TÉLÉPHONE:8777/pilote.html`). Le téléphone remplace alors le PC. La stratégie est partagée : celle que tu prépares sur le téléphone apparaît sur l'iPad (et inversement), et un Plan B choisi sur un écran s'applique sur tous.
+**Avec un iPad en plus :** pendant que l'appli tourne, l'iPad peut ouvrir l'adresse affichée sur l'accueil de l'appli (`http://IP-DU-TÉLÉPHONE:8777/pilote.html`). Le téléphone remplace alors le PC. La stratégie est partagée : celle que tu prépares sur le téléphone apparaît sur l'iPad (et inversement), et un Plan B choisi sur un écran s'applique sur tous. Le carnet de courses et les mesures en course sont aussi partagés : peu importe l'écran qui affichait Pilote, tu retrouves la course partout.
 
 Le **mode démo** de l'accueil fait tourner une course simulée, pour essayer sans la PS5.
 

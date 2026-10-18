@@ -114,6 +114,8 @@ function suggest(A,S){if(!A||!S)return[];const out=[],num=v=>parseFloat(String(v
   return out}
 
 function races(){return rd(RKEY,[])}
-function removeRace(id){wr(RKEY,races().filter(r=>r.id!==id))}
+// supprimée aussi sur les autres écrans : on garde une trace de la suppression (partagée) avant d'enlever la course
+function removeRace(id){const r=races().find(x=>x.id===id),k=r&&r.laps&&r.laps.length?r.laps[0].n+":"+r.laps[0].ms:"";
+  wr("gt7-races-del",rd("gt7-races-del",[]).concat([{id,k}]).slice(-100));wr(RKEY,races().filter(x=>x.id!==id))}
 window.Learn={update,analyze,suggest,races,removeRace,lapStr};
 })();

@@ -392,7 +392,7 @@ def demo_loop():
 # --------------------------------------------------------------------------
 class SharedStore:
     """Stratégie partagée entre les écrans (téléphone, iPad, PC) : la dernière version de chaque clé gagne."""
-    KEYS = ("gt7-endu-v1", "gt7-plan", "gt7-saved", "gt7-pitack")
+    KEYS = ("gt7-endu-v1", "gt7-plan", "gt7-saved", "gt7-pitack", "gt7-races", "gt7-races-del")
 
     def __init__(self):
         self.lock = threading.Lock()

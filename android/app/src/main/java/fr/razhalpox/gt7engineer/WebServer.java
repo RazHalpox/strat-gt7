@@ -33,7 +33,7 @@ public final class WebServer {
 
     /** Stratégie partagée entre les écrans (téléphone, iPad, PC) : la dernière version de chaque clé gagne. */
     static final class Shared {
-        private static final java.util.List<String> KEYS = java.util.Arrays.asList("gt7-endu-v1", "gt7-plan", "gt7-saved", "gt7-pitack");
+        private static final java.util.List<String> KEYS = java.util.Arrays.asList("gt7-endu-v1", "gt7-plan", "gt7-saved", "gt7-pitack", "gt7-races", "gt7-races-del");
         private final java.util.Map<String, Object[]> items = new java.util.HashMap<>(); // clé -> {valeur, date, n°}
         private long seq = 0;
 

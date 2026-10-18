@@ -248,7 +248,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
       <thead><tr><th class="l">Nom</th><th class="l">Gommes · tours par relais</th><th>Course</th><th>Conso</th><th>Arrêts</th><th>Tours</th><th>Arrivée</th><th>Stand</th><th>Écart</th><th></th></tr></thead>
       <tbody id="saved"></tbody>
     </table></div>
-    <p class="note" id="savedNote">Sauvegarde la stratégie affichée pour la comparer plus tard. « Afficher » recharge ses réglages et ses gommes. Les stratégies restent enregistrées sur cet appareil, même après un Reset.</p>
+    <p class="note" id="savedNote">Sauvegarde la stratégie affichée pour la comparer plus tard. « Afficher » recharge ses réglages et ses gommes. Les stratégies sont partagées entre tes écrans (téléphone, iPad…), même après un Reset.</p>
   </section>
   <section class="panel">
     <h2>Combien de tours avec…</h2>
@@ -261,7 +261,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <section id="v-log" class="stack" hidden>
   <section class="panel">
     <h2>Carnet de courses</h2>
-    <p class="note" style="margin-top:0">Chaque course roulée avec l'écran Pilote ou Complet ouvert est enregistrée sur cet appareil (les 20 dernières). Touche une course pour voir ses relais, ses arrêts et ses tours.</p>
+    <p class="note" style="margin-top:0">Chaque course roulée avec l'écran Pilote ou Complet ouvert est enregistrée et partagée entre tes écrans (les 20 dernières). Touche une course pour voir ses relais, ses arrêts et ses tours.</p>
     <div id="log" class="stack" style="gap:8px"></div>
   </section>
   <section class="panel">
@@ -705,7 +705,9 @@ fillForm();render();renderSaved();
 // stratégie modifiée sur un autre appareil (Plan B appliqué en course, réglages changés sur le téléphone…) : on recharge
 window.addEventListener("gt7-sync",e=>{
   const sameS=()=>{try{return JSON.stringify(JSON.parse(localStorage.getItem("gt7-endu-v1")).S)===JSON.stringify(S)}catch(x){return false}};
-  if(!e.detail.keys.some(k=>k==="gt7-plan"||k==="gt7-saved"||k==="gt7-endu-v1"&&!sameS()))return; // l'onglet ouvert ailleurs ne compte pas
+  if(!e.detail.keys.some(k=>k==="gt7-plan"||k==="gt7-saved"||k==="gt7-endu-v1"&&!sameS())){ // l'onglet ouvert ailleurs ne compte pas
+    if(e.detail.keys.includes("gt7-races")&&(tab==="log"||tab==="par")&&!(document.activeElement&&/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)))render(); // carnet mis à jour par un autre écran
+    return}
   const go=()=>location.reload(),a=document.activeElement;
   if(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))a.addEventListener("blur",()=>setTimeout(go,300),{once:true});else go()});
 </script>
