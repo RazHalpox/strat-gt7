@@ -31,7 +31,8 @@ function update(s){
   let cur=rd(LKEY,null);const last=laps.length?laps[laps.length-1].n:0,now=Date.now();
   const fresh=!cur||!cur.id||(laps.length&&last<cur.lastN)||(laps.length&&laps.length<(cur.count||0)-1)||(now-(cur.lastSeen||0)>2*3600e3);
   if(fresh){if(!laps.length&&!(L.lap>=1))return;cur={id:now,lastN:last,count:laps.length,lastSeen:now,stops:[]}}
-  trackStop(L,cur);
+  const done=window.Race&&Race.finished?Race.finished(L,laps):null;
+  if(done)cur.finish=done.lap;else trackStop(L,cur); // après l'arrivée : ni arrêt, ni tour de décélération
   const changed=last!==cur.lastN||laps.length!==cur.count||fresh||(cur.stops||[]).length!==(cur.nStops||0);
   cur.lastN=last;cur.count=laps.length;cur.lastSeen=now;cur.nStops=(cur.stops||[]).length;
   if(now-(cur.saved||0)>5000||changed){cur.saved=now;wr(LKEY,cur);
@@ -40,7 +41,7 @@ function update(s){
       races.unshift({id:cur.id,date:cur.id,updated:now,fuelCap:L.fuel_cap||100,total:L.total_laps||0,
         mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,
         laps:laps.map(l=>({n:l.n,ms:l.ms,fuel:l.fuel,pit:!!l.pit,fuel_end:l.fuel_end})),
-        plan:p&&p.rows?p.rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops||[]});
+        plan:p&&p.rows?p.rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops||[],finish:cur.finish||null});
       races.sort((a,b)=>b.id-a.id);while(races.length>MAXR)races.pop();
       if(!wr(RKEY,races)){races.length=Math.max(1,races.length-5);wr(RKEY,races)}}}
 }
@@ -49,7 +50,7 @@ function update(s){
 function compOf(rows,lap){const r=(rows||[]).find(x=>lap>=x.from&&lap<=x.to);return r&&["S","M","H"].includes(r.g)?r.g:null}
 function analyze(race){
   if(!race||!race.laps||!race.laps.length)return null;
-  const laps=race.laps,byN={};laps.forEach(l=>byN[l.n]=l);
+  const laps=race.finish?race.laps.filter(l=>l.n<=race.finish):race.laps,byN={};laps.forEach(l=>byN[l.n]=l);
   const pits=new Set(laps.filter(l=>l.pit).map(l=>l.n));
   // tours représentatifs : pas le tour 1, ni un tour avec arrêt, ni le tour de sortie, ni un tour raté
   const isClean=l=>l.ms>0&&l.n>1&&!l.pit&&!pits.has(l.n-1);

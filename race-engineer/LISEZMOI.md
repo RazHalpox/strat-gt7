@@ -108,6 +108,8 @@ Sur Pilote et sur Complet, le bouton **Plan B** recalcule la fin de la course si
 
 **Automatique dans la voie des stands :** quand tu entres dans la voie des stands à un tour qui n'est pas un arrêt prévu, l'appli le reconnaît au limiteur (vitesse figée), ouvre le Plan B toute seule et l'ingénieur annonce le meilleur choix. Il ne reste qu'à toucher l'option. Tu peux couper ce déclenchement automatique dans ⚙ Réglages › Arrêts › **Plan B automatique** (le bouton Plan B reste utilisable).
 
+**Départ et arrivée :** rien ne se déclenche avant ton premier tour bouclé. À l'arrivée, l'appli détecte le drapeau à damier (course aux tours : le nombre de tours ; course à la durée : la durée réglée dans Stratégie, donc garde-la juste) : le bandeau passe en « Course terminée », l'ingénieur l'annonce une fois, et il n'y a plus d'alerte carburant ni de Plan B pendant le tour de décélération. La course suivante repart de zéro toute seule.
+
 En dernier recours, si un arrêt hors plan est passé inaperçu, l'appli demande ensuite quelle gomme tu as montée et recalcule la suite.
 
 Le calcul prend quelques millisecondes et utilise tes temps au tour et la vie des gommes de Stratégie › Paramètres, avec ta conso réelle. Tant que tu ne touches à rien dans Stratégie, le Plan B reste actif ; le bouton « Revenir au plan » de Stratégie le remplace par le plan d'origine.

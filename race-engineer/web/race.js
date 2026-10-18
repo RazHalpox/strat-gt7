@@ -44,8 +44,21 @@ function finishLap(L,laps){
   const pr=predict(L,laps);if(pr)return pr.finalLap;
   const p=plan();return p&&p.rows&&p.rows.length?p.rows[p.rows.length-1].to:NaN}
 
+/* Course terminée ?
+   - course aux tours : le compteur dépasse le nombre de tours ;
+   - course à la durée : la somme des tours bouclés atteint la durée de la course (réglée dans Stratégie),
+     et un nouveau tour a commencé (le tour de décélération, où le jeu conduit tout seul).
+   Renvoie {lap} = dernier tour de course, ou null. La course suivante repart du tour 1 : tout redémarre. */
+function finished(L,laps){
+  if(!L||!fin(L.lap)||L.lap<1)return null;
+  if(L.total_laps>0)return L.lap>L.total_laps?{lap:L.total_laps}:null;
+  const P=strat();
+  if(!P||P.mode!=="time"||!(P.T>0)||!laps||!laps.length||laps[0].n>1)return null; // il faut toute la course depuis le tour 1
+  let t=0;for(const l of laps){if(l.ms>0)t+=l.ms/1000;if(t>=P.T-1)return L.lap>l.n?{lap:l.n}:null}
+  return null}
+
 // conso maximale (L/tour) pour tenir lapsTo tours avec l'essence actuelle
 function target(fuel,lapsTo){return fin(fuel)&&lapsTo>0?fuel/lapsTo:NaN}
 
-window.Race={strat,pace,cleanPace,predict,finishLap,target};
+window.Race={strat,pace,cleanPace,predict,finishLap,target,finished};
 })();

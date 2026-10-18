@@ -86,6 +86,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .stop{border-radius:6px;padding:8px 12px;background:var(--panel-2);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:2px 10px;font:600 18px var(--f-display);text-transform:uppercase;letter-spacing:.04em}
 .stop small{font-size:14px;color:var(--muted);letter-spacing:.04em}
 .stop.warn{background:var(--warn);color:#07090c}.stop.warn small{color:#07090c}
+.stop.done{background:rgba(61,220,132,.16);color:var(--ok)}.stop.done small{color:var(--fg)}
 .stop.crit{background:var(--accent);color:#fff;animation:pulse 1s steps(2,end) infinite}.stop.crit small{color:#fff}
 @keyframes pulse{50%{background:#8f1220}}
 @media (prefers-reduced-motion:reduce){.stop.crit{animation:none}}
@@ -386,7 +387,14 @@ function engineer(laps,live,lapsLeft,nx){
   // premier contact : message de liaison, sans relire les tours déjà faits
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
     const L=live||{};radio(`Liaison radio établie.${L.lap?` Tour ${L.lap} en cours.`:""}${fin(lapsLeft)?` Carburant pour ${Math.floor(lapsLeft)} tours.`:""}`);return}
-  if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;lastSpokenLap=last.n;
+  if(!laps.length)return;
+  // drapeau à damier : annoncé une fois, puis l'ingénieur se tait jusqu'à la course suivante
+  const dn=Race.finished(live||{},laps);
+  if(dn){if(engineer._done!==dn.lap){engineer._done=dn.lap;const b=Math.min(...laps.filter(l=>l.ms>0&&l.n<=dn.lap).map(l=>l.ms));
+      say(`Drapeau à damier, course terminée${live&&live.pos>0?`, position ${live.pos}`:""}. Meilleur tour ${sayLap(b)}. Bravo.`)}
+    lastSpokenLap=laps[laps.length-1].n;return}
+  engineer._done=null;
+  const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;lastSpokenLap=last.n;
   const O=opts(),best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   let t=O.voiceLapTime?`Tour ${last.n}, ${sayLap(last.ms)}.`:"",alert=false;
   if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
@@ -467,7 +475,10 @@ function render(s){
     tgt:Race.target(L.fuel,lapsTo),cons,endLap:nx&&!nx.done?nx.endLap:finishLap}:null;
   // conso à viser : faisable si l'économie demandée reste raisonnable (≤ 12 %)
   const tgtTxt=fuelShort&&fin(fuelShort.tgt)?(fuelShort.tgt>=cons*0.88?`Vise ${PC(fuelShort.tgt)} %/t (−${PC(cons-fuelShort.tgt)}) jusqu'au T${fuelShort.endLap}`:`Économie trop forte (${PC(fuelShort.tgt)} %/t) : rentre plus tôt`):"";
-  if(O.fuelSafety&&fin(left)&&left<1.5&&(fuelShort||!nx)&&!(nx&&!nx.done&&nx.inLaps===0)){stop.className="stop crit";$("stopTitle").textContent="Box box · carburant critique";$("stopText").textContent="Rentre au stand ce tour-ci"}
+  // course terminée (drapeau à damier) : plus d'alerte carburant ni d'arrêt
+  const done=Race.finished(L,laps);if(done)fuelShort=null;
+  if(done){stop.className="stop done";$("stopTitle").textContent=`Course terminée · T${done.lap}`;$("stopText").textContent="Drapeau à damier"+(L.pos>0?` · P${L.pos}${L.cars>0?"/"+L.cars:""}`:"")}
+  else if(O.fuelSafety&&fin(left)&&left<1.5&&(fuelShort||!nx)&&!(nx&&!nx.done&&nx.inLaps===0)){stop.className="stop crit";$("stopTitle").textContent="Box box · carburant critique";$("stopText").textContent="Rentre au stand ce tour-ci"}
   else if(nx&&!nx.done){const txt=stopTxt(nx);
     if(nx.inLaps===0){stop.className="stop crit";$("stopTitle").textContent="Box box · ce tour-ci";$("stopText").textContent=txt}
     else if(fuelShort){stop.className="stop crit";$("stopTitle").textContent=`Essence courte · ${f1(left)} tours`;$("stopText").textContent=`${tgtTxt} · ${txt}`}
@@ -503,7 +514,8 @@ function render(s){
   $("boost").textContent=fin(L.boost)&&L.boost>-0.95?(L.boost>=0?"+":"")+f1(L.boost):"–";
 
   // chronos
-  {const fr=$("finRow");if(pred){fr.hidden=false;$("finLap").textContent="T"+pred.finalLap;
+  {const fr=$("finRow"),dn=Race.finished(L,laps);if(dn){fr.hidden=false;$("finLbl").textContent="Arrivée";$("finLap").textContent="T"+dn.lap+" ✓";$("finLap").className="ok"}
+    else if(pred){fr.hidden=false;$("finLap").textContent="T"+pred.finalLap;
       $("finLbl").textContent=pred.over<10?`Arrivée · +1 tour à ${Math.max(0,Math.round(pred.over))} s`:pred.under<10?`Arrivée · −1 tour à ${Math.max(0,Math.round(pred.under))} s`:"Arrivée prévue";
       $("finLap").className=pred.over<10||pred.under<10?"wrn":""}
     else if(L.total_laps>0){fr.hidden=false;$("finLbl").textContent="Arrivée";$("finLap").textContent="T"+L.total_laps;$("finLap").className=""}

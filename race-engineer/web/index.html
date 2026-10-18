@@ -328,7 +328,14 @@ function engineer(laps,live,lapsLeft){
   // premier contact : message de liaison, sans relire les tours déjà faits
   if(lastSpokenLap===null){lastSpokenLap=laps.length?laps[laps.length-1].n:0;
     const L=live||{};radio(`Liaison radio établie.${L.lap?` Tour ${L.lap} en cours.`:""}${fin(lapsLeft)?` Carburant pour ${Math.floor(lapsLeft)} tours.`:""}`);return}
-  if(!laps.length)return;const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;lastSpokenLap=last.n;
+  if(!laps.length)return;
+  // drapeau à damier : annoncé une fois, puis l'ingénieur se tait jusqu'à la course suivante
+  const dn=Race.finished(live||{},laps);
+  if(dn){if(engineer._done!==dn.lap){engineer._done=dn.lap;const b=Math.min(...laps.filter(l=>l.ms>0&&l.n<=dn.lap).map(l=>l.ms));
+      const t=`Drapeau à damier, course terminée${live&&live.pos>0?`, position ${live.pos}`:""}. Meilleur tour ${sayLap(b)}. Bravo.`;radio(t);say(t)}
+    lastSpokenLap=laps[laps.length-1].n;return}
+  engineer._done=null;
+  const last=laps[laps.length-1];if(lastSpokenLap===last.n)return;lastSpokenLap=last.n;
   const O=opts(),best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   let t=O.voiceLapTime?`Tour ${last.n}, ${sayLap(last.ms)}.`:"";
   if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
@@ -407,7 +414,9 @@ function render(s){
   // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
   const tgt=fuelTarget(L,laps);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
   $("fuelTip").hidden=true;
-  if(tgt&&fin(cons)){const lt=tgt.endLap-L.lap+lapRem(L,laps,cons),need=lt*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos";
+  const dn=Race.finished(L,laps);
+  if(dn){$("toFinishLbl").textContent="Course";$("toFinish").textContent="Terminée";$("toFinish").className="pos"}
+  else if(tgt&&fin(cons)){const lt=tgt.endLap-L.lap+lapRem(L,laps,cons),need=lt*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos";
     // conso à viser pour tenir sans arrêt de plus
     const tg=Race.target(L.fuel,lt);
     if(need>0&&fin(tg)){$("fuelTip").hidden=false;$("fuelTip").textContent=tg>=cons*0.88?`Vise ${PC(tg)} %/t (−${PC(cons-tg)}) pour tenir jusqu'au T${tgt.endLap}`:`Il faudrait ${PC(tg)} %/t pour tenir jusqu'au T${tgt.endLap} : économie trop forte, rentre plus tôt`}}
@@ -427,7 +436,9 @@ function render(s){
   $("flags").innerHTML=[["TCS",L.tcs],["ASM",L.asm],["RUPTEUR",L.rev_limit],["PAUSE",L.paused]].map(([n,v])=>`<span class="flag${v?" on":""}">${n}</span>`).join("");
   $("water").textContent=fin(L.water)?Math.round(L.water)+" °C":"–";$("oil").textContent=fin(L.oil)?Math.round(L.oil)+" °C":"–";
   {const pr=Race.predict(L,laps);
-    if(L.total_laps>0){$("totLbl").textContent="Arrivée";$("totLaps").textContent="T"+L.total_laps;$("totLaps").className=""}
+    const dn2=Race.finished(L,laps);
+    if(dn2){$("totLbl").textContent="Arrivée";$("totLaps").textContent="T"+dn2.lap+" ✓";$("totLaps").className="pos"}
+    else if(L.total_laps>0){$("totLbl").textContent="Arrivée";$("totLaps").textContent="T"+L.total_laps;$("totLaps").className=""}
     else if(pr){$("totLbl").textContent=pr.over<10?`Arrivée · +1 t à ${Math.max(0,Math.round(pr.over))} s`:pr.under<10?`Arrivée · −1 t à ${Math.max(0,Math.round(pr.under))} s`:"Arrivée prévue";
       $("totLaps").textContent="≈ T"+pr.finalLap;$("totLaps").className=pr.over<10||pr.under<10?"wrn":""}
     else{$("totLbl").textContent="Arrivée";$("totLaps").textContent="Durée";$("totLaps").className=""}}
