@@ -71,8 +71,8 @@ Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Il s'adapte à
 - **Carburant** (à gauche) : tours restants en gros, niveau en **% du réservoir** (1 décimale), jauge, conso moyenne et du dernier tour en %, bandeau du prochain arrêt de ta stratégie (gomme et carburant à remettre, recalculé en direct avec ta vraie conso), la conso de tes 10 derniers tours, et ta **conso moyenne de chaque relais** (avec sa gomme et la moyenne de la course)
 - **Alertes stand** : quelques tours avant l'arrêt (jaune), au tour du BOX BOX (rouge), ou si l'essence ne tient pas jusqu'à l'arrêt ou l'arrivée (« Essence courte »), l'alerte clignote aussi en gros au-dessus du rapport engagé.
 - **Pneus** (à droite) : gomme et relais en cours selon ta stratégie, usure du relais (tours faits / vie de la gomme), température des 4 pneus en couleur, et alertes **BLOQUE** (roue bloquée au freinage) ou **PATINE** (roue qui patine à l'accélération).
-- **Au centre** : rapport engagé, vitesse, tour, position, turbo, et tes chronos (tour en cours, dernier, meilleur).
-- En haut, la barre de régime clignote au rupteur.
+- **Au centre** : rapport engagé, vitesse, tour, position, turbo, et tes chronos (tour en cours, dernier, meilleur, arrivée prévue en course à la durée).
+- En haut, la barre de régime clignote au rupteur. Les boutons **Plan B** (arrêt imprévu) et **▦** (disposition des fenêtres) sont à côté du casque.
 
 **Attention :** SimHub et le Race Engineer utilisent le même port. Ferme SimHub avant de lancer le relais.
 

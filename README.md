@@ -1,72 +1,79 @@
-# Strat GT7 – Stratégie d'endurance pour Gran Turismo 7
+# Strat GT7 · GT7 Race Engineer V2
 
-Calculateur de stratégie pour les courses d'endurance de Gran Turismo 7. Entre ta conso, tes temps au tour et les réglages du salon : l'app compare les stratégies (nombre d'arrêts, ordre des gommes Soft / Medium / Hard) et te donne le plan de relais le plus rapide, avec le carburant à remettre à chaque arrêt.
+Un ingénieur de course pour les courses d'endurance de Gran Turismo 7. L'appli lit la télémétrie de ta PS5 en direct et te dit quand rentrer, quelle gomme monter, combien d'essence remettre, et quoi faire si la course ne se passe pas comme prévu. La stratégie se prépare avant, l'écran Pilote te guide pendant.
 
-**App :** https://razhalpox.github.io/strat-gt7/
+![Écran Pilote pendant une course](docs/pilote.jpg)
 
-Fonctionne sur iPhone, Android et ordinateur, hors ligne une fois installée. Tes réglages restent enregistrés sur ton appareil.
-
----
-
-## GT7 Race Engineer (télémétrie en direct)
-
-Le dossier [`race-engineer`](race-engineer/) contient un ingénieur de course pour GT7 : un petit programme pour PC Windows reçoit la télémétrie de la PS5 et l'affiche en direct sur ton téléphone ou ta tablette (carburant en % et tours restants, alertes stand selon ta stratégie, pneus, chronos, conso par relais, historique), avec un ingénieur vocal en français. Ta vraie conso et tes temps par gomme s'envoient en un clic dans la stratégie incluse.
-
-**Sur Android, sans PC :** installe l'appli depuis ce lien sur ton téléphone : https://github.com/RazHalpox/strat-gt7/releases/download/android/gt7-race-engineer.apk (guide : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md)).
-
-**Télécharger la version PC :** bouton vert **Code → Download ZIP** sur cette page, puis garde le dossier `race-engineer`.
-Installation pas à pas : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md).
+**Installer sur Android (sans PC) :** ouvre ce lien sur ton téléphone et installe le fichier : https://github.com/RazHalpox/strat-gt7/releases/download/android/gt7-race-engineer.apk
+L'appli se met ensuite à jour toute seule. Guide complet : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md).
 
 ---
 
-## Installer sur iPhone
+## Ce que fait l'appli
 
-1. Ouvre le lien de l'app dans **Safari**.
-2. Appuie sur **Partager**, puis **Sur l'écran d'accueil**, puis **Ajouter**.
-3. Ouvre l'app une première fois avec du réseau. Ensuite, elle marche sans connexion.
+| En course | Ce que tu vois ou entends |
+| --- | --- |
+| Carburant | Tours restants, niveau en % du réservoir, conso moyenne et du dernier tour (1 à 3 décimales), conso de chaque relais |
+| Arrêts | Bandeau « Arrêt dans 2 tours · T22 » avec la gomme et l'essence à remettre, recalculée en direct ; BOX BOX au bon tour, en gros au-dessus du rapport |
+| Essence courte | La conso à viser pour tenir jusqu'à l'arrêt : « Vise 8,3 %/t (−0,3) jusqu'au T22 », ou « rentre plus tôt » si c'est impossible |
+| Arrivée | En course à la durée, le tour d'arrivée prévu d'après ton vrai rythme, et l'alerte quand un tour de plus ou de moins se joue à quelques secondes |
+| Plan B | Accident, crevaison : la fin de course est recalculée depuis ta situation réelle. Il s'ouvre tout seul quand tu entres aux stands hors stratégie, et l'ingénieur annonce le meilleur choix |
+| Pneus | Températures en couleur, blocage au freinage et patinage, usure du relais |
+| Voix | Un ingénieur en français : temps au tour, carburant, arrêts, conso à viser, arrivée |
 
-Sur Android, ouvre le lien dans Chrome, puis **⋮ → Ajouter à l'écran d'accueil**.
+Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme, le temps perdu à chaque arrêt, la vitesse de ravitaillement. Un geste dans **Stratégie › Paramètres › Mesuré en course** et ta prochaine stratégie part de tes vrais chiffres. Chaque course est gardée dans le **Carnet** (relais, arrêts, tours, export CSV), et la télémétrie est enregistrée pour être **rejouée** sur les écrans.
+
+![Plan B après un arrêt imprévu](docs/plan-b.jpg)
+
+## Les écrans
+
+| Écran | À quoi il sert | Quand |
+| --- | --- | --- |
+| Pilote | L'essentiel en très gros, fenêtres déplaçables (bouton ▦) | Pendant la course |
+| Complet | Tout le détail, la radio de l'ingénieur, l'historique, l'envoi de ta conso vers la stratégie | En essais, ou en course pour plus d'infos |
+| Stratégie | Le meilleur plan d'arrêts, tes mesures en course, le carnet de courses | Avant et après la course |
+| ⚙ Réglages | Thème, alertes, Plan B automatique, voix, seuils carburant et pneus | Une fois, puis quand tu veux |
+
+## Trois thèmes
+
+À choisir dans ⚙ Réglages › Apparence. Les polices sont intégrées : même rendu avec ou sans internet.
+
+| Racing GT3 | Nuit d'endurance |
+| --- | --- |
+| ![Thème Racing GT3](docs/pilote-gt3.jpg) | ![Thème Nuit d'endurance](docs/pilote-nuit.jpg) |
+| Carbone, rouge course, chiffres façon écran de volant | Habitacle sombre et cadrans ambre qui n'éblouissent pas quand tu roules dans le noir (police B612, dessinée pour les cockpits) |
 
 ---
 
-## Tuto
+## Installer
 
-### 1. Régler le salon (onglet Paramètres)
-- **Type de course** : à la durée (ex. 60 min) ou au nombre de tours.
-- **Refuel rate** : la vitesse de ravitaillement du salon, en litres par seconde.
-- **Réservoir** et **carburant au départ**, en litres.
+**Android, sans PC (conseillé).** Installe l'APK avec le lien ci-dessus, tape l'adresse IP de la PS5 (Paramètres › Réseau › Afficher l'état de la connexion) et touche **Démarrer**. Téléphone et PS5 doivent être sur le même Wi-Fi.
 
-### 2. Mesurer ta conso
-En jeu, note ton carburant au début et à la fin de 3 à 5 tours lancés, sans le tour de départ. Fais ta mesure avec les réglages du salon de ta course, puis entre ces deux valeurs et le nombre de tours. L'app calcule ta conso par tour en course et le nombre de tours avec un plein.
+**iPhone ou iPad.** Ils ne peuvent pas recevoir la télémétrie eux-mêmes. Pendant que l'appli Android (ou le PC) tourne, ouvre dans Safari l'adresse affichée sur son accueil, par exemple `http://192.168.1.30:8777/pilote.html`.
 
-Avec un réservoir de 100 L, 1 % de jauge = 1 L.
+**PC Windows.** Bouton vert **Code › Download ZIP** sur cette page, garde le dossier `race-engineer`, installe Python 3 puis double-clic sur `lancer.bat`. `lancer-demo.bat` fait tourner une course simulée sans PS5, `rejouer-course.bat` rejoue la dernière course enregistrée. Pas à pas : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md).
 
-### 3. Renseigner tes gommes
-Pour Soft, Medium et Hard :
-- **Temps au tour** moyen sur un relais (pas ton meilleur tour), en m:ss.sss ou en secondes ;
-- **Vie (tours)** : nombre de tours que tu peux faire avec cette gomme dans les conditions de ta course, avant que l'usure te coûte trop de temps.
+---
 
-### 4. Régler le stand
-- **Changement de pneus uniquement** : chronomètre un tour avec un arrêt pneus seuls, puis retire ton temps au tour normal.
-- **Calcul du temps d'arrêt** :
-  - *Pneus + litres ÷ refuel rate* : le temps de l'arrêt dépend des litres remis ;
-  - *Temps fixes* : tu entres aussi un temps d'arrêt complet, utilisé dès qu'il y a de l'essence à remettre.
+## Le calculateur de stratégie seul (web)
 
-### 5. Fixer les règles
-Coche les gommes **obligatoires** et le nombre de **gommes différentes requises** (1, 2 ou 3). L'app indique le nombre d'arrêts minimum que ça impose.
+Sans télémétrie, le calculateur fonctionne aussi seul dans le navigateur : **https://razhalpox.github.io/strat-gt7/**
+Sur iPhone : ouvre-le dans Safari, **Partager › Sur l'écran d'accueil**. Sur Android : Chrome, **⋮ › Ajouter à l'écran d'accueil**. Il marche ensuite hors connexion.
 
-### 6. Lire ta stratégie (onglet Stratégie)
-- **Chiffres clés** : conso par tour, tours avec un plein, nombre d'arrêts, tours de course et heure d'arrivée.
-- **Déroulé de la course** : la frise des relais par gomme, les arrêts et la fin du chrono.
-- **Comparer les stratégies** : la meilleure option pour chaque nombre d'arrêts. Clique sur une ligne pour voir son plan.
-- **Plan de relais** : la gomme, les tours et la durée de chaque relais, et à chaque arrêt les litres à mettre, le type d'arrêt (pneus + carbu ou pneus seuls) et sa durée.
-- **Combien de tours avec…** : le nombre de tours possibles avec 100, 75, 50, 25 L ou la quantité de ton choix.
+1. **Paramètres › Réglages du salon** : course à la durée ou aux tours, refuel rate (L/s), réservoir et carburant au départ.
+2. **Consommation** : note ton carburant au début et à la fin de 3 à 5 tours lancés (100 L de réservoir : 1 % de jauge = 1 L).
+3. **Gommes** : pour Soft, Medium et Hard, ton temps au tour moyen sur un relais et la vie de la gomme en tours. Coche les gommes obligatoires.
+4. **Stand** : le temps perdu pour un arrêt pneus seuls (tour avec arrêt moins tour normal), et le calcul des arrêts avec essence (pneus + litres ÷ refuel rate, ou temps fixes).
+5. **Règles** : nombre de gommes différentes imposées. L'appli en déduit le nombre d'arrêts minimum.
+6. **Stratégie** : chiffres clés, frise des relais, comparaison des stratégies par nombre d'arrêts, plan de relais avec les litres à remettre, stratégies sauvegardées, tours possibles avec une quantité donnée.
 
-Le bouton **Reset**, en bas des Paramètres, remet les valeurs d'exemple. Il demande une confirmation.
+Les valeurs pré-remplies sont des exemples à remplacer par tes mesures. Le calcul cherche le temps total le plus court ; il ne tient pas compte du trafic ni de la météo.
 
 ---
 
 ## À savoir
-- Les valeurs pré-remplies sont des **exemples** : remplace-les par tes propres mesures.
-- L'app cherche le temps le plus court. Elle peut proposer un relais très court sur la gomme la plus lente, juste pour respecter les règles.
-- Le calcul ne prend pas en compte le trafic, la météo, la perte de rythme liée à l'usure ni le mapping carburant.
+
+- La télémétrie de GT7 ne concerne que ta voiture : ni les pneus ni la position des autres pilotes ne sont disponibles.
+- Un seul programme à la fois peut recevoir la télémétrie (ferme SimHub ou le relais PC si l'appli Android ne reçoit rien).
+- Tes réglages, ta stratégie et ton carnet restent sur l'appareil où tu les utilises.
+- Projet indépendant, sans lien avec Polyphony Digital ni Sony Interactive Entertainment. Polices sous licence SIL Open Font License (Barlow Condensed, IBM Plex Sans, JetBrains Mono, Saira Condensed, B612), licences dans `race-engineer/web/fonts`.

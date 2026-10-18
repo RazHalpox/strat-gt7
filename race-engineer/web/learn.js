@@ -87,7 +87,7 @@ function analyze(race){
     const live=(race.stops||[]).find(x=>Math.abs(x.lap-n)<=1);
     const before=byN[n-2],after=byN[n+1];
     const est=before&&fin(before.fuel_end)&&fin(after.fuel_end)&&fin(cons)?after.fuel_end-before.fuel_end+3*cons:NaN;
-    stops.push({lap:n,loss,added:live&&fin(live.added)?live.added:(fin(est)?Math.max(0,est):NaN),still:live?live.still:NaN,rate:live&&fin(live.rate)?live.rate:NaN,g:compOf(race.plan,n+1)})});
+    stops.push({lap:n,loss,added:live&&fin(live.added)?live.added:(fin(est)?Math.min(race.fuelCap||100,Math.max(0,est)):NaN),still:live?live.still:NaN,rate:live&&fin(live.rate)?live.rate:NaN,g:compOf(race.plan,n+1)})});
   const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   return{stints,comps,cons,stops,best:fin(best)?best/1000:NaN,clean:cleanAll.length,laps:laps.length}}
 
