@@ -445,6 +445,7 @@ function currentRelay(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return n
 function readStratLife(g){try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");const v=o&&o.S&&o.S[g]&&parseFloat(o.S[g].life);return v>0?v:NaN}catch(e){return NaN}}
 
 function render(s){
+  try{const L0=s.live||{};if(fin(L0.speed)&&window.__S)PlanB.pit(L0,opts())}catch(e){} // voie des stands : d'abord, sans attendre le reste
   try{Learn.update(s)}catch(e){}
   try{Rec.feed(s)}catch(e){}
   const O=opts(),L=s.live||{},laps=s.laps||[],mode=s.mode;

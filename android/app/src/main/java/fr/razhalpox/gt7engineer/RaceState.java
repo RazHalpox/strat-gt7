@@ -22,10 +22,41 @@ public final class RaceState {
     private boolean moved;       // la voiture a roulé depuis le début du tour
     private long stillSince = -1; // arrêtée depuis (arrêt au stand sans essence)
     private double minFuel = Double.NaN; // plus bas niveau de carburant du tour en cours
+    // entrée dans la voie des stands, vue ici à 60 images/s (les écrans la reçoivent dans chaque image : pit_lane)
+    private final java.util.ArrayDeque<double[]> pitBuf = new java.util.ArrayDeque<>(); // {t, vitesse, gaz, rupteur}
+    private boolean pitLane;
+
+    /** Limiteur de la voie des stands : vitesse figée (±1,2 km/h) entre 30 et 110 km/h sans freiner,
+     *  depuis 0,6 s pied au plancher (seul le limiteur empêche d'accélérer), ou depuis 1,2 s.
+     *  Même règle que planb.js. */
+    private boolean pitLaneCheck(Gt7.Frame d, long now) {
+        if (!d.onTrack || d.paused || d.loading || d.speed < 30 || d.speed > 110 || d.brake > 5) { pitBuf.clear(); return false; }
+        if (!pitBuf.isEmpty() && now < pitBuf.peekLast()[0]) pitBuf.clear();
+        boolean spin = false;
+        for (double x : d.slip) if (Math.abs(x) >= 15) spin = true;
+        boolean rev = d.revLimit || (d.rpmHi > 1000 && d.rpm >= d.rpmHi * 0.95) || spin;
+        pitBuf.addLast(new double[]{now, d.speed, d.throttle, rev ? 1 : 0});
+        while (!pitBuf.isEmpty() && now - pitBuf.peekFirst()[0] > 2500) pitBuf.pollFirst();
+        return flat(now, 600, true) || flat(now, 1200, false);
+    }
+
+    private boolean flat(long now, int w, boolean fast) {
+        double first = -1, mn = 1e9, mx = -1e9;
+        boolean allHi = true;
+        for (double[] x : pitBuf) {
+            if (now - x[0] > w) continue;
+            if (first < 0) first = x[0];
+            if (x[3] > 0) return false;
+            mn = Math.min(mn, x[1]); mx = Math.max(mx, x[1]);
+            if (x[2] < 40) allHi = false;
+        }
+        if (first < 0 || now - first < w - 150 || mx - mn > 1.2) return false;
+        return !fast || allHi;
+    }
 
     public synchronized void reset(String newMode) {
         live = null; curMs = null; laps.clear(); lastRx = 0; lap = null; prevFuel = null; pit = false;
-        moved = false; stillSince = -1; minFuel = Double.NaN;
+        moved = false; stillSince = -1; minFuel = Double.NaN; pitBuf.clear(); pitLane = false;
         mode = newMode;
     }
 
@@ -61,6 +92,7 @@ public final class RaceState {
             moved = d.speed > 30; stillSince = -1; minFuel = d.fuel;
         }
         curMs = (lapT0 > 0 && !d.paused) ? (now - lapT0) : null;
+        pitLane = pitLaneCheck(d, now);
         live = d;
     }
 
@@ -133,6 +165,7 @@ public final class RaceState {
         else {
             frameFields(b, d);
             b.append(",\"cur_ms\":").append(curMs == null ? "null" : curMs.toString());
+            b.append(",\"pit_lane\":").append(pitLane);
             b.append('}');
         }
         b.append(",\"laps\":[");

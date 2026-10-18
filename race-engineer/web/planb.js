@@ -76,15 +76,25 @@ function onBtn(){const X=ctxNow();if(!X){return}
 // Si ce tour n'est pas un arrêt prévu, le Plan B s'ouvre tout de suite et l'ingénieur annonce le meilleur choix.
 let pitBuf=[],pitAutoLap=null;
 function pitLaneCheck(L){
+  // le téléphone (ou le PC) détecte lui-même l'entrée aux stands à 60 images/s et l'envoie dans chaque image :
+  // tous les écrans réagissent en même temps, même si le Wi-Fi de l'iPad livre les images en retard ou par paquets
+  if(typeof L.pit_lane==="boolean"){if(L.pit_lane)pitLaneHit(L);return}
   // horloge : le chrono du tour (suit aussi une relecture accélérée), sinon l'heure de l'appareil
   const now=fin(L.cur_ms)?L.cur_ms:performance.now(),v=L.speed;
   if(pitBuf.length&&now<pitBuf[pitBuf.length-1].t)pitBuf=[];
   if(!fin(v)||!L.on_track||L.paused||L.loading||v<30||v>110||(L.brake||0)>5){pitBuf=[];return}
   if(pitBuf.length&&now===pitBuf[pitBuf.length-1].t)return;
-  pitBuf.push({t:now,v});pitBuf=pitBuf.filter(x=>now-x.t<=2500);
-  if(now-pitBuf[0].t<1200)return;
-  const vs=pitBuf.map(x=>x.v);if(Math.max(...vs)-Math.min(...vs)>1.2)return;
-  window.inPitLane=now;
+  const rev=!!L.rev_limit||(L.rpm_hi>1000&&L.rpm>=L.rpm_hi*0.95)||(L.slip||[]).some(x=>Math.abs(x)>=15); // rupteur ou roues qui patinent : vitesse figée aussi, mais en piste
+  pitBuf.push({t:now,v,th:L.throttle||0,rev});pitBuf=pitBuf.filter(x=>now-x.t<=2500);
+  // vitesse figée depuis 0,6 s pied au plancher : seul le limiteur empêche d'accélérer entre 30 et 110 km/h,
+  // c'est la signature la plus rapide. Sinon vitesse figée depuis 1,2 s.
+  const flat=w=>{const b=pitBuf.filter(x=>now-x.t<=w);if(!b.length||now-b[0].t<w-150)return null;
+    const vs=b.map(x=>x.v);return Math.max(...vs)-Math.min(...vs)<=1.2&&!b.some(x=>x.rev)?b:null};
+  const fast=flat(600),slow=flat(1200);
+  if(!(fast&&fast.every(x=>x.th>=40))&&!slow)return;
+  pitLaneHit(L)}
+function pitLaneHit(L){
+  window.inPitLane=fin(L.cur_ms)?L.cur_ms:performance.now();
   if(pbOpen||window.editing||pitAutoLap===L.lap||!fin(L.lap)||!(window.__S&&window.__S.laps.length))return;
   const p=Replan.readPlan();if(!p||!p.rows||!p.rows.length)return;
   const ends=p.rows.slice(0,-1).map(r=>r.to),r=p.replan,lap=L.lap;
@@ -119,5 +129,7 @@ function init(){
   b.addEventListener("click",onBtn);$("pbClose").addEventListener("click",onClose);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
-window.PlanB={tick(L,laps,cons,O){if(!$("pb"))return;if(O&&O.planBAuto===false)return;if(window.Race&&Race.finished(L,laps)){if(pbOpen&&pbOpen.auto)closePB();return}syncClose();pitLaneCheck(L);planBCheck(L,laps,cons)},open:onBtn};
+window.PlanB={tick(L,laps,cons,O){if(!$("pb"))return;if(O&&O.planBAuto===false)return;if(window.Race&&Race.finished(L,laps)){if(pbOpen&&pbOpen.auto)closePB();return}syncClose();pitLaneCheck(L);planBCheck(L,laps,cons)},open:onBtn,
+  // appelé dès l'arrivée d'une image, avant le reste de l'écran : l'entrée aux stands est vue sans délai
+  pit(L,O){if(!$("pb")||(O&&O.planBAuto===false))return;const S=window.__S;if(window.Race&&S&&Race.finished(L,S.laps))return;pitLaneCheck(L)}};
 })();

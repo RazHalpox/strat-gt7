@@ -391,6 +391,7 @@ function O_radioSync(){const r=$("radio");if(r&&!opts().radio)r.hidden=true;else
 const tyreColor=tyreColorOpt;
 let lastLapsLen=-1;
 function render(s){
+  try{const L0=s.live||{};if(fin(L0.speed)&&window.__S)PlanB.pit(L0,opts())}catch(e){} // voie des stands : d'abord, sans attendre le reste
   try{Learn.update(s)}catch(e){}
   try{Rec.feed(s)}catch(e){}
   const st=$("status"),mode=s.mode,L=s.live||{},laps=s.laps||[];

@@ -161,6 +161,32 @@ class RaceState:
         self._moved = False      # la voiture a roule depuis le debut du tour
         self._still_since = None # arretee depuis (arret au stand sans essence)
         self._min_fuel = None    # plus bas niveau de carburant du tour en cours
+        self._pit_buf = []       # entree dans la voie des stands : (t, vitesse, gaz, rupteur)
+
+    def _pit_lane(self, d, now):
+        """Limiteur de la voie des stands, vu ici a chaque image (60/s) : vitesse figee (+-1,2 km/h) entre 30 et
+        110 km/h sans freiner, depuis 0,6 s pied au plancher, ou depuis 1,2 s. Meme regle que planb.js."""
+        v = d.get("speed") or 0
+        if not d.get("on_track") or d.get("paused") or d.get("loading") or v < 30 or v > 110 or (d.get("brake") or 0) > 5:
+            self._pit_buf = []
+            return False
+        t = now * 1000
+        if self._pit_buf and t < self._pit_buf[-1][0]:
+            self._pit_buf = []
+        hi, rpm = d.get("rpm_hi") or 0, d.get("rpm") or 0
+        rev = bool(d.get("rev_limit")) or (hi > 1000 and rpm >= hi * 0.95) or any(abs(x) >= 15 for x in (d.get("slip") or []))
+        self._pit_buf.append((t, v, d.get("throttle") or 0, rev))
+        self._pit_buf = [x for x in self._pit_buf if t - x[0] <= 2500]
+
+        def flat(w, fast):
+            b = [x for x in self._pit_buf if t - x[0] <= w]
+            if not b or t - b[0][0] < w - 150 or any(x[3] for x in b):
+                return False
+            vs = [x[1] for x in b]
+            if max(vs) - min(vs) > 1.2:
+                return False
+            return not fast or all(x[2] >= 40 for x in b)
+        return flat(600, True) or flat(1200, False)
 
     def update(self, d, now=None):
         now = now or time.time()
@@ -202,7 +228,7 @@ class RaceState:
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
                 self._moved, self._still_since, self._min_fuel = spd > 30, None, fuel
             cur = int((now - self._lap_t0) * 1000) if self._lap_t0 and not d["paused"] else None
-            self.live = dict(d, cur_ms=cur)
+            self.live = dict(d, cur_ms=cur, pit_lane=self._pit_lane(d, now))
 
     def snapshot(self):
         with self.lock:
@@ -292,6 +318,8 @@ def replay_loop(path, speed):
                     continue
                 t = d.pop("t", (prev or 0) + 100)
                 d.pop("cur_ms", None)
+                d.pop("pit_lane", None)
+                d.pop("st", None)
                 d.pop("laps", None)        # enregistrements faits sur iPad : les tours sont recalcules ici
                 if prev is not None and t > prev:
                     time.sleep(min(3.0, (t - prev) / 1000.0 / max(0.1, speed)))
@@ -434,6 +462,10 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/events"):
             self.send_response(200)
+            try:
+                self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)  # chaque image part tout de suite
+            except OSError:
+                pass
             self.send_header("Content-Type", "text/event-stream")
             self.send_header("Connection", "keep-alive")
             self.end_headers()

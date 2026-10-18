@@ -148,6 +148,7 @@ public final class WebServer {
             OutputStream out = sock.getOutputStream();
             if (path.equals("/events")) {
                 sock.setSoTimeout(0);
+                sock.setTcpNoDelay(true); // chaque image part tout de suite vers l'iPad (pas de regroupement réseau)
                 out.write(("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-store\r\n"
                         + "Connection: keep-alive\r\nAccess-Control-Allow-Origin: *\r\n\r\n").getBytes(StandardCharsets.UTF_8));
                 out.flush();

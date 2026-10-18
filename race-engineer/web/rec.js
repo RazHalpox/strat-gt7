@@ -29,7 +29,7 @@ function feed(s){
     tx(["recs"],"readwrite",t=>t.objectStore("recs").put(meta())).then(prune).catch(()=>{})}
   if(now-cur.last<90&&cur.frames)return; // au plus ~10 images par seconde
   cur.last=now;cur.frames++;
-  const line=Object.assign({},s.live,{t:now-cur.start}),laps=s.laps||[],lk=laps.length+":"+(laps.length?laps[laps.length-1].n+":"+laps[laps.length-1].ms:"");
+  const line=Object.assign({},s.live,{t:now-cur.start,st:s.t}) /* st : heure d'envoi par le serveur (mesure du retard Wi-Fi) */,laps=s.laps||[],lk=laps.length+":"+(laps.length?laps[laps.length-1].n+":"+laps[laps.length-1].ms:"");
   if(lk!==lastLapKey){lastLapKey=lk;line.laps=laps;cur.laps=laps.length}
   const txt=JSON.stringify(line);buf.push(txt);bufBytes+=txt.length;
   if(now-lastFlush>5000||bufBytes>400000)flush();
