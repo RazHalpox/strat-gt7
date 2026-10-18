@@ -128,6 +128,7 @@ Les colonnes s'alignent toutes seules et les chiffres s'adaptent à la taille de
 Pendant la course, les écrans Pilote et Complet notent tout : ton rythme moyen et l'usure par gomme, le temps perdu à chaque arrêt, le carburant ajouté et la vitesse de ravitaillement réelle.
 
 - **Stratégie › Paramètres › Mesuré en course** compare tes réglages à ce qui a été mesuré (conso, temps au tour et vie de chaque gomme, temps d'arrêt, refuel rate). **Utiliser** remplace un réglage, **Tout utiliser** les prend tous. La vie d'une gomme = le nombre de tours avant de perdre 1,5 s par tour. Plus ces réglages sont justes, plus la stratégie et le Plan B le sont.
+- **Stratégie › Choix des gommes › Je choisis** : tu choisis la gomme de chaque relais et, si tu veux, son nombre de tours dans la case « t » (vide = l'appli répartit le reste au plus égal, le chiffre grisé montre sa proposition). L'appli prévient si l'essence ne tient pas, si un relais dépasse la vie de sa gomme, ou si tes tours ne collent pas à la course.
 - **Stratégie › Carnet** garde tes 20 dernières courses : relais (gomme, moyenne, usure, conso), arrêts (temps perdu, carburant ajouté) et tous les tours. **Utiliser ses mesures** prend cette course comme référence, **Exporter (CSV)** l'envoie ou la télécharge (tableur).
 
 ## Enregistrer et rejouer une course (PC)
