@@ -25,6 +25,18 @@ public final class RaceState {
     // entrée dans la voie des stands, vue ici à 60 images/s (les écrans la reçoivent dans chaque image : pit_lane)
     private final java.util.ArrayDeque<double[]> pitBuf = new java.util.ArrayDeque<>(); // {t, vitesse, gaz, rupteur}
     private boolean pitLane;
+    // entrée aux stands dans GT7 : la voiture passe d'un coup de ~200 km/h à 0 et reste figée quelques secondes
+    // (transition vers la voie des stands), alors qu'aucun freinage ne peut faire ça. Signature immédiate.
+    private double prevV = -1; private long prevT; private int prevLap = -1;
+    private long dropT = -1; private double dropX, dropZ;
+
+    private boolean teleport(Gt7.Frame d, long now) {
+        boolean ok = d.onTrack && !d.paused && !d.loading && d.lap >= 1;
+        if (ok && prevV > 40 && d.speed < 3 && now - prevT <= 250 && d.lap == prevLap) { dropT = now; dropX = d.x; dropZ = d.z; }
+        else if (dropT >= 0 && (!ok || d.speed > 3 || Math.abs(d.x - dropX) > 0.5 || Math.abs(d.z - dropZ) > 0.5 || now - dropT > 15000)) dropT = -1;
+        prevV = d.speed; prevT = now; prevLap = d.lap;
+        return dropT >= 0 && now - dropT >= 300; // figée depuis 0,3 s : ce n'est pas un choc contre un mur
+    }
 
     /** Limiteur de la voie des stands : vitesse figée (±1,2 km/h) entre 30 et 110 km/h sans freiner,
      *  depuis 0,6 s pied au plancher (seul le limiteur empêche d'accélérer), ou depuis 1,2 s.
@@ -56,7 +68,7 @@ public final class RaceState {
 
     public synchronized void reset(String newMode) {
         live = null; curMs = null; laps.clear(); lastRx = 0; lap = null; prevFuel = null; pit = false;
-        moved = false; stillSince = -1; minFuel = Double.NaN; pitBuf.clear(); pitLane = false;
+        moved = false; stillSince = -1; minFuel = Double.NaN; pitBuf.clear(); pitLane = false; prevV = -1; dropT = -1;
         mode = newMode;
     }
 
@@ -92,7 +104,8 @@ public final class RaceState {
             moved = d.speed > 30; stillSince = -1; minFuel = d.fuel;
         }
         curMs = (lapT0 > 0 && !d.paused) ? (now - lapT0) : null;
-        pitLane = pitLaneCheck(d, now);
+        boolean tp = teleport(d, now);
+        pitLane = pitLaneCheck(d, now) || tp;
         live = d;
     }
 

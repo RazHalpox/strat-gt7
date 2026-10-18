@@ -74,13 +74,19 @@ function onBtn(){const X=ctxNow();if(!X){return}
   showPB("now",X,X.fromLap-1,`Plan B · arrêt à la fin du T${X.fromLap-1}`,`Si tu rentres à la fin de ce tour : la meilleure option pour chaque gomme, pour la suite de la course.`)}
 // entrée dans la voie des stands : le limiteur fige la vitesse (±1 km/h, entre 30 et 110 km/h) sans freiner.
 // Si ce tour n'est pas un arrêt prévu, le Plan B s'ouvre tout de suite et l'ingénieur annonce le meilleur choix.
-let pitBuf=[],pitAutoLap=null;
+let pitBuf=[],pitAutoLap=null,tpPrev=null,tpDrop=null;
 function pitLaneCheck(L){
   // le téléphone (ou le PC) détecte lui-même l'entrée aux stands à 60 images/s et l'envoie dans chaque image :
   // tous les écrans réagissent en même temps, même si le Wi-Fi de l'iPad livre les images en retard ou par paquets
   if(typeof L.pit_lane==="boolean"){if(L.pit_lane)pitLaneHit(L);return}
   // horloge : le chrono du tour (suit aussi une relecture accélérée), sinon l'heure de l'appareil
   const now=fin(L.cur_ms)?L.cur_ms:performance.now(),v=L.speed;
+  // entrée aux stands dans GT7 : de ~200 km/h à 0 d'un coup, voiture figée (transition vers la voie des stands)
+  {const ok=L.on_track&&!L.paused&&!L.loading&&L.lap>=1,p=tpPrev;
+   if(ok&&p&&p.v>40&&v<3&&Math.abs(now-p.t)<=250&&L.lap===p.lap)tpDrop={t:now,x:L.x,z:L.z};
+   else if(tpDrop&&(!ok||v>3||Math.abs(L.x-tpDrop.x)>0.5||Math.abs(L.z-tpDrop.z)>0.5||now-tpDrop.t>15000||now<tpDrop.t))tpDrop=null;
+   tpPrev={t:now,v,lap:L.lap};
+   if(tpDrop&&now-tpDrop.t>=300){pitLaneHit(L);return}}
   if(pitBuf.length&&now<pitBuf[pitBuf.length-1].t)pitBuf=[];
   if(!fin(v)||!L.on_track||L.paused||L.loading||v<30||v>110||(L.brake||0)>5){pitBuf=[];return}
   if(pitBuf.length&&now===pitBuf[pitBuf.length-1].t)return;
@@ -95,7 +101,7 @@ function pitLaneCheck(L){
   pitLaneHit(L)}
 function pitLaneHit(L){
   window.inPitLane=fin(L.cur_ms)?L.cur_ms:performance.now();
-  if(pbOpen||window.editing||pitAutoLap===L.lap||!fin(L.lap)||!(window.__S&&window.__S.laps.length))return;
+  if(pbOpen||window.editing||pitAutoLap===L.lap||!fin(L.lap)||L.lap<1||!window.__S)return;
   const p=Replan.readPlan();if(!p||!p.rows||!p.rows.length)return;
   const ends=p.rows.slice(0,-1).map(r=>r.to),r=p.replan,lap=L.lap;
   if(ends.includes(lap)||ends.includes(lap-1)||(r&&(r.at===lap||r.at===lap-1)))return; // arrêt prévu : rien à faire

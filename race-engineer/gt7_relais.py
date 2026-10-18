@@ -162,6 +162,22 @@ class RaceState:
         self._still_since = None # arretee depuis (arret au stand sans essence)
         self._min_fuel = None    # plus bas niveau de carburant du tour en cours
         self._pit_buf = []       # entree dans la voie des stands : (t, vitesse, gaz, rupteur)
+        self._prev = None        # (t, vitesse, tour) de l'image precedente
+        self._drop = None        # (t, x, z) : voiture figee d'un coup (transition vers la voie des stands)
+
+    def _teleport(self, d, now):
+        """Entree aux stands dans GT7 : la voiture passe d'un coup de ~200 km/h a 0 et reste figee quelques secondes
+        (transition vers la voie des stands), ce qu'aucun freinage ne peut faire. Signature immediate."""
+        v = d.get("speed") or 0
+        ok = d.get("on_track") and not d.get("paused") and not d.get("loading") and (d.get("lap") or 0) >= 1
+        p = self._prev
+        if ok and p and p[1] > 40 and v < 3 and now - p[0] <= 0.25 and d.get("lap") == p[2]:
+            self._drop = (now, d.get("x"), d.get("z"))
+        elif self._drop and (not ok or v > 3 or abs((d.get("x") or 0) - (self._drop[1] or 0)) > 0.5
+                             or abs((d.get("z") or 0) - (self._drop[2] or 0)) > 0.5 or now - self._drop[0] > 15):
+            self._drop = None
+        self._prev = (now, v, d.get("lap"))
+        return bool(self._drop) and now - self._drop[0] >= 0.3   # figee depuis 0,3 s : pas un choc contre un mur
 
     def _pit_lane(self, d, now):
         """Limiteur de la voie des stands, vu ici a chaque image (60/s) : vitesse figee (+-1,2 km/h) entre 30 et
@@ -228,7 +244,8 @@ class RaceState:
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
                 self._moved, self._still_since, self._min_fuel = spd > 30, None, fuel
             cur = int((now - self._lap_t0) * 1000) if self._lap_t0 and not d["paused"] else None
-            self.live = dict(d, cur_ms=cur, pit_lane=self._pit_lane(d, now))
+            tp = self._teleport(d, now)
+            self.live = dict(d, cur_ms=cur, pit_lane=self._pit_lane(d, now) or tp)
 
     def snapshot(self):
         with self.lock:
