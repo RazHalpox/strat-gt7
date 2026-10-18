@@ -21,7 +21,7 @@ L'appli se met ensuite à jour toute seule. Guide complet : [race-engineer/LISEZ
 | Pneus | Températures en couleur, blocage au freinage et patinage, usure du relais |
 | Voix | Un ingénieur en français : temps au tour, carburant, arrêts, conso à viser, arrivée |
 
-Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme, le temps perdu à chaque arrêt, la vitesse de ravitaillement. Un geste dans **Stratégie › Paramètres › Mesuré en course** et ta prochaine stratégie part de tes vrais chiffres. Chaque course est gardée dans le **Carnet** (relais, arrêts, tours, export CSV), et la télémétrie est enregistrée pour être **rejouée** sur les écrans.
+Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme, le temps perdu à chaque arrêt, la vitesse de ravitaillement. Un geste dans **Stratégie › Paramètres › Mesuré en course** et ta prochaine stratégie part de tes vrais chiffres. Chaque course est gardée dans le **Carnet** (relais, arrêts, tours, export CSV), et la télémétrie est enregistrée, sur le téléphone comme sur l'iPad qui affiche les écrans, pour être **rejouée** ou exportée.
 
 ![Plan B après un arrêt imprévu](docs/plan-b.jpg)
 

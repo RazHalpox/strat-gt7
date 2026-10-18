@@ -114,6 +114,8 @@ tr.pit td{background:var(--accent-soft);font-size:13px}
 .race .rd{padding:0 12px 12px;display:flex;flex-direction:column;gap:10px}
 .race .rd h3{margin:6px 0 0;font:600 13px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .race.sel{border-color:var(--accent)}
+.race .rh{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;padding:10px 12px;font-size:14px}
+a.mini{text-decoration:none;display:inline-flex;align-items:center}
 .saveline input{flex:1;min-width:200px}
 .sv-acts{display:flex;gap:6px;justify-content:flex-end}
 .sv-sub{display:block;font:400 12px var(--f-body);color:var(--muted)}
@@ -165,6 +167,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <link rel="stylesheet" href="theme-gt3.css">
 <link rel="stylesheet" href="theme-nuit.css">
 <script src="learn.js"></script>
+<script src="rec.js"></script>
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
 </head>
 <body>
@@ -256,6 +259,11 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <h2>Carnet de courses</h2>
     <p class="note" style="margin-top:0">Chaque course roulée avec l'écran Pilote ou Complet ouvert est enregistrée sur cet appareil (les 20 dernières). Touche une course pour voir ses relais, ses arrêts et ses tours.</p>
     <div id="log" class="stack" style="gap:8px"></div>
+  </section>
+  <section class="panel">
+    <h2>Enregistrements de cet appareil</h2>
+    <p class="note" style="margin-top:0" id="recNote">La télémétrie reçue par cet écran est enregistrée pendant que Pilote ou Complet est ouvert (les 10 dernières sessions). Rejoue une course comme en direct, ou exporte-la : le fichier se rejoue aussi sur l'appli Android et sur le PC.</p>
+    <div id="recs" class="stack" style="gap:8px"></div>
   </section>
 </section>
 <section id="v-par" class="stack" hidden>
@@ -573,7 +581,29 @@ function raceCSV(r){const A=Learn.analyze(r),lines=["tour;temps;conso_L;carburan
 function exportRace(r){const name=`course-gt7-${new Date(r.date).toISOString().slice(0,16).replace(/[:T]/g,"-")}.csv`,csv=raceCSV(r);
   if(window.AndroidApp&&AndroidApp.shareText){try{AndroidApp.shareText(name,csv);return}catch(e){}}
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+// enregistrements de télémétrie gardés par ce navigateur (iPad, téléphone, PC)
+let recDel=null;
+const dur=ms=>{const m=Math.round(ms/60000);return m>=60?`${Math.floor(m/60)} h ${String(m%60).padStart(2,"0")}`:`${m} min`};
+function renderRecs(){
+  const box=$("recs");if(!window.Rec){box.innerHTML='<p class="note">Enregistrement indisponible sur ce navigateur.</p>';return}
+  if(!Rec.enabled())$("recNote").textContent="L'enregistrement sur cet appareil est coupé (⚙ Réglages › Enregistrement)."+(window.AndroidApp?" Dans l'appli Android, la télémétrie est enregistrée par l'appli elle-même : retrouve-la sur son écran d'accueil.":"");
+  Rec.list().then(rs=>{box.innerHTML="";
+    if(!rs.length){box.innerHTML='<p class="note" style="margin:0">Aucun enregistrement pour l\'instant. Ouvre Pilote ou Complet pendant une course.</p>';return}
+    rs.forEach(r=>{const d=document.createElement("div");d.className="race";
+      const live=Rec.recording===r.id;
+      d.innerHTML=`<div class="rh" style="cursor:default"><b>${new Date(r.start).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</b>
+        <span>${dur(r.end-r.start)}</span><span>${r.laps||0} tours</span><span>${(r.bytes/1048576).toFixed(1).replace(".",",")} Mo</span>${live?'<span class="tag">En cours</span>':""}</div>
+        <div class="rd"><div class="saveline" style="margin:0">
+          <a class="mini on" href="pilote.html?replay=${r.id}&speed=1">Rejouer ×1</a><a class="mini" href="pilote.html?replay=${r.id}&speed=5">×5</a><a class="mini" href="pilote.html?replay=${r.id}&speed=20">×20</a>
+          <button type="button" class="mini" data-a="exp">Exporter</button><button type="button" class="mini" data-a="del">Supprimer</button><span class="hint" data-msg></span></div></div>`;
+      d.addEventListener("click",async e=>{const b=e.target.closest("button[data-a]");if(!b)return;const msg=d.querySelector("[data-msg]");
+        if(b.dataset.a==="exp"){msg.textContent="Préparation…";try{const how=await Rec.exportFile(r);msg.textContent=how==="annulé"?"":"✓ "+how}catch(err){msg.textContent="Export impossible"}}
+        else if(b.dataset.a==="del"){if(recDel!==r.id){recDel=r.id;b.classList.add("armed");b.textContent="Confirmer";setTimeout(()=>{if(recDel===r.id){recDel=null;renderRecs()}},4000);return}
+          recDel=null;await Rec.remove(r.id);renderRecs()}});
+      box.appendChild(d)})});
+}
 function renderLog(){
+  renderRecs();
   const rs=Learn.races(),box=$("log");box.innerHTML="";
   if(!rs.length){box.innerHTML='<p class="note">Aucune course enregistrée pour l\'instant.</p>';return}
   const cur=learnRace();

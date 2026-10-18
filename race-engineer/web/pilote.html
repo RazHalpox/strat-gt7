@@ -238,6 +238,7 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 <link rel="stylesheet" href="theme-nuit.css">
 <script src="race.js"></script>
 <script src="learn.js"></script>
+<script src="rec.js"></script>
 <script src="replan.js"></script>
 <script src="planb.js"></script>
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
@@ -444,9 +445,10 @@ function readStratLife(g){try{const o=JSON.parse(localStorage.getItem("gt7-endu-
 
 function render(s){
   try{Learn.update(s)}catch(e){}
+  try{Rec.feed(s)}catch(e){}
   const O=opts(),L=s.live||{},laps=s.laps||[],mode=s.mode;
   const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"||mode==="replay"?"demo":"wait");
-  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":mode==="replay"?"Relecture":"En attente";
+  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":mode==="replay"?"Relecture"+(new URLSearchParams(location.search).get("speed")>1?" ×"+new URLSearchParams(location.search).get("speed"):""):"En attente";
   $("waitBox").hidden=mode!=="attente"||window.editing;$("grid").hidden=mode==="attente"&&!window.editing;
   if(!fin(L.fuel))return;
 
@@ -541,6 +543,11 @@ function render(s){
 }
 
 function connect(){
+  // relecture d'une course enregistrée sur cet appareil (Stratégie › Carnet › Rejouer) : pas de connexion à la PS5
+  const q=new URLSearchParams(location.search),rid=+q.get("replay");
+  if(rid&&window.Rec){const sp=+q.get("speed")||1;
+    Rec.replay(rid,sp,s=>{try{render(s)}catch(e){}},()=>{$("status").textContent="Relecture terminée"}).catch(()=>{$("status").textContent="Relecture impossible"});
+    return}
   const es=new EventSource("events");
   es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(err){}};
   es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};

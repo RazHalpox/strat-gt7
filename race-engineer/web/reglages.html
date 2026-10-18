@@ -82,6 +82,10 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div class="row"><label for="theme"><b>Thème</b><small>Racing GT3 : carbone, rouge course, chiffres façon écran de volant. Nuit d'endurance : habitacle sombre et cadrans ambre qui n'éblouissent pas la nuit. S'applique à tous les écrans de cet appareil.</small></label>
       <select id="theme"><option value="classic">Classique</option><option value="gt3">Racing GT3</option><option value="nuit">Nuit d'endurance</option></select></div>
   </section>
+  <section class="panel">
+    <h2>Enregistrement</h2>
+    <div class="row"><label for="recLocal"><b>Enregistrer les courses sur cet appareil</b><small>Garde la télémétrie reçue par cet écran (iPad, téléphone, PC) pour la rejouer ou l'exporter depuis Stratégie › Carnet. Inutile dans l'appli Android : elle enregistre déjà toute seule.</small></label><span class="sw"><input type="checkbox" id="recLocal"><i></i></span></div>
+  </section>
 
   <section class="panel">
     <h2>Arrêts (écran Pilote)</h2>
@@ -178,13 +182,13 @@ function tyreColorOpt(t) {
 const $=id=>document.getElementById(id);
 const BOOL=["fuelSafety","planBAuto","radio","voiceLapTime","voiceBest"];
 const NUM=["warnLaps","voiceFuelEvery","voiceRate","consAvg","fuelDec","fuelWarn","fuelCrit","tCold","tHot","tOver","slipPct"];
-function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]));$("theme").value=["gt3","nuit"].includes(O.theme)?O.theme:"classic";applyTheme(O.theme)}
+function fill(){const O=opts();BOOL.forEach(k=>$(k).checked=!!O[k]);NUM.forEach(k=>$(k).value=String(O[k]));$("theme").value=["gt3","nuit"].includes(O.theme)?O.theme:"classic";$("recLocal").checked=O.recLocal===undefined?!window.AndroidApp:!!O.recLocal;applyTheme(O.theme)}
 function applyTheme(v){if(v==="gt3"||v==="nuit")document.documentElement.setAttribute("data-theme",v);else document.documentElement.removeAttribute("data-theme")}
 let t;
 function store(){const O=opts();BOOL.forEach(k=>O[k]=$(k).checked);
   NUM.forEach(k=>{const v=parseFloat($(k).value);if(isFinite(v))O[k]=v});
   if(O.fuelCrit>O.fuelWarn)O.fuelCrit=O.fuelWarn;
-  O.theme=$("theme").value;applyTheme(O.theme);
+  O.theme=$("theme").value;applyTheme(O.theme);O.recLocal=$("recLocal").checked;
   const ok=saveOpts(O);$("saved").textContent=ok?"✓ Enregistré":"Enregistrement impossible sur ce navigateur";clearTimeout(t);t=setTimeout(()=>$("saved").textContent="",1800)}
 document.querySelector("main").addEventListener("change",store);
 document.querySelector("main").addEventListener("input",e=>{if(e.target.type==="number")store()});

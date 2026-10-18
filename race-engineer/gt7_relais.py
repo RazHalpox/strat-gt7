@@ -291,6 +291,7 @@ def replay_loop(path, speed):
                     continue
                 t = d.pop("t", (prev or 0) + 100)
                 d.pop("cur_ms", None)
+                d.pop("laps", None)        # enregistrements faits sur iPad : les tours sont recalcules ici
                 if prev is not None and t > prev:
                     time.sleep(min(3.0, (t - prev) / 1000.0 / max(0.1, speed)))
                 prev = t

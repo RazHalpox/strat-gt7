@@ -131,6 +131,15 @@ Pendant la course, les écrans Pilote et Complet notent tout : ton rythme moyen 
 - **Stratégie › Choix des gommes › Je choisis** : tu choisis la gomme de chaque relais et, si tu veux, son nombre de tours dans la case « t » (vide = l'appli répartit le reste au plus égal, le chiffre grisé montre sa proposition). L'appli prévient si l'essence ne tient pas, si un relais dépasse la vie de sa gomme, ou si tes tours ne collent pas à la course.
 - **Stratégie › Carnet** garde tes 20 dernières courses : relais (gomme, moyenne, usure, conso), arrêts (temps perdu, carburant ajouté) et tous les tours. **Utiliser ses mesures** prend cette course comme référence, **Exporter (CSV)** l'envoie ou la télécharge (tableur).
 
+## Enregistrer sur l'iPad (ou sur l'écran que tu regardes)
+
+L'écran qui affiche Pilote ou Complet enregistre aussi la course de son côté, même s'il ne fait que recevoir les données du téléphone Android ou du PC (environ 1 Mo par heure, les 10 dernières sessions). Retrouve-les dans **Stratégie › Carnet › Enregistrements de cet appareil** :
+- **Rejouer ×1 / ×5 / ×20** : la course repasse sur l'écran Pilote comme en direct (pastille « Relecture »), sans la PS5. Le téléphone ou le PC doit juste être allumé pour servir les écrans.
+- **Exporter** : sur iPad, le menu de partage s'ouvre (AirDrop, Fichiers, Discord, mail). Le fichier `.jsonl.gz` se rejoue aussi sur l'appli Android et sur le PC.
+- Coupe ou rallume l'enregistrement dans ⚙ Réglages › Enregistrement (coupé par défaut dans l'appli Android, qui enregistre déjà elle-même).
+
+Bon à savoir : tes réglages, ta stratégie et ces enregistrements sont liés à l'adresse ouverte sur l'iPad (par exemple `http://192.168.1.31:8777`). Si l'adresse du téléphone change, l'iPad repart à vide : donne une adresse fixe au téléphone dans ta box.
+
 ## Enregistrer et rejouer une course (PC)
 
 Le relais PC enregistre aussi chaque réception dans le dossier `enregistrements` (les 10 dernières). Double-clic sur **rejouer-course.bat** pour rejouer la dernière course sur les écrans (vitesse demandée au lancement : 1 = temps réel, 5, 20…), ou `python gt7_relais.py --replay fichier.jsonl.gz --vitesse 5`. Les enregistrements du téléphone et du PC ont le même format.
