@@ -31,6 +31,46 @@ public final class WebServer {
             + "try{Object.defineProperty(window,'speechSynthesis',{value:S,configurable:true,writable:true})}catch(e){}"
             + "})();</script>";
 
+    /** Stratégie partagée entre les écrans (téléphone, iPad, PC) : la dernière version de chaque clé gagne. */
+    static final class Shared {
+        private static final java.util.List<String> KEYS = java.util.Arrays.asList("gt7-endu-v1", "gt7-plan", "gt7-saved", "gt7-pitack");
+        private final java.util.Map<String, Object[]> items = new java.util.HashMap<>(); // clé -> {valeur, date, n°}
+        private long seq = 0;
+
+        synchronized long seq() { return seq; }
+
+        synchronized String get(long since) {
+            try {
+                org.json.JSONObject it = new org.json.JSONObject();
+                for (java.util.Map.Entry<String, Object[]> e : items.entrySet()) {
+                    Object[] v = e.getValue();
+                    if ((Long) v[2] > since) it.put(e.getKey(), new org.json.JSONObject().put("v", v[0]).put("t", (Double) v[1]));
+                }
+                return new org.json.JSONObject().put("seq", seq).put("items", it).toString();
+            } catch (org.json.JSONException e) {
+                return "{\"seq\":" + seq + ",\"items\":{}}";
+            }
+        }
+
+        synchronized boolean put(String body) {
+            try {
+                org.json.JSONObject d = new org.json.JSONObject(body);
+                String k = d.optString("k", ""), v = d.has("v") && d.get("v") instanceof String ? d.getString("v") : null;
+                double t = d.optDouble("t", Double.NaN);
+                if (!KEYS.contains(k) || v == null || Double.isNaN(t)) return false;
+                Object[] cur = items.get(k);
+                if (cur != null && (Double) cur[1] > t) return false;
+                if (cur != null && cur[0].equals(v) && (Double) cur[1] == t) return true;
+                items.put(k, new Object[]{v, t, ++seq});
+                return true;
+            } catch (org.json.JSONException e) {
+                return false;
+            }
+        }
+    }
+
+    static final Shared SHARED = new Shared();
+
     private final Files files;
     private final RaceState state;
     private volatile boolean running;
@@ -90,12 +130,19 @@ public final class WebServer {
             String line = in.readLine();
             if (line == null) return;
             String h;
-            while ((h = in.readLine()) != null && !h.isEmpty()) { /* en-têtes ignorés */ }
+            int contentLength = 0;
+            while ((h = in.readLine()) != null && !h.isEmpty()) {
+                int c2 = h.indexOf(':');
+                if (c2 > 0 && h.substring(0, c2).trim().equalsIgnoreCase("Content-Length")) {
+                    try { contentLength = Integer.parseInt(h.substring(c2 + 1).trim()); } catch (NumberFormatException ignored) {}
+                }
+            }
             String[] parts = line.split(" ");
             if (parts.length < 2) return;
             String method = parts[0];
             String path = parts[1];
             int q = path.indexOf('?');
+            String query = q >= 0 ? path.substring(q + 1) : "";
             if (q >= 0) path = path.substring(0, q);
             path = URLDecoder.decode(path, "UTF-8");
             OutputStream out = sock.getOutputStream();
@@ -109,6 +156,26 @@ public final class WebServer {
                     out.flush();
                     Thread.sleep(100);
                 }
+                return;
+            }
+            if (path.equals("/sync")) {
+                String json;
+                if ("POST".equals(method)) {
+                    boolean ok = false;
+                    if (contentLength > 0 && contentLength <= 4_000_000) {
+                        char[] buf = new char[contentLength];
+                        int got = 0, n;
+                        while (got < contentLength && (n = in.read(buf, got, contentLength - got)) > 0) got += n;
+                        byte[] raw = new String(buf, 0, got).getBytes(StandardCharsets.ISO_8859_1);
+                        ok = SHARED.put(new String(raw, StandardCharsets.UTF_8));
+                    }
+                    json = "{\"ok\":" + ok + ",\"seq\":" + SHARED.seq() + "}";
+                } else {
+                    long since = 0;
+                    for (String kv : query.split("&")) if (kv.startsWith("since=")) try { since = Long.parseLong(kv.substring(6)); } catch (NumberFormatException ignored) {}
+                    json = SHARED.get(since);
+                }
+                send(out, 200, "application/json; charset=utf-8", json.getBytes(StandardCharsets.UTF_8), method);
                 return;
             }
             if (path.equals("/") || path.isEmpty()) path = "/index.html";

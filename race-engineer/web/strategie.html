@@ -169,6 +169,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
 <link rel="stylesheet" href="theme-nuit.css">
+<script src="sync.js"></script>
 <script src="learn.js"></script>
 <script src="rec.js"></script>
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
@@ -533,8 +534,10 @@ function render(){
   $("replanNote").hidden=!keepB;
   if(keepB){$("replanNote").innerHTML=`<b>Plan B actif</b> sur les écrans de course, recalculé au T${cur.replan.at} : ${cur.rows.filter(r=>r.from>cur.replan.at).map(r=>`${CN[r.g]} T${r.from}–T${r.to}`).join(", ")}. <button type="button" class="reset" id="dropB" style="margin-left:8px">Revenir au plan ci-dessous</button>`;
     $("dropB").addEventListener("click",()=>{touched=true;render()})}
-  else try{localStorage.setItem("gt7-plan",JSON.stringify({t:Date.now(),stops:nStops(sel),rows:sel.rows.map(x=>({g:x.g,from:x.from,to:x.to,laps:x.laps,
-    stop:x.stop?{add:Math.round(x.stop.add*10)/10,full:x.stop.full}:null,eco:x.eco?Math.round(x.eco*1000)/1000:undefined}))}))}catch(e){}
+  else try{const rows=sel.rows.map(x=>({g:x.g,from:x.from,to:x.to,laps:x.laps,
+    stop:x.stop?{add:Math.round(x.stop.add*10)/10,full:x.stop.full}:null,eco:x.eco?Math.round(x.eco*1000)/1000:undefined}));
+    // réécrit seulement si le plan change (sinon deux écrans Stratégie ouverts se renverraient le plan sans fin)
+    if(!cur||cur.replan||JSON.stringify(cur.rows)!==JSON.stringify(rows))localStorage.setItem("gt7-plan",JSON.stringify({t:Date.now(),stops:nStops(sel),rows}))}catch(e){}
   const manualRow=manualR?(()=>{const r=manualR,mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
     const gap=d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:r.time>best.time+0.05?`+${f1(r.time-best.time)} s`:"–";
     return`<tr class="pick${useManual?" sel":""}" data-n="m" tabindex="0"><td>${plural(nStops(r),"arrêt")}<span class="tag" style="background:var(--fg)">Mon choix</span></td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`})():"";
@@ -699,6 +702,12 @@ $("saved").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
     delArmed=null;writeSaved(a.filter(y=>y.id!==b.dataset.del));renderSaved()}});
 
 fillForm();render();renderSaved();
+// stratégie modifiée sur un autre appareil (Plan B appliqué en course, réglages changés sur le téléphone…) : on recharge
+window.addEventListener("gt7-sync",e=>{
+  const sameS=()=>{try{return JSON.stringify(JSON.parse(localStorage.getItem("gt7-endu-v1")).S)===JSON.stringify(S)}catch(x){return false}};
+  if(!e.detail.keys.some(k=>k==="gt7-plan"||k==="gt7-saved"||k==="gt7-endu-v1"&&!sameS()))return; // l'onglet ouvert ailleurs ne compte pas
+  const go=()=>location.reload(),a=document.activeElement;
+  if(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))a.addEventListener("blur",()=>setTimeout(go,300),{once:true});else go()});
 </script>
 
 

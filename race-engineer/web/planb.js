@@ -48,7 +48,7 @@ function optLine(r,kind){const f=r.rows[0],nx=r.rows.slice(1);
   return{head,tail}}
 function showPB(kind,X,atLap,title,sub){
   const P=Replan.params(X.c);
-  pbOpen={kind,X,atLap,auto:!!pbAutoOpen};pbAutoOpen=false;$("pb").hidden=false;$("pbTitle").textContent=title;$("pbSub").textContent=sub;
+  pbOpen={kind,X,atLap,auto:!!pbAutoOpen,planT:(Replan.readPlan()||{}).t};pbAutoOpen=false;$("pb").hidden=false;$("pbTitle").textContent=title;$("pbSub").textContent=sub;
   if(!P){$("pbList").innerHTML='<div class="sub">Il manque des réglages dans Stratégie › Paramètres (temps au tour, vie des gommes, stand) pour recalculer.</div>';return}
   const kinds=kind==="after"?["S","M","H"]:[null];
   const opts=kinds.flatMap(g=>Replan.options(Object.assign({},X,{first:g,used:new Set(X.used)}),P));
@@ -94,6 +94,9 @@ function pitLaneCheck(L){
   pbAutoOpen=true;showPB("now",X,lap,`Arrêt hors plan · T${lap}`,"Tu es dans la voie des stands : choisis ce que tu montes, la suite de la course est recalculée.");
   const b=document.querySelector(".pbOpt.best b");if(b)say(`Arrêt hors plan. Conseil : ${b.textContent.replace(" · ",", ").replace("+","").replace("%"," pour cent")}.`);
 }
+// Plan B appliqué sur un autre écran (le téléphone pendant que l'iPad affiche la même question) : on ferme ici
+function syncClose(){if(!pbOpen||!pbOpen.auto)return;const p=Replan.readPlan();
+  if(p&&p.replan&&p.t!==pbOpen.planT)closePB();else if(pbOpen.kind==="after"&&acked(pbOpen.atLap))closePB()}
 function ackPit(pl){try{localStorage.setItem("gt7-pitack",JSON.stringify({pl,t:Date.now()}))}catch(e){}}
 function acked(pl){try{const a=JSON.parse(localStorage.getItem("gt7-pitack")||"null");return a&&a.pl===pl&&Date.now()-a.t<3*3600e3}catch(e){return false}}
 // arrêt hors plan détecté (accident, crevaison…) : on demande la gomme montée et on recalcule la suite
@@ -116,5 +119,5 @@ function init(){
   b.addEventListener("click",onBtn);$("pbClose").addEventListener("click",onClose);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
-window.PlanB={tick(L,laps,cons,O){if(!$("pb"))return;if(O&&O.planBAuto===false)return;if(window.Race&&Race.finished(L,laps)){if(pbOpen&&pbOpen.auto)closePB();return}pitLaneCheck(L);planBCheck(L,laps,cons)},open:onBtn};
+window.PlanB={tick(L,laps,cons,O){if(!$("pb"))return;if(O&&O.planBAuto===false)return;if(window.Race&&Race.finished(L,laps)){if(pbOpen&&pbOpen.auto)closePB();return}syncClose();pitLaneCheck(L);planBCheck(L,laps,cons)},open:onBtn};
 })();

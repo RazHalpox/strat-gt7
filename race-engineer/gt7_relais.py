@@ -26,6 +26,7 @@ import sys
 import threading
 import time
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import parse_qs, urlparse
 
 HTTP_PORT = 8777            # le dashboard s'ouvre sur http://IP-DU-PC:8777
 PS5_SEND_PORT = 33739       # port de la PS5 qui recoit le "heartbeat"
@@ -389,6 +390,36 @@ def demo_loop():
 # --------------------------------------------------------------------------
 # Serveur web : dashboard + flux en direct (Server-Sent Events)
 # --------------------------------------------------------------------------
+class SharedStore:
+    """Stratégie partagée entre les écrans (téléphone, iPad, PC) : la dernière version de chaque clé gagne."""
+    KEYS = ("gt7-endu-v1", "gt7-plan", "gt7-saved", "gt7-pitack")
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.items = {}
+        self.seq = 0
+
+    def get(self, since):
+        with self.lock:
+            return {"seq": self.seq, "items": {k: {"v": e["v"], "t": e["t"]} for k, e in self.items.items() if e["s"] > since}}
+
+    def put(self, k, v, t):
+        if k not in self.KEYS or not isinstance(v, str) or not isinstance(t, (int, float)):
+            return False
+        with self.lock:
+            cur = self.items.get(k)
+            if cur and cur["t"] > t:
+                return False
+            if cur and cur["v"] == v and cur["t"] == t:
+                return True
+            self.seq += 1
+            self.items[k] = {"v": v, "t": t, "s": self.seq}
+            return True
+
+
+SHARED = SharedStore()
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=WEB_DIR, **kw)
@@ -414,9 +445,39 @@ class Handler(SimpleHTTPRequestHandler):
                     time.sleep(0.1)
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError):
                 return
+        if urlparse(self.path).path == "/sync":
+            q = parse_qs(urlparse(self.path).query)
+            try:
+                since = int(q.get("since", ["0"])[0])
+            except ValueError:
+                since = 0
+            return self._json(SHARED.get(since))
         if self.path in ("/", ""):
             self.path = "/index.html"
         return super().do_GET()
+
+
+    def do_POST(self):
+        if urlparse(self.path).path != "/sync":
+            self.send_error(404)
+            return
+        try:
+            n = int(self.headers.get("Content-Length", "0"))
+            if n <= 0 or n > 4_000_000:
+                raise ValueError
+            d = json.loads(self.rfile.read(n).decode("utf-8"))
+            ok = SHARED.put(d.get("k"), d.get("v"), d.get("t"))
+        except (ValueError, AttributeError):
+            ok = False
+        self._json({"ok": ok, "seq": SHARED.seq})
+
+    def _json(self, obj):
+        body = json.dumps(obj, separators=(",", ":")).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
 
 class Server(ThreadingHTTPServer):

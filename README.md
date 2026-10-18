@@ -75,5 +75,5 @@ Les valeurs pré-remplies sont des exemples à remplacer par tes mesures. Le cal
 
 - La télémétrie de GT7 ne concerne que ta voiture : ni les pneus ni la position des autres pilotes ne sont disponibles.
 - Un seul programme à la fois peut recevoir la télémétrie (ferme SimHub ou le relais PC si l'appli Android ne reçoit rien).
-- Tes réglages, ta stratégie et ton carnet restent sur l'appareil où tu les utilises.
+- La stratégie et le Plan B sont partagés entre tous les écrans branchés sur le même téléphone ou PC (téléphone, iPad…). Les réglages (thème, voix) et le carnet restent sur chaque appareil.
 - Projet indépendant, sans lien avec Polyphony Digital ni Sony Interactive Entertainment. Polices sous licence SIL Open Font License (Barlow Condensed, IBM Plex Sans, JetBrains Mono, Saira Condensed, B612), licences dans `race-engineer/web/fonts`.
