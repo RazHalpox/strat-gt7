@@ -65,7 +65,7 @@ Sur iPhone : ouvre-le dans Safari, **Partager › Sur l'écran d'accueil**. Sur 
 3. **Gommes** : pour Soft, Medium et Hard, ton temps au tour moyen sur un relais et la vie de la gomme en tours. Coche les gommes obligatoires.
 4. **Stand** : le temps perdu pour un arrêt pneus seuls (tour avec arrêt moins tour normal), et le calcul des arrêts avec essence (pneus + litres ÷ refuel rate, ou temps fixes).
 5. **Règles** : nombre de gommes différentes imposées. L'appli en déduit le nombre d'arrêts minimum.
-6. **Stratégie** : chiffres clés, frise des relais, comparaison des stratégies par nombre d'arrêts, plan de relais avec les litres à remettre, stratégies sauvegardées, tours possibles avec une quantité donnée. En mode **Je choisis**, tu choisis la gomme de chaque relais et, si tu veux, son nombre de tours (case « t » ; vide = réparti automatiquement).
+6. **Stratégie** : chiffres clés, frise des relais, comparaison des stratégies par nombre d'arrêts, plan de relais avec les litres à remettre, stratégies sauvegardées, tours possibles avec une quantité donnée. En mode **Je choisis**, tu choisis la gomme de chaque relais et, si tu veux, son nombre de tours (case « t » ; vide = réparti automatiquement). Un relais plus long qu'un plein peut être validé quand même en économie d'essence : l'appli donne la conso à viser.
 
 Les valeurs pré-remplies sont des exemples à remplacer par tes mesures. Le calcul cherche le temps total le plus court ; il ne tient pas compte du trafic ni de la météo.
 

@@ -106,6 +106,9 @@ tr.pit td{background:var(--accent-soft);font-size:13px}
 .mini.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .mini.armed{background:var(--flag);border-color:var(--flag);color:#13171c}
 .note.bad{color:var(--accent)}
+.ecoNote{display:block;margin-top:6px;color:var(--fg);font-weight:600}
+.ecoBtn{margin-top:8px;padding:6px 12px;font-size:13px}
+.tag.eco{background:var(--ok-soft,#e5f4ec);color:var(--ok,#1b7a4b)}
 .saveline{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .race{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
 .race>button.rh{all:unset;box-sizing:border-box;display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;width:100%;padding:10px 12px;cursor:pointer;font-size:14px}
@@ -422,37 +425,41 @@ function bestForSeq(seq,P,bal){
   return simulate(seq,caps,lo,P,bal);
 }
 // temps et carburant d'un plan dont on connaît les tours de chaque relais (s)
-function runPlan(seq,s,P){
+function runPlan(seq,s,P,cs){
   const k=seq.length;let fuel=P.start,drive=0,pits=0,lapNo=1;const rows=[];
   for(let i=0;i<k;i++){
-    let stop=null;
-    if(i){const need=s[i]*P.c-fuel;const add=need>1e-9?Math.min(need,P.tank-fuel):0;
+    let stop=null;const c=cs&&cs[i]>0?cs[i]:P.c;
+    if(i){const need=s[i]*c-fuel;const add=need>1e-9?Math.min(need,P.tank-fuel):0;
       const t=P.stopTime(add);fuel+=add;pits+=t;stop={add,full:add>0,t}}
-    const d=s[i]*seq[i].lap;rows.push({i,g:seq[i].k,laps:s[i],from:lapNo,to:lapNo+s[i]-1,dur:d,start:drive+pits,stop});
-    lapNo+=s[i];drive+=d;fuel-=s[i]*P.c;
+    const d=s[i]*seq[i].lap;rows.push({i,g:seq[i].k,laps:s[i],from:lapNo,to:lapNo+s[i]-1,dur:d,start:drive+pits,stop,eco:c<P.c-1e-9?c:null});
+    lapNo+=s[i];drive+=d;fuel=Math.max(0,fuel-s[i]*c);
   }
   return{seq,s,rows,drive,pits,time:drive+pits,laps:s.reduce((a,b)=>a+b,0)}}
 // mode « Je choisis » avec des tours imposés : les relais sans nombre se partagent le reste au plus égal
-function fixedPlan(seq,fix,P){
+function fixedPlan(seq,fix,P,force){
   const k=seq.length,fuelCaps=seq.map((g,i)=>i?P.fuelCap(P.tank):P.fuelCap(P.start)),caps=seq.map((g,i)=>Math.min(fuelCaps[i],g.life));
-  const isFix=i=>fix[i]>0,errs=[];
-  for(let i=0;i<k;i++)if(isFix(i)&&fix[i]>fuelCaps[i])errs.push(`R${i+1} : ${fix[i]} tours, mais ${i?"un plein":"l'essence du départ"} ne tient que ${fuelCaps[i]} tours`);
-  if(errs.length)return{err:errs.join(" ; ")};
+  const isFix=i=>fix[i]>0,errs=[],cs=seq.map(()=>null),eco=[];
+  for(let i=0;i<k;i++)if(isFix(i)&&fix[i]>fuelCaps[i]){
+    errs.push(`R${i+1} : ${fix[i]} tours, mais ${i?"un plein":"l'essence du départ"} ne tient que ${fuelCaps[i]} tours`);
+    // validé quand même : tu économises (short shift, lift & coast) pour tenir les tours avec ce que tu as
+    const avail=i?P.tank:P.start;cs[i]=avail/fix[i];eco.push({i,laps:fix[i],c:cs[i],pct:P.c>0?(1-cs[i]/P.c)*100:0})}
+  if(errs.length&&!force)return{err:errs.join(" ; "),fuel:true};
+  if(eco.some(e=>!(e.c>0)))return{err:"impossible sans essence au départ"};
   const auto=seq.map((g,i)=>!isFix(i)),nAuto=auto.filter(Boolean).length,sumFix=fix.reduce((a,f,i)=>a+(isFix(i)?f:0),0);
   if(seq.some((g,i)=>auto[i]&&caps[i]<1))return null;
   const capAuto=seq.reduce((a,g,i)=>a+(auto[i]?caps[i]:0),0);
   const run=L=>{const s=seq.map((g,i)=>auto[i]?1:fix[i]);let rem=L-s.reduce((a,b)=>a+b,0);
     while(rem>0){let j=-1;for(let i=0;i<k;i++)if(auto[i]&&s[i]<caps[i]&&(j<0||s[i]<s[j]))j=i;if(j<0)break;s[j]++;rem--}
-    return runPlan(seq,s,P)};
+    return runPlan(seq,s,P,cs)};
   const lifeWarn=seq.map((g,i)=>isFix(i)&&fix[i]>g.life?`R${i+1} dépasse la vie du ${CN[g.k]} (${g.life} tours)`:null).filter(Boolean);
-  const done=r=>{if(lifeWarn.length)r.warn=(r.warn?r.warn+" ; ":"")+lifeWarn.join(" ; ");return r};
+  const done=r=>{r.eco=eco;if(lifeWarn.length)r.warn=(r.warn?r.warn+" ; ":"")+lifeWarn.join(" ; ");return r};
   if(P.mode==="laps"){
-    if(!nAuto){const r=runPlan(seq,fix.slice(0,k),P);if(r.laps!==P.L)r.warn=r.laps<P.L?`tes relais font ${r.laps} tours, il en manque ${P.L-r.laps} pour finir la course`:`tes relais font ${r.laps} tours, ${r.laps-P.L} de trop`;return done(r)}
+    if(!nAuto){const r=runPlan(seq,fix.slice(0,k),P,cs);if(r.laps!==P.L)r.warn=r.laps<P.L?`tes relais font ${r.laps} tours, il en manque ${P.L-r.laps} pour finir la course`:`tes relais font ${r.laps} tours, ${r.laps-P.L} de trop`;return done(r)}
     if(P.L<sumFix+nAuto)return{err:`les tours imposés (${sumFix}) ne laissent pas au moins 1 tour aux autres relais (course de ${P.L} tours)`};
     if(P.L>sumFix+capAuto)return{err:`les autres relais ne peuvent pas faire les ${P.L-sumFix} tours restants (carburant ou vie des gommes) : ajoute un relais ou augmente les tours imposés`};
     return done(run(P.L))}
   // course à la durée : on s'arrête au premier passage sur la ligne après la fin du chrono
-  if(!nAuto){const r=runPlan(seq,fix.slice(0,k),P);
+  if(!nAuto){const r=runPlan(seq,fix.slice(0,k),P,cs);
     if(r.time<P.T){const last=seq[k-1].lap,miss=Math.ceil((P.T-r.time)/last);r.warn=`le chrono n'est pas fini à la fin de tes relais : il manque environ ${miss} tour${miss>1?"s":""}`}
     else{let t=0,n=0;for(const x of r.rows){if(x.stop)t+=x.stop.t;for(let j=0;j<x.laps;j++){t+=seq[x.i].lap;n++;if(t>=P.T)break}if(t>=P.T)break}
       if(n<r.laps)r.warn=`la course s'arrête au T${n} : les ${r.laps-n} derniers tours prévus ne seront pas roulés`}
@@ -495,13 +502,22 @@ function render(){
   let manualR=null;
   if(S.manual){renderRelays();const seq=(S.seq||[]).map(k=>P.comps.find(c=>c.k===k)).filter(Boolean);
     const fix=(S.lapsFix||[]).slice(0,seq.length),anyFix=fix.some(f=>f>0);let fixErr=null;
-    if(anyFix&&seq.length){const fr=fixedPlan(seq,fix,P);if(fr&&fr.err){fixErr=fr.err;manualR=null}else manualR=fr}
+    let fuelErr=false;if(anyFix&&seq.length){const fr=fixedPlan(seq,fix,P,!!S.fuelSave);if(fr&&fr.err){fixErr=fr.err;fuelErr=!!fr.fuel;manualR=null}else manualR=fr}
     else manualR=seq.length?bestForSeq(seq,P,true):null;
     const warn=manualCheck(P),mn=$("manualNote");
     document.querySelectorAll("#relays input[data-fix]").forEach(inp=>{const i=+inp.dataset.fix;inp.placeholder=manualR&&!(fix[i]>0)?String(manualR.s[i]):"auto"});
-    if(fixErr){mn.className="note bad";mn.textContent="Impossible avec ces tours : "+fixErr+". En attendant, la stratégie conseillée est affichée."}
+    if(fixErr){mn.className="note bad";mn.textContent="Impossible avec ces tours : "+fixErr+". En attendant, la stratégie conseillée est affichée.";
+      if(fuelErr){const b=document.createElement("button");b.type="button";b.className="reset ecoBtn";b.textContent="Valider quand même : j'économise";
+        b.addEventListener("click",()=>{S.fuelSave=true;touched=true;save();render()});mn.append(" ",b)}
+      else if(S.fuelSave){const b=document.createElement("button");b.type="button";b.className="reset ecoBtn";b.textContent="Annuler l'économie";
+        b.addEventListener("click",()=>{S.fuelSave=false;touched=true;save();render()});mn.append(" ",b)}}
     else if(!manualR){mn.className="note bad";mn.textContent=(P.mode==="laps"&&seq.length>P.L)?"Trop de relais pour le nombre de tours de la course.":`Ces ${seq.length} relais ne suffisent pas : la vie des gommes ou le carburant ne tiennent pas assez de tours. Ajoute un relais ou change les gommes. En attendant, la stratégie conseillée est affichée.`}
-    else{mn.className="note"+(warn.length?" bad":"");mn.textContent=(warn.length?"Attention, ne respecte pas tes règles : "+warn.join(", ")+". ":"")+(anyFix?`Tours imposés sur ${fix.map((f,i)=>f>0?"R"+(i+1):null).filter(Boolean).join(", ")}${fix.filter(f=>f>0).length<seq.length?", les autres relais se partagent le reste au plus égal":""}.`+(manualR.warn?" Attention : "+manualR.warn+".":""):`Tours répartis au plus égal entre tes ${seq.length} relais. Tape un nombre dans la case « t » d'un relais pour imposer ses tours.`)}}
+    else{mn.className="note"+(warn.length?" bad":"");mn.textContent=(warn.length?"Attention, ne respecte pas tes règles : "+warn.join(", ")+". ":"")+(anyFix?`Tours imposés sur ${fix.map((f,i)=>f>0?"R"+(i+1):null).filter(Boolean).join(", ")}${fix.filter(f=>f>0).length<seq.length?", les autres relais se partagent le reste au plus égal":""}.`+(manualR.warn?" Attention : "+manualR.warn+".":""):`Tours répartis au plus égal entre tes ${seq.length} relais. Tape un nombre dans la case « t » d'un relais pour imposer ses tours.`);
+      const eco=manualR.eco||[];
+      if(eco.length){const p=document.createElement("span");p.className="ecoNote";
+        p.textContent="Validé en économie : "+eco.map(e=>`R${e.i+1} en ${e.laps} tours, vise ${f2(e.c)} L/tour au lieu de ${f2(P.c)} (−${f1(e.pct)} %)`).join(" ; ")+". L'écran Pilote te donnera la conso à viser pendant le relais."+(eco.some(e=>e.pct>12)?" C'est une grosse économie : vérifie-la en essais.":"");
+        const b=document.createElement("button");b.type="button";b.className="reset ecoBtn";b.textContent="Annuler l'économie";
+        b.addEventListener("click",()=>{S.fuelSave=false;touched=true;save();render()});mn.append(" ",p," ",b)}}}
   if(!list.length&&!manualR){al.hidden=false;al.textContent=P.mode==="laps"?"Aucune stratégie possible : vérifie la conso, le réservoir et la vie des gommes par rapport au nombre de tours.":"Aucune stratégie possible : un relais ne peut pas tenir assez de tours. Vérifie la conso, le réservoir et la vie des gommes.";clear();return}
   al.hidden=true;
   let best=list[0];for(const r of list)if(better(r,best,P))best=r;
@@ -518,7 +534,7 @@ function render(){
   if(keepB){$("replanNote").innerHTML=`<b>Plan B actif</b> sur les écrans de course, recalculé au T${cur.replan.at} : ${cur.rows.filter(r=>r.from>cur.replan.at).map(r=>`${CN[r.g]} T${r.from}–T${r.to}`).join(", ")}. <button type="button" class="reset" id="dropB" style="margin-left:8px">Revenir au plan ci-dessous</button>`;
     $("dropB").addEventListener("click",()=>{touched=true;render()})}
   else try{localStorage.setItem("gt7-plan",JSON.stringify({t:Date.now(),stops:nStops(sel),rows:sel.rows.map(x=>({g:x.g,from:x.from,to:x.to,laps:x.laps,
-    stop:x.stop?{add:Math.round(x.stop.add*10)/10,full:x.stop.full}:null}))}))}catch(e){}
+    stop:x.stop?{add:Math.round(x.stop.add*10)/10,full:x.stop.full}:null,eco:x.eco?Math.round(x.eco*1000)/1000:undefined}))}))}catch(e){}
   const manualRow=manualR?(()=>{const r=manualR,mn=Math.min(...r.s),mx=Math.max(...r.s),d=r.laps-best.laps;
     const gap=d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:r.time>best.time+0.05?`+${f1(r.time-best.time)} s`:"–";
     return`<tr class="pick${useManual?" sel":""}" data-n="m" tabindex="0"><td>${plural(nStops(r),"arrêt")}<span class="tag" style="background:var(--fg)">Mon choix</span></td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`})():"";
@@ -534,7 +550,7 @@ function render(){
   ].map(k=>`<div class="k${k[3]?" hot":""}"><small>${k[0]}</small><b>${k[1]}</b><i>${k[2]}</i></div>`).join("");
   $("planTitle").textContent=`Plan de relais · ${plural(nStops(sel),"arrêt")}`;
   $("tlTitle").textContent=`Déroulé de la course · ${plural(nStops(sel),"arrêt")}`;
-  $("plan").innerHTML=sel.rows.map(x=>`<tr><td>Relais ${x.i+1} <span class="hint">T${x.from}–T${x.to}</span></td><td class="l">${chip(x.g)} ${CN[x.g]}</td><td><b>${x.laps}</b></td><td>${clock(x.dur)}</td>
+  $("plan").innerHTML=sel.rows.map(x=>`<tr><td>Relais ${x.i+1} <span class="hint">T${x.from}–T${x.to}</span></td><td class="l">${chip(x.g)} ${CN[x.g]}${x.eco?` <span class="tag eco" title="Relais en économie d'essence">éco ${f2(x.eco)} L/t</span>`:""}</td><td><b>${x.laps}</b></td><td>${clock(x.dur)}</td>
     <td>${x.stop?(x.stop.full?`+${f0(x.stop.add)} L`:"0 L"):'<span class="hint">départ</span>'}</td>
     <td class="l">${x.stop?(x.stop.full?'<span class="tag full">Pneus + carbu</span>':'<span class="tag tyre">Pneus seuls</span>'):""}</td>
     <td>${x.stop?f1(x.stop.t)+" s":""}</td></tr>`).join("");
