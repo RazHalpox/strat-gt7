@@ -79,11 +79,15 @@ function buildPlan(opt,X,atLap){const p=readPlan()||{rows:[]};
   const past=(p.rows||[]).filter(r=>r.from<X.fromLap).map(r=>{const to=Math.min(r.to,X.fromLap-1);return{g:r.g,from:r.from,to,laps:to-r.from+1,stop:r.stop||null}});
   const rows=past.concat(opt.rows.map((r,i)=>({g:r.g,from:r.from,to:r.to,laps:r.laps,
     stop:r.stop?{add:Math.round(r.stop.add*10)/10,full:r.stop.full}:(i===0&&past.length?{add:0,full:false,done:true}:null)})));
-  return{t:Date.now(),stops:rows.length-1,rows,replan:{at:atLap,t:Date.now(),from:p.replan?p.replan.from||p.t:p.t}}}
+  // orig : le plan de départ (pour le remettre à la course suivante) ; k : la course où ce Plan B a été choisi
+  const orig=p.replan&&p.replan.orig?p.replan.orig:{t:p.t,stops:p.stops,rows:p.rows||[]};
+  return{t:Date.now(),stops:rows.length-1,rows,replan:{at:atLap,t:Date.now(),from:p.replan?p.replan.from||p.t:p.t,orig,k:raceKey()}}}
+// identifiant de la course en cours : numéro et temps du premier tour bouclé
+function raceKey(){const S=window.__S,l=S&&S.laps&&S.laps[0];return l?l.n+":"+l.ms:""}
 function apply(opt,X,atLap){const plan=buildPlan(opt,X,atLap);try{localStorage.setItem("gt7-plan",JSON.stringify(plan))}catch(e){}return plan}
 
 // gommes déjà roulées d'après le plan (relais commencés avant le tour donné)
 function usedBefore(lap){const p=readPlan(),u=new Set();(p&&p.rows||[]).forEach(r=>{if(r.from<lap&&KS.includes(r.g))u.add(r.g)});return u}
 
-window.Replan={params,options,apply,buildPlan,usedBefore,readPlan,CN:CNR};
+window.Replan={params,options,apply,buildPlan,usedBefore,readPlan,raceKey,CN:CNR};
 })();

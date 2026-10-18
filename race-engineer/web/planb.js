@@ -113,8 +113,21 @@ function pitLaneHit(L){
 // Plan B appliqué sur un autre écran (le téléphone pendant que l'iPad affiche la même question) : on ferme ici
 function syncClose(){if(!pbOpen||!pbOpen.auto)return;const p=Replan.readPlan();
   if(p&&p.replan&&p.t!==pbOpen.planT)closePB();else if(pbOpen.kind==="after"&&acked(pbOpen.atLap))closePB()}
-function ackPit(pl){try{localStorage.setItem("gt7-pitack",JSON.stringify({pl,t:Date.now()}))}catch(e){}}
-function acked(pl){try{const a=JSON.parse(localStorage.getItem("gt7-pitack")||"null");return a&&a.pl===pl&&Date.now()-a.t<3*3600e3}catch(e){return false}}
+function ackPit(pl){try{localStorage.setItem("gt7-pitack",JSON.stringify({pl,t:Date.now(),k:Replan.raceKey()}))}catch(e){}}
+function acked(pl){try{const a=JSON.parse(localStorage.getItem("gt7-pitack")||"null");return a&&a.pl===pl&&Date.now()-a.t<3*3600e3&&(!a.k||a.k===Replan.raceKey())}catch(e){return false}}
+// nouvelle course : un Plan B choisi pendant la course précédente ne compte plus, on remet le plan de départ
+// (sinon son arrêt, par exemple au T2, passerait pour un arrêt prévu et le Plan B ne s'ouvrirait plus)
+let lastLap=null,restart=false;
+function newRaceCheck(L,laps){
+  if(fin(L.lap)){if(lastLap!==null&&L.lap<lastLap){restart=true;pitAutoLap=null}lastLap=L.lap} // compteur de tours qui recule : course relancée
+  const p=Replan.readPlan(),r=p&&p.replan;if(!r){restart=false;return}if(!(L.lap>=1))return;
+  const k=laps.length?laps[0].n+":"+laps[0].ms:"";
+  const fresh=restart||(r.k&&k&&k!==r.k)||(!laps.length&&L.lap<r.at)||(!r.k&&k&&!laps.some(l=>l.n>=r.at)&&L.lap<r.at);
+  restart=false;if(!fresh)return;
+  const o=r.orig&&r.orig.rows&&r.orig.rows.length?{t:Date.now(),stops:r.orig.stops,rows:r.orig.rows}
+    :{t:Date.now(),stops:p.stops,rows:p.rows,stale:true}; // ancien Plan B sans plan de départ : on oublie au moins l'arrêt « prévu »
+  try{localStorage.setItem("gt7-plan",JSON.stringify(o))}catch(e){}
+  if(pbOpen&&pbOpen.auto)closePB()}
 // arrêt hors plan détecté (accident, crevaison…) : on demande la gomme montée et on recalcule la suite
 function planBCheck(L,laps,cons){
   if(pbOpen||window.editing)return;const p=Replan.readPlan();if(!p||!p.rows||p.rows.length<1)return;
@@ -135,7 +148,7 @@ function init(){
   b.addEventListener("click",onBtn);$("pbClose").addEventListener("click",onClose);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
-window.PlanB={tick(L,laps,cons,O){if(!$("pb"))return;if(O&&O.planBAuto===false)return;if(window.Race&&Race.finished(L,laps)){if(pbOpen&&pbOpen.auto)closePB();return}syncClose();pitLaneCheck(L);planBCheck(L,laps,cons)},open:onBtn,
+window.PlanB={tick(L,laps,cons,O){if(!$("pb"))return;if(O&&O.planBAuto===false)return;if(window.Race&&Race.finished(L,laps)){if(pbOpen&&pbOpen.auto)closePB();return}newRaceCheck(L,laps);syncClose();pitLaneCheck(L);planBCheck(L,laps,cons)},open:onBtn,
   // appelé dès l'arrivée d'une image, avant le reste de l'écran : l'entrée aux stands est vue sans délai
   pit(L,O){if(!$("pb")||(O&&O.planBAuto===false))return;const S=window.__S;if(window.Race&&S&&Race.finished(L,S.laps))return;pitLaneCheck(L)}};
 })();
