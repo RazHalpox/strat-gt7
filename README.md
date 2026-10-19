@@ -74,7 +74,7 @@ Sans télémétrie, le calculateur fonctionne aussi seul dans le navigateur : **
 Sur iPhone : ouvre-le dans Safari, **Partager › Sur l'écran d'accueil**. Sur Android : Chrome, **⋮ › Ajouter à l'écran d'accueil**. Il marche ensuite hors connexion.
 
 1. **Paramètres › Réglages du salon** : course à la durée ou aux tours, refuel rate (L/s), réservoir et carburant au départ.
-2. **Consommation** : note ton carburant au début et à la fin de 3 à 5 tours lancés (100 L de réservoir : 1 % de jauge = 1 L).
+2. **Consommation** : note ton carburant au début et à la fin de 3 à 5 tours lancés (100 L de réservoir : 1 % de jauge = 1 L), ou choisis « Je tape ma conso moyenne par tour » et entre-la directement (par exemple 7,5 L).
 3. **Gommes** : pour Soft, Medium et Hard, ton temps au tour moyen sur un relais et la vie de la gomme en tours. Coche les gommes obligatoires.
 4. **Stand** : le temps perdu pour un arrêt pneus seuls (tour avec arrêt moins tour normal), et le calcul des arrêts avec essence (pneus + litres ÷ refuel rate, ou temps fixes).
 5. **Règles** : nombre de gommes différentes imposées. L'appli en déduit le nombre d'arrêts minimum.

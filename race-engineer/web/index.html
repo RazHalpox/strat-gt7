@@ -470,7 +470,7 @@ function flash(t){$("sendMsg").textContent=t;clearTimeout(flash._t);flash._t=set
 $("sendFuel").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,c=cleanLaps(laps).slice(-n);
   if(!c.length)return flash("Il faut au moins un tour complet sans arrêt.");
   const used=c.reduce((s,l)=>s+l.fuel,0),o=readStrat();o.S=o.S||{};
-  o.S.mDeb=100;o.S.mFin=Math.round((100-used)*100)/100;o.S.mTours=c.length;
+  o.S.consMode="mesure";o.S.mDeb=100;o.S.mFin=Math.round((100-used)*100)/100;o.S.mTours=c.length;
   flash(writeStrat(o)?`Conso enregistrée : ${f2(used/c.length)} L/tour.`:"Enregistrement impossible sur ce navigateur.")});
 $("sendLap").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,t=avgLap(laps,n),k=$("comp").value;
   if(!fin(t))return flash("Il faut au moins un tour complet sans arrêt.");

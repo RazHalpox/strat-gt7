@@ -95,8 +95,8 @@ function analyze(race){
 /* ---- suggestions pour la page Stratégie ---- */
 const lapStr=sec=>{const m=Math.floor(sec/60),s=sec-m*60;return m+":"+s.toFixed(3).padStart(6,"0")};
 function suggest(A,S){if(!A||!S)return[];const out=[],num=v=>parseFloat(String(v).replace(",","."));
-  if(fin(A.cons)&&A.clean>=2)out.push({key:"cons",label:"Conso par tour",cur:fin(num(S.mDeb)-num(S.mFin))&&num(S.mTours)>0?(num(S.mDeb)-num(S.mFin))/num(S.mTours):NaN,val:A.cons,unit:"L",
-    apply:o=>{const n=Math.min(10,A.clean);o.mDeb=100;o.mFin=Math.round((100-A.cons*n)*100)/100;o.mTours=n}});
+  if(fin(A.cons)&&A.clean>=2)out.push({key:"cons",label:"Conso par tour",cur:S.consMode==="avg"?num(S.cAvg):fin(num(S.mDeb)-num(S.mFin))&&num(S.mTours)>0?(num(S.mDeb)-num(S.mFin))/num(S.mTours):NaN,val:A.cons,unit:"L",
+    apply:o=>{const n=Math.min(10,A.clean);o.consMode="mesure";o.mDeb=100;o.mFin=Math.round((100-A.cons*n)*100)/100;o.mTours=n}});
   ["S","M","H"].forEach(g=>{const c=A.comps[g];if(!c)return;const N={S:"Soft",M:"Medium",H:"Hard"}[g],x=S[g]||{};
     out.push({key:g+"-lap",label:`Temps au tour ${N}`,cur:x.lap,val:lapStr(c.avg),note:`moyenne de ${c.laps} tours`,apply:o=>{o[g]=Object.assign({},o[g]||{},{lap:lapStr(c.avg)})}});
     if(c.life)out.push({key:g+"-life",label:`Vie ${N}`,cur:x.life,val:c.life,unit:"tours",note:`perd ${(c.slope).toFixed(2).replace(".",",")} s par tour`,apply:o=>{o[g]=Object.assign({},o[g]||{},{life:c.life})}});

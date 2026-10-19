@@ -242,9 +242,11 @@ img{max-width:100%}
       <section class="panel">
         <h2>Consommation</h2>
         <div class="fields">
-          <label>Carburant au début<span class="unit"><input type="number" id="mDeb" step="0.1"><span>L</span></span></label>
-          <label>Carburant à la fin<span class="unit"><input type="number" id="mFin" step="0.1"><span>L</span></span></label>
-          <label>Tours mesurés<input type="number" id="mTours" min="1" step="1"></label>
+          <label class="full">Ma conso<select id="consMode"><option value="mesure">Je la mesure (carburant au début, à la fin, nombre de tours)</option><option value="avg">Je tape ma conso moyenne par tour</option></select></label>
+          <label id="w-cAvg" hidden>Conso moyenne<span class="unit"><input type="number" id="cAvg" min="0.01" step="0.01" inputmode="decimal"><span>L/tour</span></span><span class="hint">par exemple 7,5</span></label>
+          <label class="w-mes">Carburant au début<span class="unit"><input type="number" id="mDeb" step="0.1"><span>L</span></span></label>
+          <label class="w-mes">Carburant à la fin<span class="unit"><input type="number" id="mFin" step="0.1"><span>L</span></span></label>
+          <label class="w-mes">Tours mesurés<input type="number" id="mTours" min="1" step="1"></label>
         </div>
         <div class="out" id="consoOut"></div>
         <p class="note">Mesure sur 3 à 5 tours lancés, sans le tour de départ, avec les réglages du salon de ta course. Avec un réservoir de 100 L, 1 % de jauge = 1 L.</p>
@@ -279,7 +281,7 @@ img{max-width:100%}
 <script>
 const COMPS=[{k:"S",name:"Soft"},{k:"M",name:"Medium"},{k:"H",name:"Hard"}];
 const CN={S:"Soft",M:"Medium",H:"Hard"};
-const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,rate:4,mDeb:100,mFin:86,mTours:5,pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,manual:false,seq:[],lapsFix:[],
+const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,rate:4,mDeb:100,mFin:86,mTours:5,consMode:"mesure",cAvg:"",pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,manual:false,seq:[],lapsFix:[],
   S:{lap:"1:44.200",life:12,req:true},M:{lap:"1:45.000",life:20,req:true},H:{lap:"1:45.900",life:30,req:true}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 let S=clone(DEF),tab="strat",selN=null;
@@ -302,10 +304,13 @@ $("tyres").innerHTML=COMPS.map(c=>`<tr><td class="lbl">${chip(c.k)} ${c.name}</t
   <td><input type="text" id="${c.k}-lap" inputmode="decimal" aria-label="Temps au tour ${c.name}"></td>
   <td><input type="number" id="${c.k}-life" min="1" step="1" aria-label="Vie ${c.name} en tours"></td>
   <td class="l"><input type="checkbox" id="${c.k}-req" aria-label="${c.name} obligatoire"></td></tr>`).join("");
-const FIELDS=["mode","duree","laps","tank","start","rate","mDeb","mFin","mTours","pitMode","pitFull","pitTyre","qty","nReq"];
+const FIELDS=["mode","duree","laps","tank","start","rate","consMode","cAvg","mDeb","mFin","mTours","pitMode","pitFull","pitTyre","qty","nReq"];
 function fillForm(){FIELDS.forEach(f=>$(f).value=S[f]);COMPS.forEach(c=>{["lap","life"].forEach(f=>$(`${c.k}-${f}`).value=S[c.k][f]);$(`${c.k}-req`).checked=!!S[c.k].req})}
 document.addEventListener("input",e=>{const el=e.target,id=el.id;if(!id)return;
-  if(FIELDS.includes(id))S[id]=el.value;else{const m=id.match(/^([SMH])-(lap|life|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
+  if(FIELDS.includes(id)){S[id]=el.value;
+    // passage à « je tape ma conso » : on part de la conso mesurée
+    if(id==="consMode"&&el.value==="avg"&&!(num(S.cAvg)>0)){const c=(num(S.mDeb)-num(S.mFin))/num(S.mTours);if(c>0){S.cAvg=String(Math.round(c*100)/100);$("cAvg").value=S.cAvg}}}
+  else{const m=id.match(/^([SMH])-(lap|life|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
   selN=null;save();render()});
 let armed=false;
 $("reset").addEventListener("click",()=>{const b=$("reset");
@@ -316,8 +321,9 @@ $("reset").addEventListener("click",()=>{const b=$("reset");
 function derive(){
   const P={mode:S.mode,T:num(S.duree)*60,L:Math.floor(num(S.laps)),tank:num(S.tank),start:Math.min(num(S.start),num(S.tank)),
     rate:num(S.rate),pitMode:S.pitMode,pitFull:num(S.pitFull),pitTyre:num(S.pitTyre),nReq:+S.nReq};
-  P.c0=(num(S.mDeb)-num(S.mFin))/num(S.mTours);
-  P.c=P.c0;   // conso mesurée avec les réglages du salon de la course
+  P.cAvg=S.consMode==="avg";  // conso tapée directement, sinon mesurée (début − fin) ÷ tours
+  P.c0=P.cAvg?num(S.cAvg):(num(S.mDeb)-num(S.mFin))/num(S.mTours);
+  P.c=P.c0;   // conso avec les réglages du salon de la course
   P.comps=COMPS.map(c=>{const x=S[c.k],life=Math.floor(num(x.life));
     return{k:c.k,lap:parseLap(x.lap),req:!!x.req,life:Math.min(MAX,life),life0:life}});
   P.fuelCap=x=>P.c>0?Math.min(MAX,Math.floor(x/P.c+1e-9)):MAX;
@@ -326,7 +332,7 @@ function derive(){
   if(P.mode==="time"&&!(P.T>0))bad.push("la durée de course");
   if(P.mode==="laps"&&!(P.L>0))bad.push("le nombre de tours");
   if(!(P.tank>0)||!(num(S.start)>=0))bad.push("le réservoir et le carburant au départ");
-  if(!(P.c0>0))bad.push("la mesure de conso (carburant au début plus grand qu'à la fin, au moins 1 tour)");
+  if(!(P.c0>0))bad.push(P.cAvg?"la conso moyenne par tour":"la mesure de conso (carburant au début plus grand qu'à la fin, au moins 1 tour)");
   P.comps.forEach(c=>{if(!(c.lap>0))bad.push(`le temps au tour ${CN[c.k]}`);if(!(c.life0>=1))bad.push(`la vie ${CN[c.k]} (au moins 1 tour)`)});
   if(!(P.pitTyre>0))bad.push("le temps de changement de pneus uniquement (Stand) : il ne peut pas être à 0 s, sinon les arrêts pneus seuls deviennent gratuits");
   if(P.pitMode==="rate"&&!(P.rate>0))bad.push("le refuel rate");
@@ -420,10 +426,11 @@ function render(){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
   $("v-strat").hidden=tab!=="strat";$("v-par").hidden=tab!=="par";
   $("w-duree").hidden=S.mode!=="time";$("w-laps").hidden=S.mode!=="laps";$("w-pitFull").hidden=S.pitMode!=="fixed";
+  $("w-cAvg").hidden=S.consMode!=="avg";document.querySelectorAll(".w-mes").forEach(e=>e.hidden=S.consMode==="avg");
   const P=derive();
   $("meta").innerHTML=`<span>${P.mode==="time"?`Durée <b>${f0(num(S.duree))} min</b>`:`Course <b>${f0(P.L)} tours</b>`}</span><span>Refuel <b>${f1(P.rate)} L/s</b></span><span>Réservoir <b>${f0(P.tank)} L</b></span>`;
   // sorties de l'onglet Paramètres
-  $("consoOut").innerHTML=P.c0>0?`<span>Conso : <b>${f2(P.c)} L/tour</b></span><span>Plein de ${f0(P.tank)} L : <b>${P.c>0?Math.floor(P.tank/P.c+1e-9)+" tours":"illimité"}</b></span>`:`<span>Entre le carburant au début, à la fin et le nombre de tours.</span>`;
+  $("consoOut").innerHTML=P.c0>0?`<span>Conso : <b>${f2(P.c)} L/tour</b></span><span>Plein de ${f0(P.tank)} L : <b>${P.c>0?Math.floor(P.tank/P.c+1e-9)+" tours":"illimité"}</b></span>`:`<span>${P.cAvg?"Tape ta conso moyenne par tour, en litres.":"Entre le carburant au début, à la fin et le nombre de tours."}</span>`;
   $("pitOut").innerHTML=P.pitMode==="rate"
     ?(P.rate>0?`<span>Pneus seuls : <b>${f0(P.pitTyre)} s</b></span><span>+ 50 L : <b>${f1(P.stopTime(50))} s</b></span><span>Plein de ${f0(P.tank)} L : <b>${f1(P.stopTime(P.tank))} s</b></span>`:"<span>Entre le refuel rate dans les réglages du salon.</span>")
     :`<span>Avec carburant : <b>${f0(P.pitFull)} s</b></span><span>Pneus seuls : <b>${f0(P.pitTyre)} s</b></span><span class="hint">le refuel rate n'est pas utilisé</span>`;
@@ -476,7 +483,7 @@ function render(){
     const gap=r===best?"–":d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:`+${f1(r.time-best.time)} s`;
     return`<tr class="pick${!useManual&&n===selN?" sel":""}" data-n="${n}" tabindex="0"><td>${plural(n,"arrêt")}${r===best?'<span class="tag">Meilleure</span>':""}</td><td class="l"><span class="chips">${r.seq.map(g=>chip(g.k)).join("")}</span></td><td>${mn===mx?mn:mn+"–"+mx}</td><td><b>${r.laps}</b></td><td>${f0(r.pits)} s</td><td>${gap}</td></tr>`}).join("");
   $("kpis").innerHTML=[
-    ["Conso / tour",f2(P.c)+" L",`mesurée sur ${f0(num(S.mTours))} tours`,0],
+    ["Conso / tour",f2(P.c)+" L",P.cAvg?"moyenne tapée":`mesurée sur ${f0(num(S.mTours))} tours`,0],
     ["Tours avec un plein",P.c>0?Math.floor(P.tank/P.c+1e-9):"∞",`${f0(P.tank)} L`,0],
     ["Arrêts",nStops(sel),useManual?"mon choix de gommes":selN===nStops(best)?"stratégie conseillée":"stratégie choisie",1],
     ["Tours de course",sel.laps,P.mode==="time"?"drapeau à damier inclus":"fixés",0],

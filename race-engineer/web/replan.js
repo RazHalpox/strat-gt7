@@ -14,7 +14,7 @@ function params(c){
   const S=readS();if(!S)return null;
   const P={mode:S.mode||"time",T:num(S.duree)*60,L:Math.floor(num(S.laps)),tank:num(S.tank),rate:num(S.rate),
     pitMode:S.pitMode||"rate",pitFull:num(S.pitFull),pitTyre:num(S.pitTyre),nReq:+S.nReq||1};
-  const c0=(num(S.mDeb)-num(S.mFin))/num(S.mTours);
+  const c0=S.consMode==="avg"?num(S.cAvg):(num(S.mDeb)-num(S.mFin))/num(S.mTours);
   P.c=c>0?c:c0;
   P.comps=KS.map(k=>{const x=S[k]||{};return{k,lap:parseLap(x.lap),life:Math.floor(num(x.life)),req:!!x.req}});
   P.fuelCap=x=>P.c>0?Math.max(0,Math.floor(x/P.c+1e-9)):999;
