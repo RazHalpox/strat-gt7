@@ -192,15 +192,19 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 /* ---- taille automatique : en paysage, chaque fenêtre adapte ses chiffres à sa propre taille ---- */
 @media (orientation:landscape){
   .card{container-type:size}
-  .gear{font-size:clamp(36px,min(55cqh,52cqw),300px)}
+  /* --g : agrandissement quand des éléments de la fenêtre sont masqués (Disposition) */
+  .gear{font-size:clamp(36px,min(calc(55cqh*var(--g,1)),52cqw),300px)}
   #cCore:has(.pitAlert:not([hidden])) .gear{font-size:clamp(30px,min(39cqh,48cqw),240px)}
   .pitAlert{font-size:clamp(11px,min(6.9cqw,7cqh),36px)}
-  .speed{font-size:clamp(14px,min(10.5cqw,13cqh),64px)}
-  .coreRow{font-size:clamp(9px,min(5cqw,6cqh),26px)}
-  .big{font-size:clamp(28px,min(18.5cqh,28cqw),190px)}
-  .liters b{font-size:clamp(16px,min(10cqw,7.5cqh),56px)}
+  .speed{font-size:clamp(14px,min(calc(10.5cqw*var(--gs,1)),calc(13cqh*var(--gs,1))),calc(64px*var(--gs,1)))}
+  .coreRow{font-size:clamp(9px,min(calc(5cqw*var(--gr,1)),calc(6cqh*var(--gr,1))),calc(26px*var(--gr,1)))}
+  .card.slim{justify-content:space-evenly}
+  .big{font-size:clamp(28px,min(calc(18.5cqh*var(--g,1)),28cqw),calc(190px*var(--g,1)))}
+  .liters b{font-size:clamp(16px,min(10cqw,calc(7.5cqh*var(--g,1))),calc(56px*var(--g,1)))}
+  #cFuel .kv b{font-size:clamp(14px,min(9cqw,calc(5cqh*var(--g,1))),calc(40px*var(--g,1)))}
+  #cFuel .stop span{font-size:clamp(13px,min(6cqw,calc(3.6cqh*var(--g,1))),calc(30px*var(--g,1)))}
   .tyre .t{font-size:clamp(16px,min(14cqw,11cqh),90px)}
-  .chronos b{font-size:clamp(13px,min(9.5cqw,16cqh),60px)}
+  .chronos b{font-size:clamp(13px,min(calc(9.5cqw*min(var(--g,1),1.5)),calc(16cqh*var(--g,1))),calc(60px*min(var(--g,1),1.6)))}
   /* 4e ligne (arrivée prévue) : lignes plus serrées */
   .chronos:has(#finRow:not([hidden])){gap:min(10px,2.2cqh)}
   .chronos:has(#finRow:not([hidden])) div{padding-top:min(8px,1.4cqh);padding-bottom:min(8px,1.4cqh)}
@@ -229,10 +233,19 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 .edOv .nm{font:700 22px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--fg);text-align:center}
 .edOv .grip{font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:#fff;background:var(--accent);border-radius:5px;padding:8px 14px;touch-action:none}
 .edOv .hideBtn{position:absolute;top:6px;right:6px}
+/* éléments masqués un par un (Disposition) */
+.offEl{display:none!important}
+.edOv .els{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:94%;max-height:55%;overflow:auto;touch-action:pan-y;cursor:default}
+.edOv .els button{font:600 13px var(--f-display);letter-spacing:.02em;border-radius:999px;padding:5px 10px;border:1px solid var(--ok);background:rgba(61,220,132,.16);color:var(--fg);cursor:pointer}
+.edOv .els button[aria-pressed=false]{border-color:var(--line);background:transparent;color:var(--muted);text-decoration:line-through}
+.edOv .elsT{font:600 12px var(--f-display);color:var(--muted);letter-spacing:.04em}
+@media (max-height:520px){.edOv .nm{font-size:16px}.edOv .grip{padding:5px 10px;font-size:13px}.edOv .els button{font-size:12px;padding:3px 8px}body.editing .edOv{gap:5px}}
 .card.dragSrc{opacity:.35}
 .dropInd{position:fixed;z-index:40;pointer-events:none;background:rgba(255,59,78,.35);border:2px solid var(--accent);border-radius:6px;display:none}
 .ghost{position:fixed;z-index:50;pointer-events:none;background:var(--accent);color:#fff;font:700 16px var(--f-display);text-transform:uppercase;letter-spacing:.06em;padding:8px 14px;border-radius:6px;transform:translate(-50%,-50%);box-shadow:0 6px 20px rgba(0,0,0,.5)}
 @media (orientation:portrait){.edOv{touch-action:pan-y}body.editing .edOv{touch-action:pan-y}}
+/* en portrait, une fenêtre presque vide doit garder la place pour ses réglages pendant la disposition */
+@media (orientation:portrait){body.editing .card:not([hidden]){min-height:250px}body.editing .grid .card.half{grid-column:1/-1}}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
 <link rel="stylesheet" href="theme-nuit.css">
@@ -272,13 +285,13 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
   <section class="card" id="cFuel">
     <div class="lbl"><span>Carburant</span><span id="fuelPct">–</span></div>
     <div class="fuelTop">
-      <div><div class="big" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
+      <div id="ftLaps"><div class="big" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
       <div class="liters"><b id="fuelL">–</b><span class="unit">% réservoir</span></div>
     </div>
     <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
     <div class="kv">
-      <div><small>Conso moy.</small><b id="cons">–</b></div>
-      <div><small>Dernier tour</small><b id="consLast">–</b></div>
+      <div id="kvCons"><small>Conso moy.</small><b id="cons">–</b></div>
+      <div id="kvLast"><small>Dernier tour</small><b id="consLast">–</b></div>
     </div>
     <div class="stop" id="stop"><span id="stopTitle">Pas de plan</span><small id="stopText">Choisis un plan dans Stratégie</small></div>
     <div class="lbl histLbl" style="font-size:12px"><span>Conso des derniers tours (%)</span></div>
@@ -291,15 +304,15 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
     <div class="pitAlert" id="pitAlert" hidden role="alert"><span id="paTitle"></span><small id="paText"></small></div>
     <div class="gear" id="gear">N</div>
     <div class="speed"><span id="speed">0</span><small>km/h</small></div>
-    <div class="coreRow"><span>Tour <b id="lap">–</b></span><span>Pos <b id="pos">–</b></span><span>Turbo <b id="boost">–</b></span></div>
+    <div class="coreRow"><span id="crLap">Tour <b id="lap">–</b></span><span id="crPos">Pos <b id="pos">–</b></span><span id="crBoost">Turbo <b id="boost">–</b></span></div>
   </section>
 
   <section class="card" id="cTime">
     <div class="lbl"><span>Chronos</span></div>
     <div class="chronos">
-      <div><small>En cours</small><b id="cur">–</b></div>
-      <div><small>Dernier</small><b id="last">–</b></div>
-      <div><small>Meilleur</small><b id="best" class="ok">–</b></div>
+      <div id="chCur"><small>En cours</small><b id="cur">–</b></div>
+      <div id="chLast"><small>Dernier</small><b id="last">–</b></div>
+      <div id="chBest"><small>Meilleur</small><b id="best" class="ok">–</b></div>
       <div id="finRow" hidden><small id="finLbl">Arrivée</small><b id="finLap">–</b></div>
     </div>
   </section>
@@ -560,7 +573,15 @@ connect();
 <script>
 // ---- Disposition des fenêtres : colonnes de fenêtres, enregistrées sur cet appareil ----
 const PANES={cFuel:{n:"Carburant",w:1.2,h:1},cCore:{n:"Rapport et vitesse",w:1.1,h:1.15},cTime:{n:"Chronos",w:1.1,h:.85},cTyre:{n:"Pneus",w:1.2,h:1}};
-const LAYOUT_DEF={cols:[["cFuel"],["cCore","cTime"],["cTyre"]],hidden:[]};
+const LAYOUT_DEF={cols:[["cFuel"],["cCore","cTime"],["cTyre"]],hidden:[],off:[]};
+// éléments de chaque fenêtre qu'on peut masquer un par un (l'alerte BOX BOX et le Plan B restent toujours)
+const ELS={
+  cFuel:[["fLaps","Tours restants","#ftLaps"],["fPct","% réservoir",".liters"],["fL","Litres","#fuelPct"],["fGauge","Jauge","#gauge"],
+    ["fCons","Conso moyenne","#kvCons"],["fLast","Conso dernier tour","#kvLast"],["fStop","Prochain arrêt","#stop"],
+    ["fHist","Conso des derniers tours",".histLbl,#hist"],["fRel","Conso par relais",".relLbl,#relays"]],
+  cCore:[["kRpm","Compte-tours","#rpm"],["kGear","Rapport","#gear"],["kSpeed","Vitesse",".speed"],["kLap","Tour","#crLap"],["kPos","Position","#crPos"],["kBoost","Turbo","#crBoost"]],
+  cTime:[["tCur","En cours","#chCur"],["tLast","Dernier","#chLast"],["tBest","Meilleur","#chBest"],["tFin","Arrivée","#finRow"]],
+  cTyre:[["yStint","Usure du relais",".stint,#tyreRelay"],["yCar","Températures","#car"],["yLeg","Légende",".legend"]]};
 const LKEY="gt7-pilote-layout";
 window.editing=false;
 function loadLayout(){
@@ -568,13 +589,29 @@ function loadLayout(){
     if(L&&Array.isArray(L.cols)&&Array.isArray(L.hidden)){
       const all=[...L.cols.flat(),...L.hidden];
       if(all.length===4&&Object.keys(PANES).every(k=>all.includes(k))&&L.cols.flat().length>0)
-        return {cols:L.cols.filter(c=>Array.isArray(c)&&c.length),hidden:L.hidden};}
+        return {cols:L.cols.filter(c=>Array.isArray(c)&&c.length),hidden:L.hidden,off:Array.isArray(L.off)?L.off:[]};}
   }catch(e){}
   return JSON.parse(JSON.stringify(LAYOUT_DEF));
 }
 let LAY=loadLayout();
 function saveLayout(){try{localStorage.setItem(LKEY,JSON.stringify(LAY))}catch(e){}}
+function applyOff(){
+  Object.keys(ELS).forEach(p=>ELS[p].forEach(([k,,sel])=>{const off=LAY.off.includes(k);
+    (p==="cCore"&&k==="kRpm"?document.querySelectorAll(sel):$(p).querySelectorAll(sel)).forEach(el=>el.classList.toggle("offEl",off))}));
+  // ce qui reste grandit pour prendre la place libérée
+  const off=k=>LAY.off.includes(k),W={fHist:.28,fRel:.22,fCons:.06,fLast:.06,fStop:.08,fGauge:.04};
+  let hw=0;for(const k in W)if(off(k))hw+=W[k];$("cFuel").style.setProperty("--g",Math.min(1.8,1/(1-hw*.85)).toFixed(3));
+  $("cCore").style.setProperty("--g",off("kSpeed")?1.25:1);$("cCore").style.setProperty("--gs",off("kGear")?2.6:1);
+  $("cCore").style.setProperty("--gr",off("kGear")&&off("kSpeed")?2.4:off("kGear")||off("kSpeed")?1.3:1);
+  const nT=["tCur","tLast","tBest"].filter(k=>!off(k)).length;$("cTime").style.setProperty("--g",(3/Math.max(1,nT)).toFixed(3));
+  // contenu réparti sur toute la hauteur quand il reste de la place
+  $("cFuel").classList.toggle("slim",hw>0);$("cTime").classList.toggle("slim",nT<3);$("cCore").classList.toggle("slim",off("kGear")||off("kSpeed"));
+  // la rangée Tour / Pos / Turbo disparaît si les trois sont masqués
+  const cr=document.querySelector("#cCore .coreRow");if(cr)cr.classList.toggle("offEl",["kLap","kPos","kBoost"].every(k=>LAY.off.includes(k)));
+  document.querySelectorAll(".edOv .els button").forEach(b=>b.setAttribute("aria-pressed",!LAY.off.includes(b.dataset.k)));
+}
 function renderLayout(){
+  applyOff();
   const g=$("grid");
   Object.keys(PANES).forEach(id=>{const c=$(id);c.hidden=LAY.hidden.includes(id);c.classList.remove("half");g.appendChild(c)});
   g.querySelectorAll(".col").forEach(c=>c.remove());
@@ -616,12 +653,15 @@ function setEditing(on){
 const portrait=()=>matchMedia("(orientation:portrait)").matches;
 Object.keys(PANES).forEach(id=>{
   const ov=document.createElement("div");ov.className="edOv";
-  ov.innerHTML='<span class="nm"></span><span class="grip">✥ Glisser</span><button type="button" class="btn hideBtn">✕ Masquer</button>';
+  ov.innerHTML='<span class="nm"></span><span class="grip">✥ Glisser</span><span class="elsT">Touche un élément pour l\'afficher ou le masquer</span><div class="els"></div><button type="button" class="btn hideBtn">✕ Masquer</button>';
   ov.querySelector(".nm").textContent=PANES[id].n;
+  ELS[id].forEach(([k,n])=>{const b=document.createElement("button");b.type="button";b.dataset.k=k;b.textContent=n;b.setAttribute("aria-pressed","true");
+    b.addEventListener("click",e=>{e.stopPropagation();LAY.off=LAY.off.includes(k)?LAY.off.filter(x=>x!==k):LAY.off.concat([k]);saveLayout();applyOff()});
+    ov.querySelector(".els").appendChild(b)});
   $(id).appendChild(ov);
   ov.querySelector(".hideBtn").addEventListener("click",e=>{e.stopPropagation();hidePane(id)});
   ov.addEventListener("pointerdown",e=>{
-    if(e.target.closest(".hideBtn"))return;
+    if(e.target.closest(".hideBtn")||e.target.closest(".els"))return;
     if(portrait()&&!e.target.closest(".grip"))return; // en portrait on fait défiler, on glisse avec la poignée
     e.preventDefault();startDrag(id,e,ov);
   });
