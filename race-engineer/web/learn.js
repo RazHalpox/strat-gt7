@@ -12,15 +12,16 @@ const median=a=>{if(!a.length)return NaN;const s=a.slice().sort((x,y)=>x-y),m=Ma
 function plan(){return rd("gt7-plan",null)}
 
 /* ---- arrêts mesurés en direct : temps immobile au stand et carburant ajouté ---- */
-const LIVE={stopCur:null,prevFuel:null};
+const LIVE={stopCur:null,prevFuel:null,moved:false};
 function trackStop(L,cur,now=Date.now(),T=LIVE){
   const v=L.speed;
   if(!fin(v)||!fin(L.fuel)||L.paused||L.loading){T.prevFuel=L.fuel;return}
-  if(v<1.5&&L.on_track){
+  if(!(L.lap>=1))T.moved=false;else if(v>30)T.moved=true; // l'attente sur la grille de départ n'est pas un arrêt
+  if(v<1.5&&L.on_track&&T.moved){
     if(!T.stopCur)T.stopCur={t0:now,f0:L.fuel,fmax:L.fuel,lap:L.lap,r0:null,r1:null};
     else{T.stopCur.fmax=Math.max(T.stopCur.fmax,L.fuel);if(fin(T.prevFuel)&&L.fuel>T.prevFuel+0.02){T.stopCur.r0=T.stopCur.r0||now;T.stopCur.r1=now}}}
   else if(v>5&&T.stopCur){const s=T.stopCur;T.stopCur=null;const still=(now-s.t0)/1000,added=s.fmax-s.f0;
-    if(still>=3&&!(s.lap<=1&&added<0.3)){const rt=s.r0&&s.r1&&(s.r1-s.r0)>800?added/((s.r1-s.r0)/1000):NaN;
+    if(still>=3){const rt=s.r0&&s.r1&&(s.r1-s.r0)>800?added/((s.r1-s.r0)/1000):NaN;
       cur.stops=(cur.stops||[]).filter(x=>x.lap!==s.lap).concat([{lap:s.lap,still:Math.round(still*10)/10,added:Math.round(added*10)/10,rate:fin(rt)?Math.round(rt*100)/100:null}])}}
   T.prevFuel=L.fuel}
 
@@ -50,7 +51,7 @@ function update(s){
 /* ---- course reconstruite depuis un enregistrement de télémétrie (Stratégie › Carnet) ---- */
 // text : le fichier de l'enregistrement (une image JSON par ligne, t = ms depuis le début, laps quand ils changent)
 function fromRecording(text,start){
-  let laps=[],L=null,first=null;const cur={stops:[]},T={stopCur:null,prevFuel:null};
+  let laps=[],L=null,first=null;const cur={stops:[]},T={stopCur:null,prevFuel:null,moved:false};
   for(const line of text.split("\n")){if(!line)continue;let d;try{d=JSON.parse(line)}catch(e){continue}
     if(d.laps)laps=d.laps;if(!(d.lap>=1))continue;L=d;if(first===null)first=start+(d.t||0);
     if(!(window.Race&&Race.finished&&Race.finished(d,laps)))trackStop(d,cur,start+(d.t||0),T)}
@@ -99,7 +100,11 @@ function analyze(race){
   const cons=fuelLaps.length?mean(fuelLaps.map(l=>l.fuel)):NaN;
   // arrêts : temps perdu sur la fenêtre de 3 tours autour de l'arrêt, carburant ajouté
   const stops=[];
-  [...pits].filter(n=>n>1).sort((a,b)=>a-b).forEach(n=>{
+  [...pits].filter(n=>n>=1).sort((a,b)=>a-b).forEach(n=>{
+    // arrêt à la fin du T1 : le temps perdu se mélange au départ arrêté, on ne le chiffre pas
+    if(n===1){if(!byN[2])return;const live=(race.stops||[]).find(x=>x.lap<=2);
+      stops.push({lap:1,loss:NaN,added:live&&fin(live.added)?live.added:(fin(byN[1].fuel_end)&&fin(byN[2].fuel_end)&&fin(cons)?Math.max(0,byN[2].fuel_end-byN[1].fuel_end+cons):NaN),
+        still:live?live.still:NaN,rate:live&&fin(live.rate)?live.rate:NaN,g:compOf(race.plan,2)});return}
     const w=[n-1,n,n+1].map(k=>byN[k]);if(w.some(l=>!l||!(l.ms>0)))return;
     const near=laps.filter(l=>good(l)&&Math.abs(l.n-n)<=10),ref=near.length?mean(near.map(l=>l.ms))/1000:med/1000;
     if(!fin(ref))return;
