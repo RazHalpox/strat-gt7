@@ -92,12 +92,12 @@ function pitLaneCheck(L){
   if(pitBuf.length&&now===pitBuf[pitBuf.length-1].t)return;
   const rev=!!L.rev_limit||(L.rpm_hi>1000&&L.rpm>=L.rpm_hi*0.95)||(L.slip||[]).some(x=>Math.abs(x)>=15); // rupteur ou roues qui patinent : vitesse figée aussi, mais en piste
   pitBuf.push({t:now,v,th:L.throttle||0,rev});pitBuf=pitBuf.filter(x=>now-x.t<=2500);
-  // vitesse figée depuis 0,6 s pied au plancher : seul le limiteur empêche d'accélérer entre 30 et 110 km/h,
-  // c'est la signature la plus rapide. Sinon vitesse figée depuis 1,2 s.
+  // vitesse figée depuis 1,2 s, sans gaz ni frein : dans la voie des stands, GT7 conduit la voiture tout seul
+  // (gaz à 0 dans la télémétrie). Avec du gaz, c'est une courbe en piste à vitesse constante.
   const flat=w=>{const b=pitBuf.filter(x=>now-x.t<=w);if(!b.length||now-b[0].t<w-150)return null;
     const vs=b.map(x=>x.v);return Math.max(...vs)-Math.min(...vs)<=1.2&&!b.some(x=>x.rev)?b:null};
-  const fast=flat(600),slow=flat(1200);
-  if(!(fast&&fast.every(x=>x.th>=40))&&!slow)return;
+  const slow=flat(1200);
+  if(!(slow&&slow.every(x=>x.th<5)))return;
   pitLaneHit(L)}
 function pitLaneHit(L){
   window.inPitLane=fin(L.cur_ms)?L.cur_ms:performance.now();

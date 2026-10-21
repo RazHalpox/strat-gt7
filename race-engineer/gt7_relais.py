@@ -181,7 +181,7 @@ class RaceState:
 
     def _pit_lane(self, d, now):
         """Limiteur de la voie des stands, vu ici a chaque image (60/s) : vitesse figee (+-1,2 km/h) entre 30 et
-        110 km/h sans freiner, depuis 0,6 s pied au plancher, ou depuis 1,2 s. Meme regle que planb.js."""
+        110 km/h sans gaz ni frein depuis 1,2 s (GT7 conduit seul dans la voie). Meme regle que planb.js."""
         v = d.get("speed") or 0
         if not d.get("on_track") or d.get("paused") or d.get("loading") or v < 30 or v > 110 or (d.get("brake") or 0) > 5:
             self._pit_buf = []
@@ -201,8 +201,8 @@ class RaceState:
             vs = [x[1] for x in b]
             if max(vs) - min(vs) > 1.2:
                 return False
-            return not fast or all(x[2] >= 40 for x in b)
-        return flat(600, True) or flat(1200, False)
+            return all(x[2] < 5 for x in b)       # gaz a 0 : GT7 conduit seul dans la voie des stands
+        return flat(1200, False)
 
     def update(self, d, now=None):
         now = now or time.time()

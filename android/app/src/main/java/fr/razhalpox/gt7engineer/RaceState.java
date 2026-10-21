@@ -39,7 +39,7 @@ public final class RaceState {
     }
 
     /** Limiteur de la voie des stands : vitesse figée (±1,2 km/h) entre 30 et 110 km/h sans freiner,
-     *  depuis 0,6 s pied au plancher (seul le limiteur empêche d'accélérer), ou depuis 1,2 s.
+     *  depuis 1,2 s, gaz à 0 (GT7 conduit seul dans la voie ; avec du gaz, c'est une courbe en piste).
      *  Même règle que planb.js. */
     private boolean pitLaneCheck(Gt7.Frame d, long now) {
         if (!d.onTrack || d.paused || d.loading || d.speed < 30 || d.speed > 110 || d.brake > 5) { pitBuf.clear(); return false; }
@@ -49,21 +49,21 @@ public final class RaceState {
         boolean rev = d.revLimit || (d.rpmHi > 1000 && d.rpm >= d.rpmHi * 0.95) || spin;
         pitBuf.addLast(new double[]{now, d.speed, d.throttle, rev ? 1 : 0});
         while (!pitBuf.isEmpty() && now - pitBuf.peekFirst()[0] > 2500) pitBuf.pollFirst();
-        return flat(now, 600, true) || flat(now, 1200, false);
+        return flat(now, 1200, false); // gaz à 0 : GT7 conduit seul dans la voie des stands
     }
 
     private boolean flat(long now, int w, boolean fast) {
         double first = -1, mn = 1e9, mx = -1e9;
-        boolean allHi = true;
+        boolean allLo = true;
         for (double[] x : pitBuf) {
             if (now - x[0] > w) continue;
             if (first < 0) first = x[0];
             if (x[3] > 0) return false;
             mn = Math.min(mn, x[1]); mx = Math.max(mx, x[1]);
-            if (x[2] < 40) allHi = false;
+            if (x[2] >= 5) allLo = false;
         }
         if (first < 0 || now - first < w - 150 || mx - mn > 1.2) return false;
-        return !fast || allHi;
+        return allLo;
     }
 
     public synchronized void reset(String newMode) {
