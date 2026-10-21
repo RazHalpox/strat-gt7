@@ -96,5 +96,5 @@ async function replay(id,speed,onState,onEnd){
   step()}
 
 init();
-window.Rec={feed,prune,flush,list,remove,exportFile,replay,enabled,fileName,get recording(){return cur&&Date.now()-cur.last<5000?cur.id:null}};
+window.Rec={feed,prune,text,flush,list,remove,exportFile,replay,enabled,fileName,get recording(){return cur&&Date.now()-cur.last<5000?cur.id:null}};
 })();

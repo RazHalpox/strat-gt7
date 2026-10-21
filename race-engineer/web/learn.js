@@ -12,24 +12,25 @@ const median=a=>{if(!a.length)return NaN;const s=a.slice().sort((x,y)=>x-y),m=Ma
 function plan(){return rd("gt7-plan",null)}
 
 /* ---- arrêts mesurés en direct : temps immobile au stand et carburant ajouté ---- */
-let stopCur=null,prevFuel=null;
-function trackStop(L,cur){
-  const now=Date.now(),v=L.speed;
-  if(!fin(v)||!fin(L.fuel)||L.paused||L.loading){prevFuel=L.fuel;return}
+const LIVE={stopCur:null,prevFuel:null};
+function trackStop(L,cur,now=Date.now(),T=LIVE){
+  const v=L.speed;
+  if(!fin(v)||!fin(L.fuel)||L.paused||L.loading){T.prevFuel=L.fuel;return}
   if(v<1.5&&L.on_track){
-    if(!stopCur)stopCur={t0:now,f0:L.fuel,fmax:L.fuel,lap:L.lap,r0:null,r1:null};
-    else{stopCur.fmax=Math.max(stopCur.fmax,L.fuel);if(fin(prevFuel)&&L.fuel>prevFuel+0.02){stopCur.r0=stopCur.r0||now;stopCur.r1=now}}}
-  else if(v>5&&stopCur){const s=stopCur;stopCur=null;const still=(now-s.t0)/1000,added=s.fmax-s.f0;
+    if(!T.stopCur)T.stopCur={t0:now,f0:L.fuel,fmax:L.fuel,lap:L.lap,r0:null,r1:null};
+    else{T.stopCur.fmax=Math.max(T.stopCur.fmax,L.fuel);if(fin(T.prevFuel)&&L.fuel>T.prevFuel+0.02){T.stopCur.r0=T.stopCur.r0||now;T.stopCur.r1=now}}}
+  else if(v>5&&T.stopCur){const s=T.stopCur;T.stopCur=null;const still=(now-s.t0)/1000,added=s.fmax-s.f0;
     if(still>=3&&!(s.lap<=1&&added<0.3)){const rt=s.r0&&s.r1&&(s.r1-s.r0)>800?added/((s.r1-s.r0)/1000):NaN;
       cur.stops=(cur.stops||[]).filter(x=>x.lap!==s.lap).concat([{lap:s.lap,still:Math.round(still*10)/10,added:Math.round(added*10)/10,rate:fin(rt)?Math.round(rt*100)/100:null}])}}
-  prevFuel=L.fuel}
+  T.prevFuel=L.fuel}
 
 /* ---- suivi de la course en cours et carnet ---- */
 function update(s){
   if(!s||s.mode!=="live")return; // ni démo, ni relecture, ni attente
   const L=s.live||{},laps=s.laps||[];
   let cur=rd(LKEY,null);const last=laps.length?laps[laps.length-1].n:0,now=Date.now();
-  const fresh=!cur||!cur.id||(laps.length&&last<cur.lastN)||(laps.length&&laps.length<(cur.count||0)-1)||(now-(cur.lastSeen||0)>2*3600e3);
+  // nouvelle course : le compteur de tours recule, ou la liste des tours repart de zéro (départ de la course suivante)
+  const fresh=!cur||!cur.id||(laps.length&&last<cur.lastN)||laps.length<(cur.count||0)-1||(now-(cur.lastSeen||0)>2*3600e3);
   if(fresh){if(!laps.length&&!(L.lap>=1))return;cur={id:now,lastN:last,count:laps.length,lastSeen:now,stops:[]}}
   const done=window.Race&&Race.finished?Race.finished(L,laps):null;
   if(done)cur.finish=done.lap;else trackStop(L,cur); // après l'arrivée : ni arrêt, ni tour de décélération
@@ -45,6 +46,24 @@ function update(s){
       races.sort((a,b)=>b.id-a.id);while(races.length>MAXR)races.pop();
       if(!wr(RKEY,races)){races.length=Math.max(1,races.length-5);wr(RKEY,races)}}}
 }
+
+/* ---- course reconstruite depuis un enregistrement de télémétrie (Stratégie › Carnet) ---- */
+// text : le fichier de l'enregistrement (une image JSON par ligne, t = ms depuis le début, laps quand ils changent)
+function fromRecording(text,start){
+  let laps=[],L=null,first=null;const cur={stops:[]},T={stopCur:null,prevFuel:null};
+  for(const line of text.split("\n")){if(!line)continue;let d;try{d=JSON.parse(line)}catch(e){continue}
+    if(d.laps)laps=d.laps;if(!(d.lap>=1))continue;L=d;if(first===null)first=start+(d.t||0);
+    if(!(window.Race&&Race.finished&&Race.finished(d,laps)))trackStop(d,cur,start+(d.t||0),T)}
+  if(!laps.length)return null;
+  const p=plan(),st=rd("gt7-endu-v1",null),rows=p&&p.replan&&p.replan.orig?p.replan.orig.rows:p&&p.rows;
+  const done=L&&window.Race&&Race.finished?Race.finished(L,laps):null;
+  const race={id:first||start,date:first||start,updated:Date.now(),fuelCap:L&&L.fuel_cap||100,total:L&&L.total_laps||0,
+    mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,
+    laps:laps.map(l=>({n:l.n,ms:l.ms,fuel:l.fuel,pit:!!l.pit,fuel_end:l.fuel_end})),
+    plan:rows?rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops,finish:done?done.lap:null,fromRec:true};
+  // remplace une version incomplète de la même course (même premier tour)
+  const k=x=>x.laps&&x.laps.length?x.laps[0].n+":"+x.laps[0].ms:"",races=rd(RKEY,[]).filter(r=>!(k(r)===k(race)&&Math.abs(r.id-race.id)<3*3600e3));
+  races.unshift(race);races.sort((a,b)=>b.id-a.id);while(races.length>MAXR)races.pop();wr(RKEY,races);return race}
 
 /* ---- analyse d'une course enregistrée ---- */
 function compOf(rows,lap){const r=(rows||[]).find(x=>lap>=x.from&&lap<=x.to);return r&&["S","M","H"].includes(r.g)?r.g:null}
@@ -117,5 +136,5 @@ function races(){return rd(RKEY,[])}
 // supprimée aussi sur les autres écrans : on garde une trace de la suppression (partagée) avant d'enlever la course
 function removeRace(id){const r=races().find(x=>x.id===id),k=r&&r.laps&&r.laps.length?r.laps[0].n+":"+r.laps[0].ms:"";
   wr("gt7-races-del",rd("gt7-races-del",[]).concat([{id,k}]).slice(-100));wr(RKEY,races().filter(x=>x.id!==id))}
-window.Learn={update,analyze,suggest,races,removeRace,lapStr};
+window.Learn={update,analyze,suggest,races,removeRace,lapStr,fromRecording};
 })();

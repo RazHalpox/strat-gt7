@@ -137,6 +137,7 @@ Pendant la course, les écrans Pilote et Complet notent tout : ton rythme moyen 
 
 L'écran qui affiche Pilote ou Complet enregistre aussi la course de son côté, même s'il ne fait que recevoir les données du téléphone Android ou du PC (environ 1 Mo par heure, les 10 dernières sessions). Retrouve-les dans **Stratégie › Carnet › Enregistrements de cet appareil** :
 - **Rejouer ×1 / ×5 / ×20** : la course repasse sur l'écran Pilote comme en direct (pastille « Relecture »), sans la PS5. Le téléphone ou le PC doit juste être allumé pour servir les écrans.
+- **Mettre au carnet** : recrée la course dans le Carnet de courses à partir de l'enregistrement (tours, temps, conso, arrêts), si elle y manque ;
 - **Exporter** : sur iPad, le menu de partage s'ouvre (AirDrop, Fichiers, Discord, mail). Le fichier `.jsonl.gz` se rejoue aussi sur l'appli Android et sur le PC.
 - Coupe ou rallume l'enregistrement dans ⚙ Réglages › Enregistrement (coupé par défaut dans l'appli Android, qui enregistre déjà elle-même).
 

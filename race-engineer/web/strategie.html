@@ -622,8 +622,12 @@ function renderRecs(){
         <span>${dur(r.end-r.start)}</span><span>${r.laps||0} tours</span><span>${(r.bytes/1048576).toFixed(1).replace(".",",")} Mo</span>${live?'<span class="tag">En cours</span>':""}</div>
         <div class="rd"><div class="saveline" style="margin:0">
           <a class="mini on" href="pilote.html?replay=${r.id}&speed=1">Rejouer ×1</a><a class="mini" href="pilote.html?replay=${r.id}&speed=5">×5</a><a class="mini" href="pilote.html?replay=${r.id}&speed=20">×20</a>
-          <button type="button" class="mini" data-a="exp">Exporter</button><button type="button" class="mini" data-a="del">Supprimer</button><span class="hint" data-msg></span></div></div>`;
+          <button type="button" class="mini" data-a="carnet">Mettre au carnet</button><button type="button" class="mini" data-a="exp">Exporter</button><button type="button" class="mini" data-a="del">Supprimer</button><span class="hint" data-msg></span></div></div>`;
       d.addEventListener("click",async e=>{const b=e.target.closest("button[data-a]");if(!b)return;const msg=d.querySelector("[data-msg]");
+        if(b.dataset.a==="carnet"){msg.textContent="Lecture…";try{const race=Learn.fromRecording(await Rec.text(r.id),r.start);
+          if(!race){msg.textContent="Aucun tour bouclé dans cet enregistrement";return}
+          openRace=race.id;msg.textContent="✓ "+race.laps.length+" tours mis au carnet";renderLog();
+          document.getElementById("log").scrollIntoView({behavior:"smooth",block:"start"})}catch(err){msg.textContent="Lecture impossible"}return}
         if(b.dataset.a==="exp"){msg.textContent="Préparation…";try{const how=await Rec.exportFile(r);msg.textContent=how==="annulé"?"":"✓ "+how}catch(err){msg.textContent="Export impossible"}}
         else if(b.dataset.a==="del"){if(recDel!==r.id){recDel=r.id;b.classList.add("armed");b.textContent="Confirmer";setTimeout(()=>{if(recDel===r.id){recDel=null;renderRecs()}},4000);return}
           recDel=null;await Rec.remove(r.id);renderRecs()}});
