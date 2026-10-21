@@ -21,11 +21,24 @@ function opts(){try{return JSON.parse(localStorage.getItem("gt7-opts")||"{}")}ca
 function enabled(){const o=opts();return o.recLocal===undefined?!window.AndroidApp:!!o.recLocal}
 
 /* ---- enregistrement ---- */
-let cur=null,buf=[],bufBytes=0,lastFlush=0,lastLapKey="",flushing=Promise.resolve(),replaying=false;
+let cur=null,buf=[],bufBytes=0,lastFlush=0,lastLapKey="",flushing=Promise.resolve(),replaying=false,ready=false,pending=[];
+/* Une course = un seul enregistrement, même si tu passes de Pilote à Complet ou Stratégie (chaque écran est une
+   nouvelle page) : à l'ouverture, on reprend l'enregistrement en cours s'il a reçu une image il y a moins de 2 min.
+   Pas de nouvel enregistrement tant que la voiture ne roule pas (menus, résultats après l'arrivée). */
+const moving=L=>L&&L.lap>=1&&L.speed>5&&L.on_track!==false&&!L.paused&&!L.loading;
+async function init(){
+  try{const a=await list(),r=a[0];
+    if(r&&Date.now()-r.end<GAP){const cs=await chunks(r.id);
+      cur={id:r.id,start:r.start,last:r.end,frames:r.frames||0,bytes:r.bytes||0,seq:cs.length?cs[cs.length-1].seq+1:0,laps:r.laps||0,resumed:true}}
+    await prune()}catch(e){}
+  ready=true;const p=pending;pending=[];p.forEach(feed)}
 function feed(s){
   if(replaying||!s||s.mode!=="live"||!s.live||!enabled())return;
+  if(!ready){if(pending.length<50)pending.push(s);return}
   const now=Date.now();
-  if(!cur||now-cur.last>GAP){flush();cur={id:now,start:now,last:now,frames:0,bytes:0,seq:0,laps:0};lastLapKey="";
+  if(!cur||now-cur.last>GAP){
+    if(!moving(s.live)){if(cur&&now-cur.last>GAP){flush();cur=null}return}
+    flush();cur={id:now,start:now,last:now,frames:0,bytes:0,seq:0,laps:0};lastLapKey="";
     tx(["recs"],"readwrite",t=>t.objectStore("recs").put(meta())).then(prune).catch(()=>{})}
   if(now-cur.last<90&&cur.frames)return; // au plus ~10 images par seconde
   cur.last=now;cur.frames++;
@@ -49,7 +62,11 @@ window.addEventListener("pagehide",()=>flush());
 function list(){return tx(["recs"],"readonly",t=>t.objectStore("recs").getAll()).then(a=>(a||[]).sort((x,y)=>y.id-x.id)).catch(()=>[])}
 async function remove(id){await tx(["recs","chunks"],"readwrite",t=>{t.objectStore("recs").delete(id);
   const idx=t.objectStore("chunks").index("rec").openCursor(IDBKeyRange.only(id));idx.onsuccess=()=>{const c=idx.result;if(c){c.delete();c.continue()}}})}
-async function prune(){const a=await list();for(const r of a.slice(KEEP))await remove(r.id)}
+// on garde les 10 derniers enregistrements, sans les bouts de moins de 2 min (menus, rechargements)
+async function prune(){const a=await list(),now=Date.now(),act=cur&&cur.id;
+  const junk=a.filter(r=>r.id!==act&&now-r.end>GAP&&(r.end-r.start<120000||!(r.frames>=600)));
+  for(const r of junk)await remove(r.id);
+  for(const r of a.filter(r=>!junk.includes(r)).slice(KEEP))await remove(r.id)}
 function chunks(id){return tx(["chunks"],"readonly",t=>t.objectStore("chunks").index("rec").getAll(IDBKeyRange.only(id))).then(a=>(a||[]).sort((x,y)=>x.seq-y.seq))}
 async function text(id){if(cur&&cur.id===id)await flush();const cs=await chunks(id);let out="";
   for(const c of cs)out+=typeof c.data==="string"?c.data:await gunzip(c.data);return out}
@@ -78,5 +95,6 @@ async function replay(id,speed,onState,onEnd){
     prev=t;setTimeout(step,wait)};
   step()}
 
-window.Rec={feed,flush,list,remove,exportFile,replay,enabled,fileName,get recording(){return cur&&Date.now()-cur.last<5000?cur.id:null}};
+init();
+window.Rec={feed,prune,flush,list,remove,exportFile,replay,enabled,fileName,get recording(){return cur&&Date.now()-cur.last<5000?cur.id:null}};
 })();
