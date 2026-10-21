@@ -108,6 +108,8 @@ tr.pit td{background:var(--accent-soft);font-size:13px}
 .note.bad{color:var(--accent)}
 .ecoNote{display:block;margin-top:6px;color:var(--fg);font-weight:600}
 .ecoBtn{margin-top:8px;padding:6px 12px;font-size:13px}
+.gfix{display:inline-flex;align-items:center;gap:8px}
+.gfix select{font:inherit;font-size:14px;padding:4px 6px;border-radius:4px;background:var(--input);color:var(--fg);border:1px solid var(--input-line)}
 .tag.eco{background:var(--ok-soft,#e5f4ec);color:var(--ok,#1b7a4b)}
 .saveline{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .race{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
@@ -644,7 +646,7 @@ function renderLog(){
       <span>${A.laps||0} tours</span><span>meilleur <b style="font-size:14px">${fin(A.best)?Learn.lapStr(A.best):"–"}</b></span><span>conso ${fin(A.cons)?f2(A.cons)+" L/t":"–"}</span><span>${A.stops.length} arrêt${A.stops.length>1?"s":""}</span><span class="chips">${chips}</span>${cur&&cur.id===r.id?'<span class="tag">Mesures utilisées</span>':""}</button>`;
     if(openRace===r.id){const rd=document.createElement("div");rd.className="rd";
       rd.innerHTML=`<h3>Relais</h3><div class="tbl"><table style="min-width:520px"><thead><tr><th class="l">Relais</th><th class="l">Gomme</th><th>Tours</th><th>Moyenne</th><th>Usure</th><th>Conso</th></tr></thead><tbody>${
-        A.stints.map((s,i)=>`<tr><td>Relais ${i+1} <span class="hint">T${s.from}–T${s.to}</span></td><td class="l">${s.g?chip(s.g)+" "+CN[s.g]:"?"}</td><td>${s.n}</td><td>${fin(s.avg)?Learn.lapStr(s.avg):"–"}</td><td>${fin(s.slope)?(s.slope>=0?"+":"")+f2(s.slope)+" s/t":"–"}</td><td>${fin(s.cons)?f2(s.cons)+" L":"–"}</td></tr>`).join("")}</tbody></table></div>
+        A.stints.map((s,i)=>`<tr><td>Relais ${i+1} <span class="hint">T${s.from}–T${s.to}</span></td><td class="l"><span class="gfix">${s.g?chip(s.g):chip("X").replace(">X<",">?<")}<select data-from="${s.from}" aria-label="Gomme du relais ${i+1}">${s.g?"":'<option value="">?</option>'}${["S","M","H"].map(k=>`<option value="${k}"${s.g===k?" selected":""}>${CN[k]}</option>`).join("")}</select></span></td><td>${s.n}</td><td>${fin(s.avg)?Learn.lapStr(s.avg):"–"}</td><td>${fin(s.slope)?(s.slope>=0?"+":"")+f2(s.slope)+" s/t":"–"}</td><td>${fin(s.cons)?f2(s.cons)+" L":"–"}</td></tr>`).join("")}</tbody></table></div>
         <h3>Arrêts</h3>${A.stops.length?`<div class="tbl"><table style="min-width:420px"><thead><tr><th class="l">Tour</th><th>Temps perdu</th><th>Carburant ajouté</th><th>Immobile</th><th>Ravitaillement</th></tr></thead><tbody>${
         A.stops.map(x=>`<tr><td>T${x.lap}</td><td>${fin(x.loss)?f1(x.loss)+" s":"–"}</td><td>${fin(x.added)?f1(x.added)+" L":"–"}</td><td>${fin(x.still)?f1(x.still)+" s":"–"}</td><td>${fin(x.rate)?f1(x.rate)+" L/s":"–"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note" style="margin:0">Aucun arrêt.</p>'}
         <h3>Tours</h3><div class="tbl" style="max-height:320px;overflow:auto"><table style="min-width:360px"><thead><tr><th class="l">Tour</th><th>Temps</th><th>Conso</th><th>Carburant fin</th></tr></thead><tbody>${
@@ -655,6 +657,9 @@ function renderLog(){
         else if(b.dataset.a==="csv")exportRace(r);
         else if(b.dataset.a==="del"){if(raceDel!==r.id){raceDel=r.id;b.classList.add("armed");b.textContent="Confirmer";setTimeout(()=>{if(raceDel===r.id){raceDel=null;renderLog()}},4000);return}
           raceDel=null;Learn.removeRace(r.id);if(learnId===r.id)learnId=null;openRace=null;renderLog()}});
+      // gomme d'un relais corrigée à la main
+      rd.addEventListener("change",e=>{const sel=e.target.closest("select[data-from]");if(!sel||!sel.value)return;
+        Learn.setStintComp(r.id,+sel.dataset.from,sel.value);renderLog()});
       d.appendChild(rd)}
     d.querySelector(".rh").addEventListener("click",()=>{openRace=openRace===r.id?null:r.id;renderLog()});
     box.appendChild(d)});

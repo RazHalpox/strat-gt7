@@ -136,5 +136,8 @@ function races(){return rd(RKEY,[])}
 // supprimée aussi sur les autres écrans : on garde une trace de la suppression (partagée) avant d'enlever la course
 function removeRace(id){const r=races().find(x=>x.id===id),k=r&&r.laps&&r.laps.length?r.laps[0].n+":"+r.laps[0].ms:"";
   wr("gt7-races-del",rd("gt7-races-del",[]).concat([{id,k}]).slice(-100));wr(RKEY,races().filter(x=>x.id!==id))}
-window.Learn={update,analyze,suggest,races,removeRace,lapStr,fromRecording};
+// corrige la gomme d'un relais (la télémétrie ne la donne pas : elle vient du plan, qui peut avoir changé)
+function setStintComp(id,from,g){const races=rd(RKEY,[]),r=races.find(x=>x.id===id);if(!r)return;const A=analyze(r);if(!A)return;
+  r.plan=A.stints.map(s=>({g:s.from===from?g:(s.g||"?"),from:s.from,to:s.to}));r.updated=Date.now();r.gFixed=true;wr(RKEY,races)}
+window.Learn={update,analyze,suggest,races,removeRace,lapStr,fromRecording,setStintComp};
 })();
