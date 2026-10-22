@@ -604,7 +604,7 @@ const sec=x=>fin(x)?clock(x):"–";
 const lapS=ms=>ms>0?Learn.lapStr(ms/1000):"–";
 let openRace=null,raceDel=null;
 function raceCSV(r){const A=Learn.analyze(r),lines=["tour;temps;conso_L;carburant_fin_L;arret;gomme"];
-  r.laps.forEach(l=>{const g=(r.plan||[]).find(x=>l.n>=x.from&&l.n<=x.to);lines.push([l.n,lapS(l.ms),fin(l.fuel)?String(Math.round(l.fuel*1000)/1000).replace(".",","):"",fin(l.fuel_end)?String(l.fuel_end).replace(".",","):"",l.pit?"oui":"",g?g.g:""].join(";"))});
+  r.laps.forEach(l=>{const g=(r.plan||[]).find(x=>l.n>=x.from&&l.n<=x.to);lines.push([l.n,lapS(l.ms),fin(l.fuel)?String(Math.round(l.fuel*1000)/1000).replace(".",","):"",fin(l.fuel_end)?String(l.fuel_end).replace(".",","):"",(A?A.pits.includes(l.n):l.pit)?"oui":"",g?g.g:""].join(";"))});
   if(A&&A.stops.length){lines.push("","arret_tour;temps_perdu_s;carburant_ajoute_L;immobile_s");A.stops.forEach(x=>lines.push([x.lap,fin(x.loss)?x.loss.toFixed(1).replace(".",","):"",fin(x.added)?x.added.toFixed(1).replace(".",","):"",fin(x.still)?String(x.still).replace(".",","):""].join(";")))}
   return lines.join("\n")}
 function exportRace(r){const name=`course-gt7-${new Date(r.date).toISOString().slice(0,16).replace(/[:T]/g,"-")}.csv`,csv=raceCSV(r);
@@ -650,7 +650,7 @@ function renderLog(){
         <h3>Arrêts</h3>${A.stops.length?`<div class="tbl"><table style="min-width:420px"><thead><tr><th class="l">Tour</th><th>Temps perdu</th><th>Carburant ajouté</th><th>Immobile</th><th>Ravitaillement</th></tr></thead><tbody>${
         A.stops.map(x=>`<tr><td>T${x.lap}</td><td>${fin(x.loss)?f1(x.loss)+" s":"–"}</td><td>${fin(x.added)?f1(x.added)+" L":"–"}</td><td>${fin(x.still)?f1(x.still)+" s":"–"}</td><td>${fin(x.rate)?f1(x.rate)+" L/s":"–"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note" style="margin:0">Aucun arrêt.</p>'}
         <h3>Tours</h3><div class="tbl" style="max-height:320px;overflow:auto"><table style="min-width:360px"><thead><tr><th class="l">Tour</th><th>Temps</th><th>Conso</th><th>Carburant fin</th></tr></thead><tbody>${
-        r.laps.slice().reverse().map(l=>`<tr><td>T${l.n}${l.pit?' <span class="hint">stand</span>':""}</td><td>${lapS(l.ms)}</td><td>${fin(l.fuel)?f2(l.fuel)+" L":"–"}</td><td>${fin(l.fuel_end)?f1(l.fuel_end)+" L":"–"}</td></tr>`).join("")}</tbody></table></div>
+        r.laps.slice().reverse().map(l=>`<tr><td>T${l.n}${A.pits&&A.pits.includes(l.n)?' <span class="hint">stand</span>':""}</td><td>${lapS(l.ms)}</td><td>${fin(l.fuel)?f2(l.fuel)+" L":"–"}</td><td>${fin(l.fuel_end)?f1(l.fuel_end)+" L":"–"}</td></tr>`).join("")}</tbody></table></div>
         <div class="saveline" style="margin:0"><button type="button" class="mini on" data-a="use">Utiliser ses mesures</button><button type="button" class="mini" data-a="csv">Exporter (CSV)</button><button type="button" class="mini" data-a="del">Supprimer</button></div>`;
       rd.addEventListener("click",e=>{const b=e.target.closest("button[data-a]");if(!b)return;
         if(b.dataset.a==="use"){learnId=r.id;tab="par";save();render()}

@@ -161,6 +161,9 @@ class RaceState:
         self._moved = False      # la voiture a roule depuis le debut du tour
         self._still_since = None # arretee depuis (arret au stand sans essence)
         self._min_fuel = None    # plus bas niveau de carburant du tour en cours
+        self._fuel_pit = False   # essence ajoutee pendant ce tour
+        self._still_pit = False  # immobile 3 s pendant ce tour
+        self._pit_lane_t = None  # derniere fois dans la voie des stands
         self._pit_buf = []       # entree dans la voie des stands : (t, vitesse, gaz, rupteur)
         self._prev = None        # (t, vitesse, tour) de l'image precedente
         self._drop = None        # (t, x, z) : voiture figee d'un coup (transition vers la voie des stands)
@@ -212,9 +215,9 @@ class RaceState:
             fuel = d["fuel"]
             # ravitaillement : le carburant remonte (GT7 remplit petit a petit : on compare au plus bas du tour)
             if self._prev_fuel is not None and fuel > self._prev_fuel + 0.5:
-                self._pit = True
+                self._fuel_pit = True
             if self._min_fuel is not None and fuel > self._min_fuel + 0.5:
-                self._pit = True
+                self._fuel_pit = True
             self._min_fuel = fuel if self._min_fuel is None else min(self._min_fuel, fuel)
             self._prev_fuel = fuel
             # arret au stand sans essence (pneus seuls) : voiture immobile plus de 3 s apres avoir roule
@@ -225,15 +228,21 @@ class RaceState:
                 if self._still_since is None:
                     self._still_since = now
                 elif now - self._still_since >= 3:
-                    self._pit = True
+                    self._still_pit = True
             else:
                 self._still_since = None
+            # arret au stand : essence ajoutee, ou immobile 3 s APRES etre passe par la voie des stands (un tete-a-queue
+            # ou l'attente sur la grille ne comptent pas). Au T1, l'entree aux stands doit avoir ete vue (plein remis au depart).
+            seen = self._pit_lane_t is not None and now - self._pit_lane_t < 90
+            self._pit = (self._fuel_pit and (self._lap is None or self._lap > 1 or seen)) or (self._still_pit and seen)
             if lap <= 0 and self._lap is not None and self._lap >= 1:
                 pass                                       # tour 0 en pleine course (chargement, menu) : on garde l'historique
             elif self._lap is None or lap < self._lap:     # nouvelle course
                 self.laps = []
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
                 self._moved, self._still_since, self._min_fuel = False, None, fuel
+                self._fuel_pit = self._still_pit = False
+                self._pit_lane_t = None
             elif lap > self._lap:                          # tour termine
                 if self._lap >= 1 and d["last_ms"] > 0:
                     used = None if self._pit else max(0.0, self._lap_fuel - fuel)
@@ -243,9 +252,13 @@ class RaceState:
                     self.laps = self.laps[-200:]
                 self._lap, self._lap_fuel, self._lap_t0, self._pit = lap, fuel, now, False
                 self._moved, self._still_since, self._min_fuel = spd > 30, None, fuel
+                self._fuel_pit = self._still_pit = False
             cur = int((now - self._lap_t0) * 1000) if self._lap_t0 and not d["paused"] else None
             tp = self._teleport(d, now)
-            self.live = dict(d, cur_ms=cur, pit_lane=self._pit_lane(d, now) or tp)
+            pl = self._pit_lane(d, now) or tp
+            if pl:
+                self._pit_lane_t = now
+            self.live = dict(d, cur_ms=cur, pit_lane=pl)
         COACH.push(d, now)
 
     def snapshot(self):

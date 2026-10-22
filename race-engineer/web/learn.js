@@ -75,10 +75,13 @@ function analyze(race){
   // tours représentatifs : pas le tour 1, ni un tour avec arrêt, ni le tour de sortie, ni un tour raté
   const isClean=l=>l.ms>0&&l.n>1&&!l.pit&&!pits.has(l.n-1);
   const cleanAll=laps.filter(isClean),med=median(cleanAll.map(l=>l.ms));
+  // « arrêt » au T1 sans temps perdu (moins de 15 % au-dessus d'un tour normal) : c'était le départ, pas un arrêt
+  // (anciennes versions : plein remis ou attente sur la grille comptés comme un arrêt)
+  if(pits.has(1)&&byN[1]&&byN[1].ms>0&&fin(med)&&byN[1].ms<=med*1.15)pits.delete(1);
   const good=l=>isClean(l)&&l.ms<=med*1.07;
   // relais : de la sortie des stands jusqu'au tour de l'arrêt suivant
   const stints=[];let cur=null;
-  laps.forEach(l=>{if(!cur){cur={from:l.n,to:l.n,laps:[]};stints.push(cur)}cur.to=l.n;cur.laps.push(l);if(l.pit)cur=null});
+  laps.forEach(l=>{if(!cur){cur={from:l.n,to:l.n,laps:[]};stints.push(cur)}cur.to=l.n;cur.laps.push(l);if(pits.has(l.n))cur=null});
   stints.forEach(st=>{st.g=compOf(race.plan,st.from+(st.from>1?1:0))||compOf(race.plan,st.from);
     const c=st.laps.filter(good);st.n=st.laps.length;st.clean=c.length;
     st.avg=c.length?mean(c.map(l=>l.ms))/1000:NaN;
@@ -114,7 +117,7 @@ function analyze(race){
     const est=before&&fin(before.fuel_end)&&fin(after.fuel_end)&&fin(cons)?after.fuel_end-before.fuel_end+3*cons:NaN;
     stops.push({lap:n,loss,added:live&&fin(live.added)?live.added:(fin(est)?Math.min(race.fuelCap||100,Math.max(0,est)):NaN),still:live?live.still:NaN,rate:live&&fin(live.rate)?live.rate:NaN,g:compOf(race.plan,n+1)})});
   const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
-  return{stints,comps,cons,stops,best:fin(best)?best/1000:NaN,clean:cleanAll.length,laps:laps.length}}
+  return{pits:[...pits],stints,comps,cons,stops,best:fin(best)?best/1000:NaN,clean:cleanAll.length,laps:laps.length}}
 
 /* ---- suggestions pour la page Stratégie ---- */
 const lapStr=sec=>{const m=Math.floor(sec/60),s=sec-m*60;return m+":"+s.toFixed(3).padStart(6,"0")};

@@ -25,6 +25,8 @@ public final class RaceState {
     // entrée dans la voie des stands, vue ici à 60 images/s (les écrans la reçoivent dans chaque image : pit_lane)
     private final java.util.ArrayDeque<double[]> pitBuf = new java.util.ArrayDeque<>(); // {t, vitesse, gaz, rupteur}
     private boolean pitLane;
+    private boolean fuelPit, stillPit; // indices d'arrêt du tour en cours
+    private long pitLaneT = -1;        // dernière fois que la voiture était dans la voie des stands
     // entrée aux stands dans GT7 : la voiture passe d'un coup de ~200 km/h à 0 et reste figée quelques secondes
     // (transition vers la voie des stands), alors qu'aucun freinage ne peut faire ça. Signature immédiate.
     private double prevV = -1; private long prevT; private int prevLap = -1;
@@ -68,28 +70,33 @@ public final class RaceState {
 
     public synchronized void reset(String newMode) {
         live = null; curMs = null; laps.clear(); lastRx = 0; lap = null; prevFuel = null; pit = false;
-        moved = false; stillSince = -1; minFuel = Double.NaN; pitBuf.clear(); pitLane = false; prevV = -1; dropT = -1;
+        moved = false; stillSince = -1; minFuel = Double.NaN; fuelPit = stillPit = false; pitLaneT = -1; pitBuf.clear(); pitLane = false; prevV = -1; dropT = -1;
         mode = newMode;
     }
 
     public synchronized void update(Gt7.Frame d, long now) {
         lastRx = System.currentTimeMillis(); // horloge réelle (en relecture, « now » est l'heure de la course enregistrée)
         // ravitaillement : le carburant remonte (GT7 remplit petit à petit : on compare au plus bas du tour)
-        if (prevFuel != null && d.fuel > prevFuel + 0.5) pit = true;
-        if (!Double.isNaN(minFuel) && d.fuel > minFuel + 0.5) pit = true;
+        if (prevFuel != null && d.fuel > prevFuel + 0.5) fuelPit = true;
+        if (!Double.isNaN(minFuel) && d.fuel > minFuel + 0.5) fuelPit = true;
         minFuel = Double.isNaN(minFuel) ? d.fuel : Math.min(minFuel, d.fuel);
         prevFuel = d.fuel;
         // arrêt au stand sans essence (pneus seuls) : voiture immobile plus de 3 s après avoir roulé
         if (d.speed > 30) moved = true;
         if (moved && d.speed < 1 && d.onTrack && !d.paused && !d.loading) {
             if (stillSince < 0) stillSince = now;
-            else if (now - stillSince >= 3000) pit = true;
+            else if (now - stillSince >= 3000) stillPit = true;
         } else stillSince = -1;
+        // arrêt au stand : essence ajoutée, ou voiture immobile 3 s APRÈS être passée par la voie des stands
+        // (un tête-à-queue ou l'attente sur la grille ne comptent pas). Au T1, l'entrée aux stands doit avoir été vue :
+        // au départ, GT7 peut remettre le plein ou laisser la voiture arrêtée sur la grille avec le compteur au T1.
+        boolean seenPitLane = pitLaneT >= 0 && now - pitLaneT < 90000; // la ligne peut couper la voie des stands
+        pit = (fuelPit && (lap == null || lap > 1 || seenPitLane)) || (stillPit && seenPitLane);
         if (d.lap <= 0 && lap != null && lap >= 1) {
             // tour 0 en pleine course (chargement, menu) : on garde l'historique
         } else if (lap == null || d.lap < lap) {          // nouvelle course
             laps.clear();
-            lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false;
+            lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false; fuelPit = stillPit = false; pitLaneT = -1;
             moved = false; stillSince = -1; minFuel = d.fuel;
         } else if (d.lap > lap) {                           // tour terminé
             if (lap >= 1 && d.lastMs > 0) {
@@ -100,12 +107,13 @@ public final class RaceState {
                 laps.add(l);
                 while (laps.size() > 200) laps.remove(0);
             }
-            lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false;
+            lap = d.lap; lapFuel = d.fuel; lapT0 = now; pit = false; fuelPit = stillPit = false;
             moved = d.speed > 30; stillSince = -1; minFuel = d.fuel;
         }
         curMs = (lapT0 > 0 && !d.paused) ? (now - lapT0) : null;
         boolean tp = teleport(d, now);
         pitLane = pitLaneCheck(d, now) || tp;
+        if (pitLane) pitLaneT = now;
         live = d;
         Coach.push(d, now);
     }
