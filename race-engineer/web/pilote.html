@@ -237,6 +237,8 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 .offEl{display:none!important}
 .edOv .els{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:94%;max-height:55%;overflow:auto;touch-action:pan-y;cursor:default}
 .edOv .els button{font:600 13px var(--f-display);letter-spacing:.02em;border-radius:999px;padding:5px 10px;border:1px solid var(--ok);background:rgba(61,220,132,.16);color:var(--fg);cursor:pointer}
+.edOv .els button{touch-action:none}
+.edOv .els button.elDrag{outline:2px solid var(--accent);transform:scale(1.08);z-index:2}
 .edOv .els button[aria-pressed=false]{border-color:var(--line);background:transparent;color:var(--muted);text-decoration:line-through}
 .edOv .elsT{font:600 12px var(--f-display);color:var(--muted);letter-spacing:.04em}
 @media (max-height:520px){.edOv .nm{font-size:16px}.edOv .grip{padding:5px 10px;font-size:13px}.edOv .els button{font-size:12px;padding:3px 8px}body.editing .edOv{gap:5px}}
@@ -573,7 +575,7 @@ connect();
 <script>
 // ---- Disposition des fenêtres : colonnes de fenêtres, enregistrées sur cet appareil ----
 const PANES={cFuel:{n:"Carburant",w:1.2,h:1},cCore:{n:"Rapport et vitesse",w:1.1,h:1.15},cTime:{n:"Chronos",w:1.1,h:.85},cTyre:{n:"Pneus",w:1.2,h:1}};
-const LAYOUT_DEF={cols:[["cFuel"],["cCore","cTime"],["cTyre"]],hidden:[],off:[]};
+const LAYOUT_DEF={cols:[["cFuel"],["cCore","cTime"],["cTyre"]],hidden:[],off:[],order:{}};
 // éléments de chaque fenêtre qu'on peut masquer un par un (l'alerte BOX BOX et le Plan B restent toujours)
 const ELS={
   cFuel:[["fLaps","Tours restants","#ftLaps"],["fPct","% réservoir",".liters"],["fL","Litres","#fuelPct"],["fGauge","Jauge","#gauge"],
@@ -589,7 +591,7 @@ function loadLayout(){
     if(L&&Array.isArray(L.cols)&&Array.isArray(L.hidden)){
       const all=[...L.cols.flat(),...L.hidden];
       if(all.length===4&&Object.keys(PANES).every(k=>all.includes(k))&&L.cols.flat().length>0)
-        return {cols:L.cols.filter(c=>Array.isArray(c)&&c.length),hidden:L.hidden,off:Array.isArray(L.off)?L.off:[]};}
+        return {cols:L.cols.filter(c=>Array.isArray(c)&&c.length),hidden:L.hidden,off:Array.isArray(L.off)?L.off:[],order:L.order&&typeof L.order==="object"?L.order:{}};}
   }catch(e){}
   return JSON.parse(JSON.stringify(LAYOUT_DEF));
 }
@@ -610,8 +612,19 @@ function applyOff(){
   const cr=document.querySelector("#cCore .coreRow");if(cr)cr.classList.toggle("offEl",["kLap","kPos","kBoost"].every(k=>LAY.off.includes(k)));
   document.querySelectorAll(".edOv .els button").forEach(b=>b.setAttribute("aria-pressed",!LAY.off.includes(b.dataset.k)));
 }
+// ordre des éléments dans chaque fenêtre (glissés dans la liste du mode Disposition)
+function orderOf(p){const ks=ELS[p].map(e=>e[0]),o=(LAY.order&&LAY.order[p])||[];return o.filter(k=>ks.includes(k)).concat(ks.filter(k=>!o.includes(k)))}
+function applyOrder(){
+  Object.keys(ELS).forEach(p=>{const card=$(p),ord=orderOf(p),rank=new Map();
+    card.querySelectorAll("*").forEach(n=>{if(n.style.order)n.style.order=""});
+    ord.forEach((k,i)=>{const e=ELS[p].find(x=>x[0]===k);
+      card.querySelectorAll(e[2]).forEach(el=>{let n=el; // l'élément et ses blocs parents suivent l'ordre choisi (le titre de la fenêtre reste en haut)
+        while(n&&n!==card&&!(n.parentElement===card&&n.classList.contains("lbl")&&n===card.firstElementChild)){rank.set(n,Math.min(rank.has(n)?rank.get(n):1e9,i+1));n=n.parentElement}})});
+    rank.forEach((v,n)=>n.style.order=v);
+    const box=card.querySelector(".edOv .els");if(box)ord.forEach(k=>{const b=box.querySelector(`[data-k="${k}"]`);if(b)box.appendChild(b)})});
+}
 function renderLayout(){
-  applyOff();
+  applyOff();applyOrder();
   const g=$("grid");
   Object.keys(PANES).forEach(id=>{const c=$(id);c.hidden=LAY.hidden.includes(id);c.classList.remove("half");g.appendChild(c)});
   g.querySelectorAll(".col").forEach(c=>c.remove());
@@ -653,11 +666,12 @@ function setEditing(on){
 const portrait=()=>matchMedia("(orientation:portrait)").matches;
 Object.keys(PANES).forEach(id=>{
   const ov=document.createElement("div");ov.className="edOv";
-  ov.innerHTML='<span class="nm"></span><span class="grip">✥ Glisser</span><span class="elsT">Touche un élément pour l\'afficher ou le masquer</span><div class="els"></div><button type="button" class="btn hideBtn">✕ Masquer</button>';
+  ov.innerHTML='<span class="nm"></span><span class="grip">✥ Glisser</span><span class="elsT">Touche un élément pour l\'afficher ou le masquer, fais-le glisser pour changer sa place</span><div class="els"></div><button type="button" class="btn hideBtn">✕ Masquer</button>';
   ov.querySelector(".nm").textContent=PANES[id].n;
   ELS[id].forEach(([k,n])=>{const b=document.createElement("button");b.type="button";b.dataset.k=k;b.textContent=n;b.setAttribute("aria-pressed","true");
-    b.addEventListener("click",e=>{e.stopPropagation();LAY.off=LAY.off.includes(k)?LAY.off.filter(x=>x!==k):LAY.off.concat([k]);saveLayout();applyOff()});
-    ov.querySelector(".els").appendChild(b)});
+    b.addEventListener("click",e=>{e.stopPropagation();if(b.dataset.dragged){delete b.dataset.dragged;return}
+      LAY.off=LAY.off.includes(k)?LAY.off.filter(x=>x!==k):LAY.off.concat([k]);saveLayout();applyOff()});
+    elDrag(b,id);ov.querySelector(".els").appendChild(b)});
   $(id).appendChild(ov);
   ov.querySelector(".hideBtn").addEventListener("click",e=>{e.stopPropagation();hidePane(id)});
   ov.addEventListener("pointerdown",e=>{
@@ -666,6 +680,19 @@ Object.keys(PANES).forEach(id=>{
     e.preventDefault();startDrag(id,e,ov);
   });
 });
+// glisser un élément dans la liste : il change de place dans la fenêtre
+function elDrag(b,p){
+  b.addEventListener("pointerdown",e=>{e.stopPropagation();const x0=e.clientX,y0=e.clientY;let on=false;
+    // écoute sur la fenêtre : déplacer le bouton dans la liste lui ferait perdre le suivi du doigt
+    const mv=ev=>{if(!on&&Math.hypot(ev.clientX-x0,ev.clientY-y0)<8)return;
+      if(!on){on=true;b.classList.add("elDrag")}
+      const box=b.parentElement,t=[...box.children].find(c=>c!==b&&(()=>{const r=c.getBoundingClientRect();return ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom})());
+      if(t){const r=t.getBoundingClientRect(),after=ev.clientX>r.left+r.width/2;box.insertBefore(b,after?t.nextSibling:t);
+        LAY.order[p]=[...box.children].map(c=>c.dataset.k);applyOrder()}};
+    const up=()=>{window.removeEventListener("pointermove",mv);window.removeEventListener("pointerup",up);window.removeEventListener("pointercancel",up);
+      if(on){b.classList.remove("elDrag");b.dataset.dragged="1";saveLayout();setTimeout(()=>delete b.dataset.dragged,400)}};
+    window.addEventListener("pointermove",mv);window.addEventListener("pointerup",up);window.addEventListener("pointercancel",up)});
+}
 let drag=null;
 function startDrag(id,e,ov){
   const gh=document.createElement("div");gh.className="ghost";gh.textContent=PANES[id].n;document.body.appendChild(gh);

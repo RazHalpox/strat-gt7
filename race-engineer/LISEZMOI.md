@@ -120,6 +120,7 @@ Le bouton **▦** (en haut à droite de Pilote) ouvre le mode **Disposition** :
 - glisse une fenêtre (Carburant, Rapport et vitesse, Chronos, Pneus) sur une autre : **au centre** elles s'échangent, **sur un bord** (gauche, droite, haut, bas) elle se place à côté ;
 - **✕ Masquer** retire une fenêtre ; elle réapparaît avec le bouton **+ Nom** dans la barre ;
 - dans chaque fenêtre, touche un élément pour le masquer ou le réafficher (par exemple le compte-tours, le rapport, la conso des derniers tours) : ce qui reste grandit pour prendre la place libérée. L'alerte BOX BOX et le Plan B restent toujours ;
+- fais glisser un élément dans cette liste pour changer sa place dans la fenêtre (par exemple le prochain arrêt tout en haut du carburant) ;
 - **Par défaut** remet la disposition d'origine, **Terminé** quitte le mode.
 
 Les colonnes s'alignent toutes seules et les chiffres s'adaptent à la taille de chaque fenêtre. En portrait, les fenêtres s'empilent dans le même ordre (on glisse avec la poignée ✥). La disposition est enregistrée sur l'appareil.
