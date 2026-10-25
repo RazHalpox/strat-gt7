@@ -103,6 +103,21 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .relays b{font:600 22px var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 .relays b small{font:600 12px var(--f-display);color:var(--muted);margin-left:3px}
 .relays .now{outline:1px solid #3a4553}
+/* bandeau « Conso par relais » sur toute la largeur, au-dessus des fenêtres (Disposition › + Conso par relais) */
+.band{flex:0 0 auto;height:clamp(120px,25vh,260px)}
+.relBand{flex:1;min-height:0;display:flex;gap:8px}
+.rb{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;background:var(--panel-2);border-radius:8px;padding:6px 8px;text-align:center}
+.rb.now{outline:2px solid var(--fg)}
+.rb.plan{opacity:.45;background:transparent;border:1px dashed var(--line)}
+.rbH{display:flex;align-items:center;gap:8px;font:600 15px var(--f-display);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;max-width:100%}
+.rbH em{font-style:normal;color:var(--fg)}
+.rb b{font:700 clamp(22px,7vh,64px)/1 var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rb b small{font:600 .35em var(--f-display);color:var(--muted);margin-left:4px}
+.rb i{font:600 13px var(--f-display);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+@media (orientation:portrait){.band{height:auto}.relBand{flex-wrap:wrap}.rb{flex:1 1 30%;min-height:90px}}
+/* écran bas (téléphone en paysage) : chaque relais sur une ligne compacte */
+@media (max-height:520px) and (orientation:landscape){.rb{flex-direction:column;justify-content:space-evenly;gap:0;padding:3px 6px}
+  .rbH{font-size:11px;gap:5px}.rbH .chip{width:20px;height:20px;font-size:11px;border-width:2.5px}.rb b{font-size:clamp(18px,8vh,34px)}.rb i{font-size:10px}}
 
 /* centre */
 #cCore{align-items:center;justify-content:center;text-align:center}
@@ -251,13 +266,14 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
 <link rel="stylesheet" href="theme-nuit.css">
+<link rel="stylesheet" href="theme-contour.css">
 <script src="sync.js"></script>
 <script src="race.js"></script>
 <script src="learn.js"></script>
 <script src="rec.js"></script>
 <script src="replan.js"></script>
 <script src="planb.js"></script>
-<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit"||o.theme==="contour")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -283,6 +299,10 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 <div class="dropInd" id="dropInd"></div>
 <div class="waitbox" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
 
+<section class="card band" id="cRel" hidden>
+  <div class="lbl"><span>Conso par relais</span><span id="bandAvg"></span></div>
+  <div class="relBand" id="relBand"><div class="rb"><span class="rbH"><span class="chip X">–</span><span>Après le 1er tour</span></span><b>–</b></div></div>
+</section>
 <main class="grid" id="grid">
   <section class="card" id="cFuel">
     <div class="lbl"><span>Carburant</span><span id="fuelPct">–</span></div>
@@ -354,7 +374,7 @@ const OPTS_DEF = {
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
   slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
-  theme: "classic"    // apparence : "classic", "gt3" (Racing GT3) ou "nuit" (Nuit d'endurance)
+  theme: "classic"    // apparence : "classic", "gt3" (Racing GT3), "nuit" (Nuit d'endurance) ou "contour"
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
@@ -460,6 +480,18 @@ function currentRelay(lap){const p=readPlan();if(!p||!p.rows||!fin(lap))return n
   const i=p.rows.findIndex(r=>lap>=r.from&&lap<=r.to);if(i<0)return null;return{i,row:p.rows[i],n:p.rows.length}}
 function readStratLife(g){try{const o=JSON.parse(localStorage.getItem("gt7-endu-v1")||"null");const v=o&&o.S&&o.S[g]&&parseFloat(o.S[g].life);return v>0?v:NaN}catch(e){return NaN}}
 
+// bandeau : relais roulés (moyenne de conso), relais en cours, et relais encore prévus par la stratégie
+function renderBand(st,cur,rows,all){
+  if($("cRel").hidden)return;
+  $("bandAvg").textContent=all.length?"course "+PC(all.reduce((a,b)=>a+b,0)/all.length)+" %/t":"";
+  const done=st.map((r,i)=>{const pr=rows.find(x=>r.from>=x.from&&r.from<=x.to),avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN;
+    const now=i===st.length-1&&!!cur;return{g:pr?pr.g:"",n:i+1,from:r.from,to:now&&pr?pr.to:r.to,avg,now}});
+  const nextFrom=st.length?(cur?st[st.length-1].from:st[st.length-1].to+1):1;
+  const plan=rows.filter(x=>x.from>nextFrom||(!st.length&&x.from>=1)).map((x,j)=>({g:x.g,n:done.length+j+1,from:x.from,to:x.to,plan:true}));
+  if(!st.length&&!plan.length){$("relBand").innerHTML='<div class="rb"><span class="rbH">Après le 1er tour</span><b>–</b></div>';return}
+  const tiles=done.slice(-3).concat(plan).slice(0,6);
+  $("relBand").innerHTML=tiles.map(t=>`<div class="rb${t.now?" now":""}${t.plan?" plan":""}"><span class="rbH"><span class="chip ${t.g||"X"}">${t.g||"?"}</span><span><em>R${t.n}</em> · T${t.from}–${t.to}</span></span>`+
+    (t.plan?`<b>–</b><i>prévu · ${t.to-t.from+1} t</i>`:`<b>${fin(t.avg)?PC(t.avg):"–"}<small>%/t</small></b><i>${t.now?"en cours":t.to-t.from+1+" t"}</i>`)+`</div>`).join("")}
 function render(s){
   try{const L0=s.live||{};if(fin(L0.speed)&&window.__S)PlanB.pit(L0,opts())}catch(e){} // voie des stands : d'abord, sans attendre le reste
   try{Learn.update(s)}catch(e){}
@@ -523,6 +555,7 @@ function render(s){
       if(!l.pit&&fin(l.fuel)&&l.fuel>0.05)cur.f.push(l.fuel);if(l.pit)cur=null});
     const plan=readPlan(),rows=plan&&plan.rows||[];
     const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+PC(all.reduce((a,b)=>a+b,0)/all.length)+" %":"";
+    renderBand(st,cur,rows,all);
     if(st.length){$("relays").innerHTML=st.map((r,i)=>{const pr=rows.find(x=>r.from>=x.from&&r.from<=x.to),g=pr?pr.g:"",avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN,live=i===st.length-1&&cur;
       return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?PC(avg):"–"}<small>%/t</small></b></div>`}).slice(-4).join("")}}
 
@@ -591,7 +624,7 @@ function loadLayout(){
     if(L&&Array.isArray(L.cols)&&Array.isArray(L.hidden)){
       const all=[...L.cols.flat(),...L.hidden];
       if(all.length===4&&Object.keys(PANES).every(k=>all.includes(k))&&L.cols.flat().length>0)
-        return {cols:L.cols.filter(c=>Array.isArray(c)&&c.length),hidden:L.hidden,off:Array.isArray(L.off)?L.off:[],order:L.order&&typeof L.order==="object"?L.order:{}};}
+        return {cols:L.cols.filter(c=>Array.isArray(c)&&c.length),hidden:L.hidden,off:Array.isArray(L.off)?L.off:[],order:L.order&&typeof L.order==="object"?L.order:{},band:typeof L.band==="boolean"?L.band:undefined};}
   }catch(e){}
   return JSON.parse(JSON.stringify(LAYOUT_DEF));
 }
@@ -623,8 +656,11 @@ function applyOrder(){
     rank.forEach((v,n)=>n.style.order=v);
     const box=card.querySelector(".edOv .els");if(box)ord.forEach(k=>{const b=box.querySelector(`[data-k="${k}"]`);if(b)box.appendChild(b)})});
 }
+// bandeau « Conso par relais » : affiché d'office avec le thème Contour, sinon au choix (Disposition)
+const bandOn=()=>typeof LAY.band==="boolean"?LAY.band:opts().theme==="contour";
 function renderLayout(){
   applyOff();applyOrder();
+  const bw=$("cRel").hidden;$("cRel").hidden=!bandOn();if(bw&&!$("cRel").hidden)render._rl=null;
   const g=$("grid");
   Object.keys(PANES).forEach(id=>{const c=$(id);c.hidden=LAY.hidden.includes(id);c.classList.remove("half");g.appendChild(c)});
   g.querySelectorAll(".col").forEach(c=>c.remove());
@@ -639,6 +675,8 @@ function renderLayout(){
   const hd=$("edHidden");hd.innerHTML="";
   LAY.hidden.forEach(id=>{const b=document.createElement("button");b.type="button";b.className="btn";b.textContent="+ "+PANES[id].n;
     b.addEventListener("click",()=>{LAY.hidden=LAY.hidden.filter(x=>x!==id);LAY.cols.push([id]);saveLayout();renderLayout()});hd.appendChild(b)});
+  if(!bandOn()){const b=document.createElement("button");b.type="button";b.className="btn";b.textContent="+ Conso par relais (bandeau)";
+    b.addEventListener("click",()=>{LAY.band=true;saveLayout();renderLayout()});hd.appendChild(b)}
 }
 function posOf(id){for(let c=0;c<LAY.cols.length;c++){const r=LAY.cols[c].indexOf(id);if(r>=0)return[c,r]}return null}
 function moveTo(src,dst,zone){
@@ -693,6 +731,9 @@ function elDrag(b,p){
       if(on){b.classList.remove("elDrag");b.dataset.dragged="1";saveLayout();setTimeout(()=>delete b.dataset.dragged,400)}};
     window.addEventListener("pointermove",mv);window.addEventListener("pointerup",up);window.addEventListener("pointercancel",up)});
 }
+{const ov=document.createElement("div");ov.className="edOv";
+  ov.innerHTML='<span class="nm">Conso par relais</span><span class="elsT">Bandeau sur toute la largeur, au-dessus des fenêtres</span><button type="button" class="btn hideBtn">✕ Masquer</button>';
+  ov.querySelector(".hideBtn").addEventListener("click",e=>{e.stopPropagation();LAY.band=false;saveLayout();renderLayout()});$("cRel").appendChild(ov)}
 let drag=null;
 function startDrag(id,e,ov){
   const gh=document.createElement("div");gh.className="ghost";gh.textContent=PANES[id].n;document.body.appendChild(gh);

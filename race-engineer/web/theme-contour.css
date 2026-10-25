@@ -1,0 +1,95 @@
+/* Thème « Contour » : fond noir, chaque fenêtre entourée d'un trait de couleur avec son titre posé sur le trait,
+   chiffres en police à chasse fixe, gros rapport sur fond gris. Le bandeau « Conso par relais » s'affiche en haut.
+   Activé dans ⚙ Réglages › Apparence (html[data-theme=contour]). */
+html[data-theme=contour]{
+  --bg:#000; --panel:#000; --panel-2:#121212; --line:#2a2a2a; --fg:#f5f5f5; --muted:#9a9a9a;
+  --accent:#ff4d5e; --ok:#46d37a; --warn:#ffd23f; --cold:#4a9cff; --spin:#ff9a3c;
+  --soft:#ff4d5e; --med:#ffd23f; --hard:#f0f0f0;
+  --rpm-a:#46d37a; --rpm-b:#ffd23f; --rpm-c:#ff4d5e;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --c-fuel:#ffd23f; --c-time:#58c4e0; --c-tyre:#f5f5f5; --c-rel:#ff4d5e; --c-a:#4a9cff; --c-b:#a45cd6;
+  background:#000;
+}
+html[data-theme=contour] body{background:#000}
+
+/* ---- en-tête : sobre, contours fins ---- */
+html[data-theme=contour] nav.tabs3{background:#000;border:1px solid #333;border-radius:10px}
+html[data-theme=contour] nav.tabs3 a{border-radius:7px}
+html[data-theme=contour] nav.tabs3 a[aria-current=page]{background:#f5f5f5;color:#000}
+html[data-theme=contour] .btn{background:#000;border-color:#333;border-radius:8px}
+html[data-theme=contour] .btn.on{background:var(--accent);border-color:var(--accent)}
+
+/* ---- compte-tours : rangée de voyants ronds ---- */
+html[data-theme=contour] .rpm{gap:6px;height:20px;justify-items:center}
+html[data-theme=contour] .rpm i{width:20px;max-width:100%;height:20px;border-radius:50%;background:#2a2a2a}
+
+/* ---- fenêtres : trait de couleur, titre posé au milieu du trait ---- */
+html[data-theme=contour] .card{background:transparent;border:0;border-radius:0;padding:22px 16px 12px;--c:#f5f5f5}
+html[data-theme=contour] .card::before{content:"";position:absolute;inset:9px 1px 1px;border:2px solid var(--c);border-radius:14px;pointer-events:none}
+html[data-theme=contour] .card>.lbl:first-child{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:1;background:#000;padding:0 10px;
+  color:#fff;font:700 17px var(--f-mono);letter-spacing:.06em;line-height:18px;max-width:90%;white-space:nowrap;justify-content:center;gap:14px}
+html[data-theme=contour] .card>.lbl:first-child>span:not(:first-child){color:var(--muted);font-weight:500;font-size:14px}
+html[data-theme=contour] #cFuel{--c:var(--c-fuel)}
+html[data-theme=contour] #cTime{--c:var(--c-time)}
+html[data-theme=contour] #cTyre{--c:var(--c-tyre)}
+html[data-theme=contour] #cRel{--c:var(--c-rel)}
+/* le rapport : gros chiffre blanc sur un bloc gris, sans contour */
+html[data-theme=contour] #cCore{padding:12px}
+html[data-theme=contour] #cCore::before{inset:0;border:0;background:#1a1a1a;border-radius:18px}
+html[data-theme=contour] #cCore>*{position:relative}
+html[data-theme=contour] .gear{font-family:var(--f-mono);font-weight:800;color:#fff}
+html[data-theme=contour] .speed{font-family:var(--f-mono)}
+html[data-theme=contour] .coreRow{font-family:var(--f-mono);color:var(--muted)}
+
+/* ---- intérieur : petits cadres de couleur, chiffres à chasse fixe ---- */
+html[data-theme=contour] .lbl{font-family:var(--f-mono);letter-spacing:.04em}
+html[data-theme=contour] .big,html[data-theme=contour] .liters b,html[data-theme=contour] .chronos b,html[data-theme=contour] .kv b,
+html[data-theme=contour] .tyre .t,html[data-theme=contour] .relays b,html[data-theme=contour] .rb b{font-family:var(--f-mono);font-weight:700}
+html[data-theme=contour] .kv div{background:transparent;border:2px solid var(--c-a);border-radius:10px}
+html[data-theme=contour] .kv div+div{border-color:var(--c-b)}
+html[data-theme=contour] .chronos div{background:transparent;border-bottom:1px solid #222;border-radius:0}
+html[data-theme=contour] .chronos div:last-child{border-bottom:0}
+html[data-theme=contour] .stop{background:transparent;border:2px solid #444;border-radius:10px}
+html[data-theme=contour] .stop.warn{border-color:var(--warn)}
+html[data-theme=contour] .stop.crit{border-color:var(--accent)}
+html[data-theme=contour] .gauge{border-radius:999px;background:#1a1a1a}
+html[data-theme=contour] .gauge i{border-radius:999px}
+html[data-theme=contour] .relays>div{background:transparent;border:1px solid #2a2a2a;border-radius:10px}
+html[data-theme=contour] .tyre{border-radius:12px}
+html[data-theme=contour] .hist div i{border-radius:4px 4px 0 0}
+
+/* ---- bandeau « Conso par relais » ---- */
+html[data-theme=contour] .rb{background:transparent;border:2px solid #2a2a2a;border-radius:12px}
+html[data-theme=contour] .rb.now{outline:0;border-color:var(--c-rel)}
+html[data-theme=contour] .rb.plan{border-style:dashed}
+
+/* ---- disposition, Plan B ---- */
+html[data-theme=contour] .edOv{border-radius:14px}
+html[data-theme=contour] .pbBox{background:#000;border-radius:16px}
+html[data-theme=contour] .pbOpt{background:#0d0d0d;border-radius:12px}
+html[data-theme=contour] .pitAlert{border-radius:12px}
+
+/* ---- pages Stratégie et Réglages : noir, contours ---- */
+html[data-theme=contour][data-page=strat]{
+  --bg:#000; --surface:#000; --fg:#f5f5f5; --muted:#9a9a9a; --line:#2a2a2a;
+  --accent:#ff4d5e; --accent-soft:#2a1114; --flag:#ffd23f; --flag-soft:#2a2410; --ok:#46d37a; --ok-soft:#10261a;
+  --input:#0d0d0d; --input-line:#333; --soft:#ff4d5e; --med:#ffd23f; --hard:#f0f0f0;
+  color-scheme:dark;
+}
+html[data-theme=contour][data-page=strat] body{color:var(--fg)}
+html[data-theme=contour][data-page=strat] .panel{border:2px solid #2a2a2a;border-radius:14px}
+html[data-theme=contour][data-page=strat] .race{border-radius:12px}
+html[data-theme=contour] .panel{border-radius:14px}
+
+/* ---- téléphone en paysage : traits et titres plus fins, bandeau plus bas ---- */
+@media (max-height:520px){
+  html[data-theme=contour] .card{padding:15px 10px 7px}
+  html[data-theme=contour] .card::before{inset:6px 1px 1px;border-radius:10px}
+  html[data-theme=contour] .card>.lbl:first-child{font-size:12px;line-height:12px;padding:0 6px;gap:8px}
+  html[data-theme=contour] .card>.lbl:first-child>span:not(:first-child){font-size:11px}
+  html[data-theme=contour] .band{height:clamp(84px,24vh,140px)}
+  html[data-theme=contour] .rpm{height:14px}html[data-theme=contour] .rpm i{width:14px;height:14px}
+  html[data-theme=contour] .rbH{font-size:12px}
+}
+
