@@ -152,6 +152,7 @@ Le relais PC enregistre aussi chaque réception dans le dossier `enregistrements
 ## ⚙ Réglages
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
+- **Alertes de stratégie** : coupe d'un coup les alertes des arrêts de ta stratégie (« Arrêt dans X tours », BOX BOX au tour d'arrêt, annonces vocales). Le prochain arrêt reste affiché sans alerte ; l'alerte carburant critique reste ;
 - **Apparence** : thème **Classique**, **Racing GT3** (fond carbone, rouge course, chiffres italiques façon écran de volant) **Nuit d'endurance** (habitacle sombre, cadrans ambre qui n'éblouissent pas quand tu roules dans le noir) ou **Contour** (fond noir, fenêtres entourées d'un trait de couleur, bandeau « Conso par relais » en haut de Pilote), appliqué à tous les écrans de cet appareil. Les polices sont intégrées à l'appli : même rendu avec ou sans internet ;
 - **Arrêts** : Plan B automatique (on/off), alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique / essence courte ;
 - **Carburant** : précision de la conso au tour (1, 2 ou 3 décimales, ex. 7,326 %/t), sur Pilote et Complet ;

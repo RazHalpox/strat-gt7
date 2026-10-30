@@ -355,6 +355,7 @@ const OPTS_DEF = {
   // Arrêts (écran Pilote)
   warnLaps: 3,        // bannière « Arrêt dans X tours » : combien de tours avant l'arrêt prévu
   boxFlash: true,     // BOX BOX clignotant
+  stratAlerts: true,  // alertes de la stratégie : bannière et voix « Arrêt dans X tours », BOX BOX au tour d'arrêt
   fuelSafety: true,   // BOX BOX « Carburant critique » si l'essence ne tient pas jusqu'à l'arrêt prévu
   planBAuto: true,    // Plan B ouvert tout seul dans la voie des stands (et après un arrêt hors plan)
   // Écran Complet
@@ -436,7 +437,8 @@ function engineer(laps,live,lapsLeft,nx){
   const O=opts(),best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
   let t=O.voiceLapTime?`Tour ${last.n}, ${sayLap(last.ms)}.`:"",alert=false;
   if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
-  if(nx&&!nx.done&&nx.inLaps===0){t+=` Box box, ce tour-ci. ${CN[nx.g]}${addL(nx)>0?`, ${Math.round(addL(nx)*FK)} pour cent`:", pneus seuls"}.`;alert=true}
+  if(!O.stratAlerts){} // alertes de stratégie coupées (⚙ Réglages)
+  else if(nx&&!nx.done&&nx.inLaps===0){t+=` Box box, ce tour-ci. ${CN[nx.g]}${addL(nx)>0?`, ${Math.round(addL(nx)*FK)} pour cent`:", pneus seuls"}.`;alert=true}
   else if(nx&&!nx.done&&O.warnLaps>0&&nx.inLaps<=O.warnLaps){t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CN[nx.g]}.`;alert=true}
   if(fuelShort&&fin(lapsLeft)&&Math.floor(lapsLeft)>1){const n=Math.floor(lapsLeft),ok=fuelShort.tgt>=fuelShort.cons*0.88,v=PC(fuelShort.tgt);
     t+=fuelShort.toStop?` Attention, essence pour ${n} tours seulement, l'arrêt prévu est trop loin. ${ok?`Vise ${v} pour cent par tour.`:"Rentre plus tôt."}`
@@ -532,9 +534,9 @@ function render(s){
   if(done){stop.className="stop done";$("stopTitle").textContent=`Course terminée · T${done.lap}`;$("stopText").textContent="Drapeau à damier"+(L.pos>0?` · P${L.pos}${L.cars>0?"/"+L.cars:""}`:"")}
   else if(O.fuelSafety&&fin(left)&&left<1.5&&(fuelShort||!nx)&&!(nx&&!nx.done&&nx.inLaps===0)){stop.className="stop crit";$("stopTitle").textContent="Box box · carburant critique";$("stopText").textContent="Rentre au stand ce tour-ci"}
   else if(nx&&!nx.done){const txt=stopTxt(nx);
-    if(nx.inLaps===0){stop.className="stop crit";$("stopTitle").textContent="Box box · ce tour-ci";$("stopText").textContent=txt}
+    if(nx.inLaps===0){stop.className=O.stratAlerts?"stop crit":"stop";$("stopTitle").textContent=O.stratAlerts?"Box box · ce tour-ci":`Arrêt prévu ce tour-ci · T${nx.endLap}`;$("stopText").textContent=txt}
     else if(fuelShort){stop.className="stop crit";$("stopTitle").textContent=`Essence courte · ${f1(left)} tours`;$("stopText").textContent=`${tgtTxt} · ${txt}`}
-    else{stop.className="stop"+(O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}
+    else{stop.className="stop"+(O.stratAlerts&&O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}
   else if(fuelShort){stop.className="stop warn";$("stopTitle").textContent=`Essence courte pour finir · ${f1(left)} tours`;$("stopText").textContent=fuelShort.tgt>=cons*0.88?`${tgtTxt} · il manque ${Math.round(fuelShort.miss*FK)} %`:`Il manque ${Math.round(fuelShort.miss*FK)} % : ravitaille`}
   else{stop.className="stop";$("stopTitle").textContent=nx&&nx.done?"Dernier relais":"Pas de plan";$("stopText").textContent=nx&&nx.done?"Plus d'arrêt prévu":"Choisis un plan dans Stratégie"}
   // la même alerte, en gros et clignotante au-dessus du rapport engagé

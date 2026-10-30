@@ -264,6 +264,7 @@ const OPTS_DEF = {
   // Arrêts (écran Pilote)
   warnLaps: 3,        // bannière « Arrêt dans X tours » : combien de tours avant l'arrêt prévu
   boxFlash: true,     // BOX BOX clignotant
+  stratAlerts: true,  // alertes de la stratégie : bannière et voix « Arrêt dans X tours », BOX BOX au tour d'arrêt
   fuelSafety: true,   // BOX BOX « Carburant critique » si l'essence ne tient pas jusqu'à l'arrêt prévu
   planBAuto: true,    // Plan B ouvert tout seul dans la voie des stands (et après un arrêt hors plan)
   // Écran Complet
@@ -345,7 +346,8 @@ function engineer(laps,live,lapsLeft){
   if(O.voiceBest&&last.ms===best&&laps.length>1)t+=" Meilleur tour, bravo.";
   // arrêts de la stratégie (comme l'écran Pilote)
   const nx=nextStop(live&&live.lap),cons=avgFuel(laps,O.consAvg);let alert=false;
-  if(nx&&!nx.done&&nx.inLaps===0){const a=stopAddPct(nx,live,cons,laps);t+=` Box box, ce tour-ci. ${CNS[nx.g]||""}${a>0?`, ${a} pour cent`:", pneus seuls"}.`;alert=true}
+  if(!O.stratAlerts){} // alertes de stratégie coupées (⚙ Réglages)
+  else if(nx&&!nx.done&&nx.inLaps===0){const a=stopAddPct(nx,live,cons,laps);t+=` Box box, ce tour-ci. ${CNS[nx.g]||""}${a>0?`, ${a} pour cent`:", pneus seuls"}.`;alert=true}
   else if(nx&&!nx.done&&O.warnLaps>0&&nx.inLaps<=O.warnLaps){t+=` Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""}. On passe en ${CNS[nx.g]||""}.`;alert=true}
   if(fin(lapsLeft)&&!alert){const n=Math.floor(lapsLeft),tgt=fuelTarget(live||{},laps),lapsTo=tgt&&live?tgt.endLap-live.lap+lapRem(live,laps,cons):NaN,short=fin(lapsTo)&&lapsLeft<lapsTo-0.05;
     if(O.fuelSafety&&n<=1&&(short||!tgt))t+=" Carburant critique, rentre au stand ce tour-ci.";
