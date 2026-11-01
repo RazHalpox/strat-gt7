@@ -4,7 +4,7 @@
 // à chaque arrêt et la vitesse de ravitaillement réelle. La page Stratégie propose ensuite d'utiliser ces mesures.
 (function(){
 const fin=x=>typeof x==="number"&&isFinite(x);
-const RKEY="gt7-races",LKEY="gt7-learn",MAXR=20;
+const RKEY="gt7-races",LKEY="gt7-learn",MAXR=40;
 const rd=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)||"null");return v==null?d:v}catch(e){return d}};
 const wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
 const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN;
@@ -38,10 +38,10 @@ function update(s){
   const changed=last!==cur.lastN||laps.length!==cur.count||fresh||(cur.stops||[]).length!==(cur.nStops||0);
   cur.lastN=last;cur.count=laps.length;cur.lastSeen=now;cur.nStops=(cur.stops||[]).length;
   if(now-(cur.saved||0)>5000||changed){cur.saved=now;wr(LKEY,cur);
-    if(changed&&laps.length){const races=rd(RKEY,[]).filter(r=>r.id!==cur.id);
+    if(changed&&laps.length){const all=rd(RKEY,[]),old=all.find(r=>r.id===cur.id),races=all.filter(r=>r.id!==cur.id);
       const p=plan(),st=rd("gt7-endu-v1",null);
       races.unshift({id:cur.id,date:cur.id,updated:now,fuelCap:L.fuel_cap||100,total:L.total_laps||0,
-        mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,
+        mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,circuit:old&&old.circuit!==undefined?old.circuit:(st&&st.S&&st.S.circuit||""), // circuit noté au départ (ou corrigé dans le Carnet)
         laps:laps.map(l=>({n:l.n,ms:l.ms,fuel:l.fuel,pit:!!l.pit,fuel_end:l.fuel_end})),
         plan:p&&p.rows?p.rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops||[],finish:cur.finish||null});
       races.sort((a,b)=>b.id-a.id);while(races.length>MAXR)races.pop();
@@ -59,7 +59,7 @@ function fromRecording(text,start){
   const p=plan(),st=rd("gt7-endu-v1",null),rows=p&&p.replan&&p.replan.orig?p.replan.orig.rows:p&&p.rows;
   const done=L&&window.Race&&Race.finished?Race.finished(L,laps):null;
   const race={id:first||start,date:first||start,updated:Date.now(),fuelCap:L&&L.fuel_cap||100,total:L&&L.total_laps||0,
-    mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,
+    mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,circuit:st&&st.S&&st.S.circuit||"",
     laps:laps.map(l=>({n:l.n,ms:l.ms,fuel:l.fuel,pit:!!l.pit,fuel_end:l.fuel_end})),
     plan:rows?rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops,finish:done?done.lap:null,fromRec:true};
   // remplace une version incomplète de la même course (même premier tour)
@@ -147,5 +147,6 @@ function removeRace(id){const r=races().find(x=>x.id===id),k=r&&r.laps&&r.laps.l
 // corrige la gomme d'un relais (la télémétrie ne la donne pas : elle vient du plan, qui peut avoir changé)
 function setStintComp(id,from,g){const races=rd(RKEY,[]),r=races.find(x=>x.id===id);if(!r)return;const A=analyze(r);if(!A)return;
   r.plan=A.stints.map(s=>({g:s.from===from?g:(s.g||"?"),from:s.from,to:s.to}));r.updated=Date.now();r.gFixed=true;wr(RKEY,races)}
-window.Learn={update,analyze,suggest,races,removeRace,lapStr,fromRecording,setStintComp};
+function setCircuit(id,c){const races=rd(RKEY,[]),r=races.find(x=>x.id===id);if(!r)return;r.circuit=c;r.updated=Date.now();wr(RKEY,races)}
+window.Learn={setCircuit,update,analyze,suggest,races,removeRace,lapStr,fromRecording,setStintComp};
 })();

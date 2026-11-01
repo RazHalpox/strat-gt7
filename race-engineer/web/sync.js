@@ -21,7 +21,7 @@ function mergeRaces(a,b){const del=arr(LS.getItem("gt7-races-del"));
   // une course = la version qui a le plus de tours, sous le plus petit numéro (le même sur tous les écrans)
   const out=groups.map(g=>{const best=g.slice().sort((x,y)=>(y.laps||[]).length-(x.laps||[]).length||(y.updated||0)-(x.updated||0)||x.id-y.id)[0];
     const id=Math.min(...g.map(x=>x.id));return Object.assign({},best,{id,date:Math.min(...g.map(x=>x.date||x.id))})});
-  return JSON.stringify(out.sort((x,y)=>y.id-x.id).slice(0,20))}
+  return JSON.stringify(out.sort((x,y)=>y.id-x.id).slice(0,40))}
 const MERGE={"gt7-races":mergeRaces,"gt7-races-del":mergeDel},remote={};
 const LS=window.localStorage;if(!LS||!window.XMLHttpRequest||location.protocol==="file:")return;
 const rawSet=Storage.prototype.setItem;

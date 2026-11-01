@@ -109,6 +109,8 @@ tr.pit td{background:var(--accent-soft);font-size:13px}
 .note.bad{color:var(--accent)}
 .ecoNote{display:block;margin-top:6px;color:var(--fg);font-weight:600}
 .ecoBtn{margin-top:8px;padding:6px 12px;font-size:13px}
+.svAct td{background:var(--ok-soft)}
+.tag.circ{background:var(--input);color:var(--fg);border:1px solid var(--input-line)}
 .gfix{display:inline-flex;align-items:center;gap:8px}
 .gfix select{font:inherit;font-size:14px;padding:4px 6px;border-radius:4px;background:var(--input);color:var(--fg);border:1px solid var(--input-line)}
 .tag.eco{background:var(--ok-soft,#e5f4ec);color:var(--ok,#1b7a4b)}
@@ -244,14 +246,14 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   <section class="panel">
     <h2>Stratégies sauvegardées</h2>
     <div class="saveline">
-      <input type="text" id="saveName" maxlength="40" placeholder="Nom (ex. Spa – départ en Dur)" aria-label="Nom de la stratégie">
+      <input type="text" id="saveName" maxlength="40" placeholder="Nom (vide : le circuit et la durée)" aria-label="Nom de la stratégie">
       <button type="button" class="mini on" id="saveBtn">Sauvegarder la stratégie affichée</button>
     </div>
     <div class="tbl"><table style="min-width:760px">
       <thead><tr><th class="l">Nom</th><th class="l">Gommes · tours par relais</th><th>Course</th><th>Conso</th><th>Arrêts</th><th>Tours</th><th>Arrivée</th><th>Stand</th><th>Écart</th><th></th></tr></thead>
       <tbody id="saved"></tbody>
     </table></div>
-    <p class="note" id="savedNote">Sauvegarde la stratégie affichée pour la comparer plus tard. « Afficher » recharge ses réglages et ses gommes. Les stratégies sont partagées entre tes écrans (téléphone, iPad…), même après un Reset.</p>
+    <p class="note" id="savedNote">Sauvegarde la stratégie affichée pour la comparer plus tard ou garder un réglage par circuit. « Afficher » recharge tous ses réglages et ses gommes ; « Mettre à jour » y enregistre tes réglages actuels. Les stratégies sont partagées entre tes écrans (téléphone, iPad…), même après un Reset.</p>
   </section>
   <section class="panel">
     <h2>Combien de tours avec…</h2>
@@ -264,7 +266,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <section id="v-log" class="stack" hidden>
   <section class="panel">
     <h2>Carnet de courses</h2>
-    <p class="note" style="margin-top:0">Chaque course roulée avec l'écran Pilote ou Complet ouvert est enregistrée et partagée entre tes écrans (les 20 dernières). Touche une course pour voir ses relais, ses arrêts et ses tours.</p>
+    <p class="note" style="margin-top:0">Chaque course roulée avec l'écran Pilote ou Complet ouvert est enregistrée et partagée entre tes écrans (les 40 dernières), avec le circuit réglé dans Paramètres. Touche une course pour voir ses relais, ses arrêts et ses tours.</p>
+    <div class="saveline" id="logFilter" style="margin:0 0 8px"></div>
     <div id="log" class="stack" style="gap:8px"></div>
   </section>
   <section class="panel">
@@ -290,6 +293,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
       <section class="panel">
         <h2>Réglages du salon GT7</h2>
         <div class="fields">
+          <label class="full">Circuit<input type="text" id="circuit" maxlength="40" placeholder="ex. Spa-Francorchamps" autocomplete="off"><span class="hint">noté sur chaque course du carnet et proposé comme nom de sauvegarde</span></label>
           <label>Type de course<select id="mode"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select></label>
           <label id="w-duree">Durée de course<span class="unit"><input type="number" id="duree" min="1" step="1"><span>min</span></span></label>
           <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" id="laps" min="1" step="1"><span>tours</span></span></label>
@@ -341,7 +345,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <script>
 const COMPS=[{k:"S",name:"Soft"},{k:"M",name:"Medium"},{k:"H",name:"Hard"}];
 const CN={S:"Soft",M:"Medium",H:"Hard"};
-const DEF={mode:"time",duree:60,laps:35,tank:100,start:100,rate:4,mDeb:100,mFin:86,mTours:5,consMode:"mesure",cAvg:"",pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,manual:false,seq:[],lapsFix:[],
+const DEF={circuit:"",mode:"time",duree:60,laps:35,tank:100,start:100,rate:4,mDeb:100,mFin:86,mTours:5,consMode:"mesure",cAvg:"",pitMode:"rate",pitFull:50,pitTyre:30,qty:60,nReq:3,manual:false,seq:[],lapsFix:[],
   S:{lap:"1:44.200",life:12,req:true},M:{lap:"1:45.000",life:20,req:true},H:{lap:"1:45.900",life:30,req:true}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 let S=clone(DEF),tab="strat",selN=null,touched=false;
@@ -364,7 +368,7 @@ $("tyres").innerHTML=COMPS.map(c=>`<tr><td class="lbl">${chip(c.k)} ${c.name}</t
   <td><input type="text" id="${c.k}-lap" inputmode="decimal" aria-label="Temps au tour ${c.name}"></td>
   <td><input type="number" id="${c.k}-life" min="1" step="1" aria-label="Vie ${c.name} en tours"></td>
   <td class="l"><input type="checkbox" id="${c.k}-req" aria-label="${c.name} obligatoire"></td></tr>`).join("");
-const FIELDS=["mode","duree","laps","tank","start","rate","consMode","cAvg","mDeb","mFin","mTours","pitMode","pitFull","pitTyre","qty","nReq"];
+const FIELDS=["circuit","mode","duree","laps","tank","start","rate","consMode","cAvg","mDeb","mFin","mTours","pitMode","pitFull","pitTyre","qty","nReq"];
 function fillForm(){FIELDS.forEach(f=>$(f).value=S[f]);COMPS.forEach(c=>{["lap","life"].forEach(f=>$(`${c.k}-${f}`).value=S[c.k][f]);$(`${c.k}-req`).checked=!!S[c.k].req})}
 document.addEventListener("input",e=>{const el=e.target,id=el.id;if(!id)return;
   if(FIELDS.includes(id)){S[id]=el.value;
@@ -489,7 +493,7 @@ function render(){
   $("w-duree").hidden=S.mode!=="time";$("w-laps").hidden=S.mode!=="laps";$("w-pitFull").hidden=S.pitMode!=="fixed";
   $("w-cAvg").hidden=S.consMode!=="avg";document.querySelectorAll(".w-mes").forEach(e=>e.hidden=S.consMode==="avg");
   const P=derive();
-  $("meta").innerHTML=`<span>${P.mode==="time"?`Durée <b>${f0(num(S.duree))} min</b>`:`Course <b>${f0(P.L)} tours</b>`}</span><span>Refuel <b>${f1(P.rate)} L/s</b></span><span>Réservoir <b>${f0(P.tank)} L</b></span>`;
+  $("meta").innerHTML=(S.circuit?`<span><b>${esc(S.circuit)}</b></span>`:"")+`<span>${P.mode==="time"?`Durée <b>${f0(num(S.duree))} min</b>`:`Course <b>${f0(P.L)} tours</b>`}</span><span>Refuel <b>${f1(P.rate)} L/s</b></span><span>Réservoir <b>${f0(P.tank)} L</b></span>`;
   // sorties de l'onglet Paramètres
   $("consoOut").innerHTML=P.c0>0?`<span>Conso : <b>${f2(P.c)} L/tour</b></span><span>Plein de ${f0(P.tank)} L : <b>${P.c>0?Math.floor(P.tank/P.c+1e-9)+" tours":"illimité"}</b></span>`:`<span>${P.cAvg?"Tape ta conso moyenne par tour, en litres.":"Entre le carburant au début, à la fin et le nombre de tours."}</span>`;
   $("pitOut").innerHTML=P.pitMode==="rate"
@@ -581,12 +585,15 @@ $("strats").addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-n]
 /* ---- mesures en course (onglet Paramètres) et carnet ---- */
 let learnId=null;
 const fmtCur=(v,u)=>v==null||v===""||(typeof v==="number"&&!fin(v))?"–":(typeof v==="number"?f2(v).replace(/,00$/,""):v)+(u?" "+u:"");
-function learnRace(){const rs=Learn.races();return rs.find(r=>r.id===learnId)||rs[0]||null}
+// course utilisée pour les mesures : celle choisie dans le Carnet, sinon la dernière roulée sur le circuit réglé
+const sameCircuit=(a,b)=>String(a||"").trim().toLowerCase()===String(b||"").trim().toLowerCase();
+function learnRace(){const rs=Learn.races();return rs.find(r=>r.id===learnId)||(S.circuit?rs.find(r=>sameCircuit(r.circuit,S.circuit)):null)||rs[0]||null}
+let logCircuit=null; // filtre du carnet : null = circuit réglé (s'il a des courses), "" = tous
 function renderLearn(){
   const r=learnRace(),tb=$("learn");
   if(!r){$("learnSrc").textContent="Pas encore de course enregistrée : roule avec l'écran Pilote ou Complet ouvert, les mesures apparaîtront ici.";$("learnTbl").hidden=true;$("learnAll").hidden=true;return}
   const A=Learn.analyze(r),items=Learn.suggest(A,S);
-  $("learnSrc").textContent=`D'après ta course du ${new Date(r.date).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · ${A?A.laps:0} tours.`;
+  $("learnSrc").textContent=`D'après ta course${r.circuit?" à "+r.circuit:""} du ${new Date(r.date).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})} · ${A?A.laps:0} tours.`;
   $("learnTbl").hidden=!items.length;$("learnAll").hidden=!items.some(i=>i.val!=null);
   if(!items.length){$("learnSrc").textContent+=" Pas assez de tours propres pour mesurer.";return}
   tb.innerHTML="";
@@ -635,17 +642,25 @@ function renderRecs(){
           recDel=null;await Rec.remove(r.id);renderRecs()}});
       box.appendChild(d)})});
 }
+document.getElementById("logFilter").addEventListener("click",e=>{const b=e.target.closest("button[data-c]");if(!b)return;logCircuit=b.dataset.c;renderLog()});
 function renderLog(){
   renderRecs();
-  const rs=Learn.races(),box=$("log");box.innerHTML="";
+  const all=Learn.races(),box=$("log");box.innerHTML="";
+  // filtre par circuit
+  const names=[];all.forEach(r=>{const c=String(r.circuit||"").trim();if(c&&!names.some(n=>sameCircuit(n,c)))names.push(c)});
+  let fc=logCircuit===null?(S.circuit&&names.some(n=>sameCircuit(n,S.circuit))?S.circuit:""):logCircuit;
+  if(fc&&!names.some(n=>sameCircuit(n,fc)))fc="";
+  const fl=$("logFilter");fl.hidden=!names.length;
+  fl.innerHTML=[["","Tous"]].concat(names.map(n=>[n,n])).concat(all.some(r=>!String(r.circuit||"").trim())&&names.length?[["?","Sans circuit"]]:[]).map(([v,t])=>`<button type="button" class="mini${(v===fc||v&&fc&&sameCircuit(v,fc))?" on":""}" data-c="${esc(v)}">${esc(t)}</button>`).join("");
+  const rs=all.filter(r=>!fc||(fc==="?"?!String(r.circuit||"").trim():sameCircuit(r.circuit,fc)));
   if(!rs.length){box.innerHTML='<p class="note">Aucune course enregistrée pour l\'instant.</p>';return}
   const cur=learnRace();
   rs.forEach(r=>{const A=Learn.analyze(r)||{stints:[],stops:[]},d=document.createElement("div");d.className="race"+(cur&&cur.id===r.id?" sel":"");
     const chips=A.stints.map(s=>s.g?chip(s.g):"").join("");
-    d.innerHTML=`<button type="button" class="rh" aria-expanded="${openRace===r.id}"><b>${new Date(r.date).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</b>
+    d.innerHTML=`<button type="button" class="rh" aria-expanded="${openRace===r.id}"><b>${new Date(r.date).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</b>${r.circuit?`<span class="tag circ">${esc(r.circuit)}</span>`:""}
       <span>${A.laps||0} tours</span><span>meilleur <b style="font-size:14px">${fin(A.best)?Learn.lapStr(A.best):"–"}</b></span><span>conso ${fin(A.cons)?f2(A.cons)+" L/t":"–"}</span><span>${A.stops.length} arrêt${A.stops.length>1?"s":""}</span><span class="chips">${chips}</span>${cur&&cur.id===r.id?'<span class="tag">Mesures utilisées</span>':""}</button>`;
     if(openRace===r.id){const rd=document.createElement("div");rd.className="rd";
-      rd.innerHTML=`<h3>Relais</h3><div class="tbl"><table style="min-width:520px"><thead><tr><th class="l">Relais</th><th class="l">Gomme</th><th>Tours</th><th>Moyenne</th><th>Usure</th><th>Conso</th></tr></thead><tbody>${
+      rd.innerHTML=`<div class="saveline" style="margin:0 0 6px"><label class="hint" style="display:flex;flex-direction:row;align-items:center;gap:8px;margin:0">Circuit<input type="text" data-circ maxlength="40" value="${esc(r.circuit||"")}" placeholder="à renseigner" style="max-width:220px"></label></div><h3>Relais</h3><div class="tbl"><table style="min-width:520px"><thead><tr><th class="l">Relais</th><th class="l">Gomme</th><th>Tours</th><th>Moyenne</th><th>Usure</th><th>Conso</th></tr></thead><tbody>${
         A.stints.map((s,i)=>`<tr><td>Relais ${i+1} <span class="hint">T${s.from}–T${s.to}</span></td><td class="l"><span class="gfix">${s.g?chip(s.g):chip("X").replace(">X<",">?<")}<select data-from="${s.from}" aria-label="Gomme du relais ${i+1}">${s.g?"":'<option value="">?</option>'}${["S","M","H"].map(k=>`<option value="${k}"${s.g===k?" selected":""}>${CN[k]}</option>`).join("")}</select></span></td><td>${s.n}</td><td>${fin(s.avg)?Learn.lapStr(s.avg):"–"}</td><td>${fin(s.slope)?(s.slope>=0?"+":"")+f2(s.slope)+" s/t":"–"}</td><td>${fin(s.cons)?f2(s.cons)+" L":"–"}</td></tr>`).join("")}</tbody></table></div>
         <h3>Arrêts</h3>${A.stops.length?`<div class="tbl"><table style="min-width:420px"><thead><tr><th class="l">Tour</th><th>Temps perdu</th><th>Carburant ajouté</th><th>Immobile</th><th>Ravitaillement</th></tr></thead><tbody>${
         A.stops.map(x=>`<tr><td>T${x.lap}</td><td>${fin(x.loss)?f1(x.loss)+" s":"–"}</td><td>${fin(x.added)?f1(x.added)+" L":"–"}</td><td>${fin(x.still)?f1(x.still)+" s":"–"}</td><td>${fin(x.rate)?f1(x.rate)+" L/s":"–"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note" style="margin:0">Aucun arrêt.</p>'}
@@ -657,6 +672,8 @@ function renderLog(){
         else if(b.dataset.a==="csv")exportRace(r);
         else if(b.dataset.a==="del"){if(raceDel!==r.id){raceDel=r.id;b.classList.add("armed");b.textContent="Confirmer";setTimeout(()=>{if(raceDel===r.id){raceDel=null;renderLog()}},4000);return}
           raceDel=null;Learn.removeRace(r.id);if(learnId===r.id)learnId=null;openRace=null;renderLog()}});
+      // circuit corrigé à la main
+      rd.querySelector("[data-circ]").addEventListener("change",e=>{Learn.setCircuit(r.id,e.target.value.trim().slice(0,40));renderLog()});
       // gomme d'un relais corrigée à la main
       rd.addEventListener("change",e=>{const sel=e.target.closest("select[data-from]");if(!sel||!sel.value)return;
         Learn.setStintComp(r.id,+sel.dataset.from,sel.value);renderLog()});
@@ -701,21 +718,29 @@ function renderSaved(){const a=readSaved();
   const multi=k=>a.filter(x=>raceKey(x)===k).length>1;
   $("saved").innerHTML=a.map(x=>{const b=bestBy[raceKey(x)],d=x.laps-b.laps;
     const gap=!multi(raceKey(x))?"–":x===b?'<span class="tag" style="margin:0">Meilleure</span>':d!==0?`${d>0?"+":""}${d} tour${Math.abs(d)>1?"s":""}`:`+${f1(x.time-b.time)} s`;
-    return`<tr><td class="l" style="font-family:var(--f-body);white-space:normal"><b>${esc(x.name)}</b><span class="sv-sub">${esc(x.date)}${x.manual?" · gommes choisies":""}</span></td>
+    const act=S.savedId===x.id;
+    return`<tr${act?' class="svAct"':""}><td class="l" style="font-family:var(--f-body);white-space:normal"><b>${esc(x.name)}</b>${act?'<span class="tag" style="margin-left:6px">Affichée</span>':""}<span class="sv-sub">${x.circuit&&!String(x.name).includes(x.circuit)?esc(x.circuit)+" · ":""}${esc(x.date)}${x.manual?" · gommes choisies":""}</span></td>
       <td class="l"><span class="chips">${x.seq.map(g=>chip(g)).join("")}</span><span class="sv-sub">${x.s.join(" · ")}</span></td>
       <td>${x.mode==="laps"?x.target+" t":x.target+" min"}</td><td>${f2(x.c)} L</td><td>${x.stops}</td><td><b>${x.laps}</b></td><td>${clock(x.time)}</td><td>${f0(x.pits)} s</td><td>${gap}</td>
-      <td><span class="sv-acts"><button type="button" class="mini" data-load="${x.id}">Afficher</button><button type="button" class="mini" data-del="${x.id}" aria-label="Supprimer ${esc(x.name)}">✕</button></span></td></tr>`}).join("")}
-$("saveBtn").addEventListener("click",()=>{if(!lastSel)return;const P=lastP,r=lastSel,a=readSaved(),d=new Date();
-  const name=($("saveName").value.trim()||`Stratégie ${a.length+1}`).slice(0,40);
-  a.push({id:Date.now().toString(36),name,date:d.toLocaleDateString("fr-FR")+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),
-    manual:!!S.manual,mode:P.mode,target:P.mode==="laps"?P.L:Math.round(P.T/60),c:P.c,seq:r.seq.map(g=>g.k),s:r.s.slice(),stops:r.seq.length-1,laps:r.laps,time:r.time,pits:r.pits,snap:clone(S)});
+      <td><span class="sv-acts"><button type="button" class="mini" data-load="${x.id}">Afficher</button><button type="button" class="mini" data-upd="${x.id}" title="Enregistrer les réglages actuels dans cette sauvegarde">Mettre à jour</button><button type="button" class="mini" data-del="${x.id}" aria-label="Supprimer ${esc(x.name)}">✕</button></span></td></tr>`}).join("")}
+// contenu d'une sauvegarde : tous les réglages et la stratégie affichée
+function savedData(){const P=lastP,r=lastSel,d=new Date();
+  return{date:d.toLocaleDateString("fr-FR")+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}),circuit:S.circuit||"",
+    manual:!!S.manual,mode:P.mode,target:P.mode==="laps"?P.L:Math.round(P.T/60),c:P.c,seq:r.seq.map(g=>g.k),s:r.s.slice(),stops:r.seq.length-1,laps:r.laps,time:r.time,pits:r.pits,snap:clone(S)}}
+$("saveBtn").addEventListener("click",()=>{if(!lastSel)return;const P=lastP,a=readSaved();
+  const def=S.circuit?`${S.circuit} · ${P.mode==="laps"?P.L+" tours":Math.round(P.T/60)+" min"}`:`Stratégie ${a.length+1}`;
+  const id=Date.now().toString(36);S.savedId=id;save();
+  a.push(Object.assign({id,name:($("saveName").value.trim()||def).slice(0,40)},savedData()));
   writeSaved(a);$("saveName").value="";renderSaved();
   const btn=$("saveBtn");btn.textContent="✓ Sauvegardée";setTimeout(()=>btn.textContent="Sauvegarder la stratégie affichée",1600)});
-let delArmed=null;
+let delArmed=null,updArmed=null;
 $("saved").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const a=readSaved();
   if(b.dataset.load){const x=a.find(y=>y.id===b.dataset.load);if(!x)return;
     S=Object.assign(clone(DEF),clone(x.snap));COMPS.forEach(c=>S[c.k]=Object.assign(clone(DEF[c.k]),x.snap[c.k]||{}));
-    S.manual=true;S.seq=x.seq.slice();S.lapsFix=x.snap&&x.snap.lapsFix?x.snap.lapsFix.slice(0,x.seq.length):[];selN=null;touched=true;save();fillForm();render();window.scrollTo({top:0,behavior:"smooth"});return}
+    S.manual=true;S.seq=x.seq.slice();S.lapsFix=x.snap&&x.snap.lapsFix?x.snap.lapsFix.slice(0,x.seq.length):[];S.savedId=x.id;selN=null;touched=true;logCircuit=null;learnId=null;save();fillForm();render();renderSaved();window.scrollTo({top:0,behavior:"smooth"});return}
+  if(b.dataset.upd){const i=a.findIndex(y=>y.id===b.dataset.upd);if(i<0||!lastSel)return;
+    if(updArmed!==b.dataset.upd){updArmed=b.dataset.upd;b.classList.add("armed");b.textContent="Remplacer ?";setTimeout(()=>{if(updArmed===b.dataset.upd){updArmed=null;renderSaved()}},4000);return}
+    updArmed=null;S.savedId=a[i].id;save();a[i]=Object.assign({},a[i],savedData(),{snap:clone(S)});writeSaved(a);renderSaved();return}
   if(b.dataset.del){if(delArmed!==b.dataset.del){delArmed=b.dataset.del;b.classList.add("armed");b.textContent="Supprimer ?";setTimeout(()=>{if(delArmed===b.dataset.del){delArmed=null;renderSaved()}},4000);return}
     delArmed=null;writeSaved(a.filter(y=>y.id!==b.dataset.del));renderSaved()}});
 
