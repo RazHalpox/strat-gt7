@@ -101,6 +101,14 @@ tr.pit td{color:var(--muted)}
 /* envoi stratégie */
 .send{display:flex;flex-direction:column;gap:10px}
 .send .line{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* gommes à toucher : enregistre le temps moyen des derniers tours dans cette gomme */
+.tyreBtns{gap:10px!important}
+.tyreBtn{flex:1 1 0;min-width:84px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:10px;
+  font:600 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tyreBtn .chip{width:46px;height:46px;font-size:22px;border-width:5px}
+.tyreBtn:active{transform:scale(.96)}
+.tyreBtn.done{border-color:var(--ok);background:rgba(61,220,132,.14)}
+.tyreBtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 select,input[type=number]{font:500 16px var(--f-mono);background:var(--panel-2);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
 .msg{font-size:13px;color:var(--ok);min-height:1.2em}
 .note{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:70ch}
@@ -242,9 +250,11 @@ header .tools,header .hdr-right{grid-area:tools;justify-self:end}
     <div class="send">
       <div class="line"><span class="sm">Sur les</span><select id="nLaps" aria-label="Nombre de tours pris en compte"><option>3</option><option selected>5</option><option>10</option></select><span class="sm">derniers tours sans arrêt</span></div>
       <div class="line"><button class="btn" id="sendFuel" type="button">Utiliser ma conso</button><span class="sm" id="sendFuelInfo"></span></div>
-      <div class="line"><span class="sm">Temps moyen en</span>
-        <select id="comp" aria-label="Gomme utilisée"><option value="S">Soft</option><option value="M" selected>Medium</option><option value="H">Hard</option></select>
-        <button class="btn" id="sendLap" type="button">Enregistrer</button><span class="sm" id="sendLapInfo"></span></div>
+      <div class="line"><span class="sm">Temps moyen <b id="sendLapInfo"></b> : touche la gomme que tu as roulée pour l'enregistrer</span></div>
+      <div class="line tyreBtns">
+        <button class="tyreBtn" type="button" data-k="S" aria-label="Enregistrer le temps moyen en Soft"><span class="chip S">S</span>Soft</button>
+        <button class="tyreBtn" type="button" data-k="M" aria-label="Enregistrer le temps moyen en Medium"><span class="chip M">M</span>Medium</button>
+        <button class="tyreBtn" type="button" data-k="H" aria-label="Enregistrer le temps moyen en Hard"><span class="chip H">H</span>Hard</button></div>
       <div class="msg" id="sendMsg" role="status"></div>
     </div>
     <p class="note">Ta conso et tes temps sont enregistrés tels quels dans la stratégie. Les tours avec un arrêt au stand sont ignorés.</p>
@@ -467,7 +477,7 @@ function readStrat(){try{return JSON.parse(localStorage.getItem(KEY)||"null")||{
 function writeStrat(o){try{localStorage.setItem(KEY,JSON.stringify(o));return true}catch(e){return false}}
 function updateSendInfo(laps){const n=+$("nLaps").value,c=avgFuel(laps,n),cl=cleanLaps(laps).slice(-n).length,t=avgLap(laps,n);
   $("sendFuelInfo").textContent=fin(c)?`${f2(c)} L/tour sur ${cl} tour${cl>1?"s":""}`:"pas encore de tour complet";
-  $("sendLapInfo").textContent=fin(t)?lapFmt(t):""}
+  $("sendLapInfo").textContent=fin(t)?lapFmt(t):"–"}
 $("nLaps").addEventListener("change",()=>updateSendInfo(window.__laps||[]));
 function flash(t){$("sendMsg").textContent=t;clearTimeout(flash._t);flash._t=setTimeout(()=>$("sendMsg").textContent="",4000)}
 $("sendFuel").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,c=cleanLaps(laps).slice(-n);
@@ -475,10 +485,11 @@ $("sendFuel").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("n
   const used=c.reduce((s,l)=>s+l.fuel,0),o=readStrat();o.S=o.S||{};
   o.S.consMode="mesure";o.S.mDeb=100;o.S.mFin=Math.round((100-used)*100)/100;o.S.mTours=c.length;
   flash(writeStrat(o)?`Conso enregistrée : ${f2(used/c.length)} L/tour.`:"Enregistrement impossible sur ce navigateur.")});
-$("sendLap").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,t=avgLap(laps,n),k=$("comp").value;
+document.querySelectorAll(".tyreBtn").forEach(b=>b.addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,t=avgLap(laps,n),k=b.dataset.k;
   if(!fin(t))return flash("Il faut au moins un tour complet sans arrêt.");
   const o=readStrat();o.S=o.S||{};o.S[k]=Object.assign({lap:"",life:20,req:true},o.S[k]||{},{lap:lapFmt(t)});
-  flash(writeStrat(o)?`Temps ${({S:"Soft",M:"Medium",H:"Hard"})[k]} enregistré : ${lapFmt(t)}.`:"Enregistrement impossible sur ce navigateur.")});
+  const ok=writeStrat(o);flash(ok?`Temps ${({S:"Soft",M:"Medium",H:"Hard"})[k]} enregistré : ${lapFmt(t)}.`:"Enregistrement impossible sur ce navigateur.");
+  if(ok){document.querySelectorAll(".tyreBtn").forEach(x=>x.classList.toggle("done",x===b));clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove("done"),2500)}}));
 
 /* ---- flux en direct depuis le PC ---- */
 function connect(){
