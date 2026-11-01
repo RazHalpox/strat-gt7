@@ -120,7 +120,7 @@ Le bouton **▦** (en haut à droite de Pilote) ouvre le mode **Disposition** :
 - glisse une fenêtre (Carburant, Rapport et vitesse, Chronos, Pneus) sur une autre : **au centre** elles s'échangent, **sur un bord** (gauche, droite, haut, bas) elle se place à côté ;
 - **✕ Masquer** retire une fenêtre ; elle réapparaît avec le bouton **+ Nom** dans la barre ;
 - dans chaque fenêtre, touche un élément pour le masquer ou le réafficher (par exemple le compte-tours, le rapport, la conso des derniers tours) : ce qui reste grandit pour prendre la place libérée. L'alerte BOX BOX et le Plan B restent toujours ;
-- **+ Conso par relais (bandeau)** ajoute en haut de Pilote un bandeau sur toute la largeur : la conso moyenne de chaque relais roulé, le relais en cours et ceux encore prévus (affiché d'office avec le thème Contour, ✕ Masquer pour l'enlever) ;
+- **+ Conso par relais (bandeau)** ajoute en haut de Pilote un bandeau sur toute la largeur : la conso moyenne de chaque relais roulé, le relais en cours et ceux encore prévus (✕ Masquer pour l'enlever) ;
 - fais glisser un élément dans cette liste pour changer sa place dans la fenêtre (par exemple le prochain arrêt tout en haut du carburant) ;
 - **Par défaut** remet la disposition d'origine, **Terminé** quitte le mode.
 
@@ -153,7 +153,7 @@ Le relais PC enregistre aussi chaque réception dans le dossier `enregistrements
 
 L'onglet avec la roue crantée, à droite de Stratégie, regroupe les options. Elles s'appliquent tout de suite sur les autres écrans :
 - **Alertes de stratégie** : coupe d'un coup les alertes des arrêts de ta stratégie (« Arrêt dans X tours », BOX BOX au tour d'arrêt, annonces vocales). Le prochain arrêt reste affiché sans alerte ; l'alerte carburant critique reste ;
-- **Apparence** : thème **Classique**, **Racing GT3** (fond carbone, rouge course, chiffres italiques façon écran de volant) **Nuit d'endurance** (habitacle sombre, cadrans ambre qui n'éblouissent pas quand tu roules dans le noir) ou **Contour** (fond noir, fenêtres entourées d'un trait de couleur, bandeau « Conso par relais » en haut de Pilote), appliqué à tous les écrans de cet appareil. Les polices sont intégrées à l'appli : même rendu avec ou sans internet ;
+- **Apparence** : thème **Classique** ou **Racing GT3** (fond carbone, rouge course, chiffres italiques façon écran de volant), appliqué à tous les écrans de cet appareil. Les polices sont intégrées à l'appli : même rendu avec ou sans internet ;
 - **Arrêts** : Plan B automatique (on/off), alerte d'arrêt de 1 à 5 tours avant (ou désactivée), alerte carburant critique / essence courte ;
 - **Carburant** : précision de la conso au tour (1, 2 ou 3 décimales, ex. 7,326 %/t), sur Pilote et Complet ;
 - **Écran Complet** : afficher ou masquer la bande radio ;

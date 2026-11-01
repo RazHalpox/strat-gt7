@@ -35,14 +35,13 @@ Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme
 | ⚙ Réglages | Thème, alertes, Plan B automatique, voix, seuils carburant et pneus | Une fois, puis quand tu veux |
 | Coach | Analyse tes tours : où est le temps, quoi changer à chaque virage, piste en 3D, comparaison à un tour de référence | En essais ou en contre-la-montre |
 
-## Trois thèmes
+## Deux thèmes
 
-À choisir dans ⚙ Réglages › Apparence. Les polices sont intégrées : même rendu avec ou sans internet.
+À choisir dans ⚙ Réglages › Apparence : **Classique** (en haut de cette page) ou **Racing GT3**. Les polices sont intégrées : même rendu avec ou sans internet.
 
-| Racing GT3 | Nuit d'endurance |
-| --- | --- |
-| ![Thème Racing GT3](docs/pilote-gt3.jpg) | ![Thème Nuit d'endurance](docs/pilote-nuit.jpg) |
-| Carbone, rouge course, chiffres façon écran de volant | Habitacle sombre et cadrans ambre qui n'éblouissent pas quand tu roules dans le noir (police B612, dessinée pour les cockpits) |
+![Thème Racing GT3](docs/pilote-gt3.jpg)
+
+Racing GT3 : carbone, rouge course, chiffres façon écran de volant.
 
 ## Le Coach de tour
 
@@ -89,4 +88,4 @@ Les valeurs pré-remplies sont des exemples à remplacer par tes mesures. Le cal
 - La télémétrie de GT7 ne concerne que ta voiture : ni les pneus ni la position des autres pilotes ne sont disponibles.
 - Un seul programme à la fois peut recevoir la télémétrie (ferme SimHub ou le relais PC si l'appli Android ne reçoit rien).
 - La stratégie, le Plan B et le carnet sont partagés entre tous les écrans branchés sur le même téléphone ou PC (téléphone, iPad…). Les réglages (thème, voix), la disposition et les enregistrements restent sur chaque appareil.
-- Projet indépendant, sans lien avec Polyphony Digital ni Sony Interactive Entertainment. Polices sous licence SIL Open Font License (Barlow Condensed, IBM Plex Sans, JetBrains Mono, Saira Condensed, B612), licences dans `race-engineer/web/fonts`.
+- Projet indépendant, sans lien avec Polyphony Digital ni Sony Interactive Entertainment. Polices sous licence SIL Open Font License (Barlow Condensed, IBM Plex Sans, JetBrains Mono, Saira Condensed), licences dans `race-engineer/web/fonts`.

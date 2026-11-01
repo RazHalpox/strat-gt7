@@ -171,12 +171,10 @@ nav.tabs3 a.cog{display:flex;align-items:center;padding:6px 10px}
 nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
-<link rel="stylesheet" href="theme-nuit.css">
-<link rel="stylesheet" href="theme-contour.css">
 <script src="sync.js"></script>
 <script src="learn.js"></script>
 <script src="rec.js"></script>
-<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit"||o.theme==="contour")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
 </head>
 <body>
 <div class="topnav">
@@ -692,7 +690,8 @@ $("relays").addEventListener("change",e=>{const t=e.target;if(!t||t.dataset.fix=
   touched=true;save();render()});
 /* ---- stratégies sauvegardées (gardées à part : un Reset ne les efface pas) ---- */
 const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function readSaved(){try{return JSON.parse(localStorage.getItem("gt7-saved")||"[]")}catch(e){return[]}}
+// stratégies sauvegardées (partagées entre les écrans) : on ignore une entrée incomplète plutôt que de bloquer la page
+function readSaved(){try{const a=JSON.parse(localStorage.getItem("gt7-saved")||"[]");return Array.isArray(a)?a.filter(x=>x&&Array.isArray(x.seq)&&Array.isArray(x.s)):[]}catch(e){return[]}}
 function writeSaved(a){try{localStorage.setItem("gt7-saved",JSON.stringify(a));return true}catch(e){return false}}
 function raceKey(x){return x.mode==="laps"?"L"+x.target:"T"+x.target}
 function renderSaved(){const a=readSaved();

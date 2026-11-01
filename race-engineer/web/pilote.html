@@ -266,15 +266,13 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 @media (orientation:portrait){body.editing .card:not([hidden]){min-height:250px}body.editing .grid .card.half{grid-column:1/-1}}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
-<link rel="stylesheet" href="theme-nuit.css">
-<link rel="stylesheet" href="theme-contour.css">
 <script src="sync.js"></script>
 <script src="race.js"></script>
 <script src="learn.js"></script>
 <script src="rec.js"></script>
 <script src="replan.js"></script>
 <script src="planb.js"></script>
-<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3"||o.theme==="nuit"||o.theme==="contour")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
+<script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
 </head>
 <body>
 <div class="wrap">
@@ -376,7 +374,7 @@ const OPTS_DEF = {
   tHot: 95,           // au-dessus : chaud (jaune)
   tOver: 110,         // au-dessus : trop chaud (rouge)
   slipPct: 15,        // blocage / patinage affiché au-delà de ce % (écran Pilote)
-  theme: "classic"    // apparence : "classic", "gt3" (Racing GT3), "nuit" (Nuit d'endurance) ou "contour"
+  theme: "classic"    // apparence : "classic" ou "gt3" (Racing GT3)
 };
 function opts() {
   try { return Object.assign({}, OPTS_DEF, JSON.parse(localStorage.getItem("gt7-opts") || "{}")); }
@@ -659,8 +657,8 @@ function applyOrder(){
     rank.forEach((v,n)=>n.style.order=v);
     const box=card.querySelector(".edOv .els");if(box)ord.forEach(k=>{const b=box.querySelector(`[data-k="${k}"]`);if(b)box.appendChild(b)})});
 }
-// bandeau « Conso par relais » : affiché d'office avec le thème Contour, sinon au choix (Disposition)
-const bandOn=()=>typeof LAY.band==="boolean"?LAY.band:opts().theme==="contour";
+// bandeau « Conso par relais » : au choix (Disposition)
+const bandOn=()=>LAY.band===true;
 function renderLayout(){
   applyOff();applyOrder();
   const bw=$("cRel").hidden;$("cRel").hidden=!bandOn();if(bw&&!$("cRel").hidden)render._rl=null;
