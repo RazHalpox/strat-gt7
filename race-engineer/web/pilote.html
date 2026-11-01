@@ -114,7 +114,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .rb b{font:700 clamp(22px,7vh,64px)/1 var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
 .rb b small{font:600 .35em var(--f-display);color:var(--muted);margin-left:4px}
 .rb i{font:600 13px var(--f-display);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-@media (orientation:portrait){.band{height:auto}.relBand{flex-wrap:wrap}.rb{flex:1 1 30%;min-height:90px}}
+@media (orientation:portrait){.band{height:auto}.relBand{flex-direction:column;gap:6px}
+  .rb{flex-direction:row;justify-content:space-between;gap:10px;padding:6px 12px}.rb b{font-size:28px}.rb i{min-width:70px;text-align:right}}
 /* écran bas (téléphone en paysage) : chaque relais sur une ligne compacte */
 @media (max-height:520px) and (orientation:landscape){.rb{flex-direction:column;justify-content:space-evenly;gap:0;padding:3px 6px}
   .rbH{font-size:11px;gap:5px}.rbH .chip{width:20px;height:20px;font-size:11px;border-width:2.5px}.rb b{font-size:clamp(18px,8vh,34px)}.rb i{font-size:10px}}

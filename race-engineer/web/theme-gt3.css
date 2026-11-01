@@ -34,6 +34,7 @@ html[data-theme=gt3] .card,html[data-theme=gt3] .panel{
 html[data-theme=gt3] .card::after,html[data-theme=gt3] .panel::after{content:"";position:absolute;left:0;top:0;width:54px;height:3px;background:var(--accent);
   transform:skewX(-30deg);transform-origin:left;pointer-events:none}
 html[data-theme=gt3] .lbl,html[data-theme=gt3] .panel h2{font-style:italic;letter-spacing:.14em;font-weight:700}
+@media (max-width:480px){html[data-theme=gt3] .panel h2{letter-spacing:.06em;font-size:18px}}
 html[data-theme=gt3] .kv div,html[data-theme=gt3] .chronos div,html[data-theme=gt3] .relays>div{background:#18181c;border-radius:1px;border-left:2px solid #34343b}
 
 /* ---- chiffres façon écran de volant ---- */

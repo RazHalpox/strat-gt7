@@ -30,7 +30,8 @@
   --bg:#11151a; --surface:#1a2027; --fg:#e7ebef; --muted:#97a1ac; --line:#2c343e;
   --accent:#ff5468; --accent-soft:#3a1d24; --flag:#ffc833; --flag-soft:#3a3118; --ok:#4cc583; --ok-soft:#173226;
   --input:#11161c; --input-line:#3a4552; --soft:#ff4a5c; --med:#ffc833; --hard:#dfe5ea; color-scheme:dark}}
-:root[data-theme="dark"]{
+/* dans l'appli, le thème Classique (sans data-theme) est sombre comme les autres onglets */
+:root[data-theme="dark"],:root:not([data-theme]){
   --bg:#11151a; --surface:#1a2027; --fg:#e7ebef; --muted:#97a1ac; --line:#2c343e;
   --accent:#ff5468; --accent-soft:#3a1d24; --flag:#ffc833; --flag-soft:#3a3118; --ok:#4cc583; --ok-soft:#173226;
   --input:#11161c; --input-line:#3a4552; --soft:#ff4a5c; --med:#ffc833; --hard:#dfe5ea; color-scheme:dark}
@@ -51,8 +52,8 @@ nav.tabs button:hover:not([aria-selected=true]){color:var(--fg)}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
 @media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
-h2{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-h2::before{content:"";width:10px;height:10px;background:var(--accent);transform:skewX(-15deg)}
+h2{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+h2::before{content:"";flex:none;width:10px;height:10px;background:var(--accent);transform:skewX(-15deg)}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fields.three{grid-template-columns:1fr 1fr 1fr}
 .fields .full{grid-column:1/-1}

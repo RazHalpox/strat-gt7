@@ -25,7 +25,8 @@ html[data-theme=contour] .rpm{gap:6px;height:20px;justify-items:center}
 html[data-theme=contour] .rpm i{width:20px;max-width:100%;height:20px;border-radius:50%;background:#2a2a2a}
 
 /* ---- fenêtres : trait de couleur, titre posé au milieu du trait ---- */
-html[data-theme=contour] .card{background:transparent;border:0;border-radius:0;padding:22px 16px 12px;--c:#f5f5f5}
+html[data-theme=contour] .card{position:relative;background:transparent;border:0;border-radius:0;padding:22px 16px 12px;--c:#f5f5f5}
+html[data-theme=contour] .card>p.lbl:first-child{margin:0}
 html[data-theme=contour] .card::before{content:"";position:absolute;inset:9px 1px 1px;border:2px solid var(--c);border-radius:14px;pointer-events:none}
 html[data-theme=contour] .card>.lbl:first-child{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:1;background:#000;padding:0 10px;
   color:#fff;font:700 17px var(--f-mono);letter-spacing:.06em;line-height:18px;max-width:90%;white-space:nowrap;justify-content:center;gap:14px}
