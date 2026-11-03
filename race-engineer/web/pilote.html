@@ -283,7 +283,6 @@ html[data-mode=simple]:not(.adv) #stintTxt{font-size:clamp(20px,min(3.4vw,6vh),4
 <script src="mode.js"></script>
 <script src="race.js"></script>
 <script src="learn.js"></script>
-<script src="rec.js"></script>
 <script src="replan.js"></script>
 <script src="planb.js"></script>
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
@@ -510,7 +509,6 @@ function renderBand(st,cur,rows,all){
 function render(s){
   try{const L0=s.live||{};if(fin(L0.speed)&&window.__S)PlanB.pit(L0,opts())}catch(e){} // voie des stands : d'abord, sans attendre le reste
   try{Learn.update(s)}catch(e){}
-  try{Rec.feed(s)}catch(e){}
   const O=opts(),L=s.live||{},laps=s.laps||[],mode=s.mode;
   const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"||mode==="replay"?"demo":"wait");
   st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":mode==="replay"?"Relecture"+(new URLSearchParams(location.search).get("speed")>1?" ×"+new URLSearchParams(location.search).get("speed"):""):"En attente";
@@ -609,11 +607,6 @@ function render(s){
 }
 
 function connect(){
-  // relecture d'une course enregistrée sur cet appareil (Stratégie › Carnet › Rejouer) : pas de connexion à la PS5
-  const q=new URLSearchParams(location.search),rid=+q.get("replay");
-  if(rid&&window.Rec){const sp=+q.get("speed")||1;
-    Rec.replay(rid,sp,s=>{try{render(s)}catch(e){}},()=>{$("status").textContent="Relecture terminée"}).catch(()=>{$("status").textContent="Relecture impossible"});
-    return}
   const es=new EventSource("events");
   es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(err){}};
   es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};

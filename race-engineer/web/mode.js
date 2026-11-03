@@ -120,6 +120,8 @@ function wizard(){
   draw()}
 
 window.Mode={get:()=>m,set:setMode,wizard};
+// les anciens enregistrements de télémétrie des écrans (fonction retirée) : on libère la place une fois
+if(get("gt7-rec-gone")!=="1"){try{if(window.indexedDB)indexedDB.deleteDatabase("gt7-rec")}catch(e){}put("gt7-rec-gone","1")}
 // au premier lancement, sur n'importe quel écran (sauf Réglages et la relecture d'une course)
 document.addEventListener("DOMContentLoaded",()=>{
   if(get(W)==="1"||/reglages\.html$/.test(location.pathname)||/[?&]replay=/.test(location.search))return;
