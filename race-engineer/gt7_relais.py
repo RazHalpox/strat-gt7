@@ -259,7 +259,6 @@ class RaceState:
             if pl:
                 self._pit_lane_t = now
             self.live = dict(d, cur_ms=cur, pit_lane=pl)
-        COACH.push(d, now)
 
     def snapshot(self):
         with self.lock:
@@ -268,34 +267,6 @@ class RaceState:
                     "live": self.live, "laps": self.laps, "t": time.time()}
 
 
-class CoachFeed:
-    """Coach de tour : chaque image de la PS5 (60 par seconde), en version compacte, pour l'ecran coach.html.
-    [t (ms), x, y, z, vitesse km/h, gaz %, frein %, tour, dernier tour (ms), rapport, drapeaux, regime]
-    drapeaux : 1 = en piste, 2 = pause, 4 = chargement. Meme format que l'appli Android (Coach.java)."""
-    SIZE = 1200   # 20 s d'avance
-
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.ring = [None] * self.SIZE
-        self.seq = 0
-
-    def push(self, d, now):
-        r = lambda v, n: round(float(v or 0), n)
-        flags = (1 if d.get("on_track") else 0) | (2 if d.get("paused") else 0) | (4 if d.get("loading") else 0)
-        s = [int(now * 1000), r(d.get("x"), 2), r(d.get("y"), 2), r(d.get("z"), 2), r(d.get("speed"), 2),
-             r(d.get("throttle"), 1), r(d.get("brake"), 1), int(d.get("lap") or 0), int(d.get("last_ms") or 0),
-             int(d.get("gear") or 0), flags, int(d.get("rpm") or 0)]
-        with self.lock:
-            self.ring[self.seq % self.SIZE] = s
-            self.seq += 1
-
-    def since(self, since):
-        with self.lock:
-            start = max(since, self.seq - self.SIZE)
-            return [self.ring[i % self.SIZE] for i in range(start, self.seq)], self.seq
-
-
-COACH = CoachFeed()
 STATE = RaceState()
 
 
@@ -531,27 +502,6 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 while True:
                     msg = json.dumps(STATE.snapshot(), separators=(",", ":"))
-                    self.wfile.write(("data: " + msg + "\n\n").encode("utf-8"))
-                    self.wfile.flush()
-                    time.sleep(0.1)
-            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError):
-                return
-        if urlparse(self.path).path == "/coach":
-            # Coach de tour : toutes les images de la PS5 (60/s), envoyees par paquets toutes les 100 ms
-            self.send_response(200)
-            try:
-                self.connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            except OSError:
-                pass
-            self.send_header("Content-Type", "text/event-stream")
-            self.send_header("Connection", "keep-alive")
-            self.end_headers()
-            since = max(0, COACH.seq - 30)
-            try:
-                while True:
-                    frames, since = COACH.since(since)
-                    mode = STATE.snapshot()["mode"]
-                    msg = json.dumps({"mode": mode, "s": frames}, separators=(",", ":"))
                     self.wfile.write(("data: " + msg + "\n\n").encode("utf-8"))
                     self.wfile.flush()
                     time.sleep(0.1)

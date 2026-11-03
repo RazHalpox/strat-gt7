@@ -115,7 +115,6 @@ public final class RaceState {
         pitLane = pitLaneCheck(d, now) || tp;
         if (pitLane) pitLaneT = now;
         live = d;
-        Coach.push(d, now);
     }
 
     /** Télémétrie reçue il y a moins de 2,5 s. */
