@@ -34,6 +34,12 @@ Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme
 | Stratégie | Le meilleur plan d'arrêts, tes mesures en course, le carnet de courses | Avant et après la course |
 | ⚙ Réglages | Thème, alertes, Plan B automatique, voix, seuils carburant et pneus | Une fois, puis quand tu veux |
 
+## Simple ou Expert
+
+Au premier lancement, un assistant pose 4 questions (durée de la course, réservoir et conso, gommes obligatoires, affichage) et la stratégie est prête.
+
+En **Simple** (conseillé pour débuter), chaque écran ne montre que l'essentiel en très gros : tours d'essence restants, prochain arrêt, gomme du relais. Le reste est rangé derrière **Plus d'options**, et l'écran Complet est caché. En **Expert**, tout est affiché. Le choix se change dans ⚙ Réglages › Affichage, où l'on peut aussi relancer l'assistant ; il est propre à chaque appareil.
+
 ## Deux thèmes
 
 À choisir dans ⚙ Réglages › Apparence : **Classique** (en haut de cette page) ou **Racing GT3**. Les polices sont intégrées : même rendu avec ou sans internet.

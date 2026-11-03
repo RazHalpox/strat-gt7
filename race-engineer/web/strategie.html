@@ -174,6 +174,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
 <script src="sync.js"></script>
+<script src="mode.js"></script>
 <script src="learn.js"></script>
 <script src="rec.js"></script>
 <script>try{var o=JSON.parse(localStorage.getItem("gt7-opts")||"{}");if(o.theme==="gt3")document.documentElement.setAttribute("data-theme",o.theme)}catch(e){}</script>
@@ -182,7 +183,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <div class="topnav">
   <nav class="tabs3" aria-label="Écrans">
     <a href="pilote.html">Pilote</a>
-    <a href="./">Complet</a>
+    <a href="./" class="x-exp">Complet</a>
     <a href="strategie.html" aria-current="page">Stratégie</a>
     <a href="reglages.html" class="cog" aria-label="Réglages" title="Réglages"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path fill="currentColor" d="M18.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L14 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L5.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></a>
   </nav>
@@ -195,7 +196,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 <nav class="tabs" role="tablist">
   <button role="tab" id="tab-strat" data-tab="strat">Stratégie</button>
   <button role="tab" id="tab-par" data-tab="par">Paramètres</button>
-  <button role="tab" id="tab-log" data-tab="log">Carnet</button>
+  <button role="tab" class="x-adv" id="tab-log" data-tab="log">Carnet</button>
 </nav>
 
 <!-- ============ STRATÉGIE ============ -->
@@ -203,7 +204,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   <div id="replanNote" class="warn" hidden></div>
   <div id="alert" class="warn" hidden></div>
   <div class="kpis" id="kpis"></div>
-  <section class="panel" id="tyrePanel">
+  <section class="panel x-adv" id="tyrePanel">
     <h2>Choix des gommes</h2>
     <div class="modebar" role="group" aria-label="Choix des gommes">
       <button type="button" data-mode="auto">Automatique</button>
@@ -226,7 +227,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div style="padding-top:18px"><div class="bar" id="bar"></div></div>
     <div class="legend"><span><i class="sw" style="background:var(--soft)"></i>Soft</span><span><i class="sw" style="background:var(--med)"></i>Medium</span><span><i class="sw" style="background:var(--hard)"></i>Hard</span><span><i class="sw" style="background:repeating-linear-gradient(135deg,var(--fg) 0 3px,transparent 3px 6px)"></i>Arrêt au stand</span><span><i class="sw" style="border-left:2px dashed var(--accent);width:2px;border-radius:0"></i>Fin du chrono</span></div>
   </section>
-  <section class="panel">
+  <section class="panel x-adv">
     <h2>Comparer les stratégies</h2>
     <div class="tbl"><table style="min-width:620px">
       <thead><tr><th>Arrêts</th><th class="l">Gommes</th><th>Tours / relais</th><th>Tours de course</th><th>Temps au stand</th><th>Écart</th></tr></thead>
@@ -242,7 +243,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     </table></div>
     <p class="note">Le carburant indiqué est celui à mettre à l'arrêt <b>avant</b> le relais : ce qu'il faut pour le finir, arrondi au litre le plus proche. S'il reste assez d'essence, l'arrêt se fait en pneus seuls.</p>
   </section>
-  <section class="panel">
+  <section class="panel x-adv">
     <h2>Stratégies sauvegardées</h2>
     <div class="saveline">
       <input type="text" id="saveName" maxlength="40" placeholder="Nom (vide : le circuit et la durée)" aria-label="Nom de la stratégie">
@@ -254,11 +255,12 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     </table></div>
     <p class="note" id="savedNote">Sauvegarde la stratégie affichée pour la comparer plus tard ou garder un réglage par circuit. « Afficher » recharge tous ses réglages et ses gommes ; « Mettre à jour » y enregistre tes réglages actuels. Les stratégies sont partagées entre tes écrans (téléphone, iPad…), même après un Reset.</p>
   </section>
-  <section class="panel">
+  <section class="panel x-adv">
     <h2>Combien de tours avec…</h2>
     <div class="tbl"><table><thead><tr><th>Carburant</th><th>Tours possibles</th><th>Durée de roulage</th></tr></thead><tbody id="auto"></tbody></table></div>
     <div style="max-width:220px;margin-top:12px"><label>Autre quantité<span class="unit"><input type="number" id="qty" min="1" step="1"><span>L</span></span></label></div>
   </section>
+  <button type="button" class="x-more">Plus d'options</button>
 </section>
 
 <!-- ============ PARAMÈTRES ============ -->
@@ -276,7 +278,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   </section>
 </section>
 <section id="v-par" class="stack" hidden>
-  <section class="panel" id="learnPanel">
+  <section class="panel x-adv" id="learnPanel">
     <h2>Mesuré en course</h2>
     <p class="note" id="learnSrc" style="margin-top:0"></p>
     <div class="tbl" id="learnTbl"><table style="min-width:560px">
@@ -286,20 +288,20 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
     <div class="saveline" style="margin:12px 0 0;align-items:center"><button type="button" class="mini on" id="learnAll">Tout utiliser</button><span class="hint" id="learnMsg"></span></div>
     <p class="note">Mesures prises automatiquement par les écrans Pilote et Complet pendant ta course : rythme moyen et usure par gomme (vie = tours avant de perdre 1,5 s par tour), temps perdu à chaque arrêt, vitesse de ravitaillement. Choisis la course dans l'onglet Carnet.</p>
   </section>
-  <p class="note" style="margin:0"><span class="example">Valeurs d'exemple</span>Les chiffres pré-remplis servent à montrer les calculs. Remplace-les par tes propres mesures.</p>
+  <p class="note x-adv" style="margin:0"><span class="example">Valeurs d'exemple</span>Les chiffres pré-remplis servent à montrer les calculs. Remplace-les par tes propres mesures.</p>
   <div class="two">
     <div class="stack">
       <section class="panel">
         <h2>Réglages du salon GT7</h2>
         <div class="fields">
-          <label class="full">Circuit<input type="text" id="circuit" maxlength="40" placeholder="ex. Spa-Francorchamps" autocomplete="off"><span class="hint">noté sur chaque course du carnet et proposé comme nom de sauvegarde</span></label>
+          <label class="full x-adv">Circuit<input type="text" id="circuit" maxlength="40" placeholder="ex. Spa-Francorchamps" autocomplete="off"><span class="hint">noté sur chaque course du carnet et proposé comme nom de sauvegarde</span></label>
           <label>Type de course<select id="mode"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select></label>
           <label id="w-duree">Durée de course<span class="unit"><input type="number" id="duree" min="1" step="1"><span>min</span></span></label>
           <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" id="laps" min="1" step="1"><span>tours</span></span></label>
-          <label>Refuel rate<span class="unit"><input type="number" id="rate" min="0.1" step="0.1"><span>L/s</span></span><span class="hint">vitesse de ravitaillement du salon</span></label>
-          <span></span>
+          <label class="x-adv">Refuel rate<span class="unit"><input type="number" id="rate" min="0.1" step="0.1"><span>L/s</span></span><span class="hint">vitesse de ravitaillement du salon</span></label>
+          <span class="x-adv"></span>
           <label>Réservoir<span class="unit"><input type="number" id="tank" min="1" step="1"><span>L</span></span></label>
-          <label>Carburant au départ<span class="unit"><input type="number" id="start" min="0" step="1"><span>L</span></span></label>
+          <label class="x-adv">Carburant au départ<span class="unit"><input type="number" id="start" min="0" step="1"><span>L</span></span></label>
         </div>
       </section>
       <section class="panel">
@@ -314,7 +316,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
         <div class="out" id="consoOut"></div>
         <p class="note">Mesure sur 3 à 5 tours lancés, sans le tour de départ, avec les réglages du salon de ta course. Avec un réservoir de 100 L, 1 % de jauge = 1 L.</p>
       </section>
-      <section class="panel">
+      <section class="panel x-adv">
         <h2>Stand</h2>
         <div class="fields">
           <label class="full">Calcul du temps d'arrêt<select id="pitMode"><option value="rate">Pneus + litres ÷ refuel rate</option><option value="fixed">Temps fixes (arrêt complet ou pneus seuls)</option></select></label>
@@ -337,7 +339,8 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
       <p class="note" id="ruleNote"></p>
     </section>
   </div>
-  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button type="button" class="reset" id="reset">Reset</button><span class="hint">Efface tous tes réglages et recharge les valeurs d'exemple.</span></div>
+  <button type="button" class="x-more">Plus d'options</button>
+  <div class="x-adv" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button type="button" class="reset" id="reset">Reset</button><span class="hint">Efface tous tes réglages et recharge les valeurs d'exemple.</span></div>
 </section>
 </div>
 
@@ -486,6 +489,8 @@ function solve(k,P){let best=null;for(const seq of sequences(k,P)){const r=bestF
 
 /* ---- affichage ---- */
 function render(){
+  // mode Simple : le carnet est rangé derrière « Plus d'options »
+  if(tab==="log"&&window.Mode&&Mode.get()==="simple"&&!document.documentElement.classList.contains("adv"))tab="strat";
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
   $("v-strat").hidden=tab!=="strat";$("v-par").hidden=tab!=="par";$("v-log").hidden=tab!=="log";
   if(tab==="par")renderLearn();if(tab==="log")renderLog();
