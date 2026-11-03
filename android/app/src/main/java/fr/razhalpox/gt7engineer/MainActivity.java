@@ -37,7 +37,8 @@ public class MainActivity extends Activity {
 
     private EditText ipField;
     private TextView status, lanInfo, recInfo;
-    private LinearLayout replayRow;
+    private LinearLayout replayRow, recBox;
+    private int devTaps = 0;
     private Button shareBtn;
     private Button startBtn, demoBtn, openBtn, stopBtn;
     private SharedPreferences prefs;
@@ -103,7 +104,17 @@ public class MainActivity extends Activity {
 
         TextView title = text("GT7 Race Engineer", 28, FG, true);
         col.addView(title);
-        col.addView(text("v" + Updater.installedName(this) + " · appli Android, sans PC", 14, MUTED, false));
+        TextView ver = text("v" + Updater.installedName(this) + " · appli Android, sans PC", 14, MUTED, false);
+        col.addView(ver);
+        // outils de dépannage (enregistrements des courses) : cachés, 7 appuis sur la version pour les afficher ou les masquer
+        ver.setOnClickListener(v -> {
+            if (++devTaps < 7) return;
+            devTaps = 0;
+            boolean dev = !prefs.getBoolean("dev", false);
+            prefs.edit().putBoolean("dev", dev).apply();
+            android.widget.Toast.makeText(this, dev ? "Outils de dépannage affichés" : "Outils de dépannage masqués", android.widget.Toast.LENGTH_SHORT).show();
+            refresh();
+        });
 
         status = text("", 16, MUTED, true);
         status.setPadding(dp(14), dp(12), dp(14), dp(12));
@@ -161,12 +172,16 @@ public class MainActivity extends Activity {
         llp.topMargin = dp(22);
         col.addView(lanInfo, llp);
 
-        // enregistrements : chaque réception de la PS5 est enregistrée, on peut la rejouer ou l'envoyer
-        TextView recLbl = text("Enregistrements", 15, FG, true);
+        // dépannage : chaque réception de la PS5 est enregistrée en arrière-plan ; ces boutons ne s'affichent
+        // qu'après 7 appuis sur la version (inutiles pour la plupart des joueurs)
+        recBox = new LinearLayout(this);
+        recBox.setOrientation(LinearLayout.VERTICAL);
+        col.addView(recBox, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        TextView recLbl = text("Dépannage · enregistrements", 15, FG, true);
         recLbl.setPadding(0, dp(22), 0, dp(4));
-        col.addView(recLbl);
+        recBox.addView(recLbl);
         recInfo = text("", 13, MUTED, false);
-        col.addView(recInfo);
+        recBox.addView(recInfo);
         replayRow = new LinearLayout(this);
         replayRow.setOrientation(LinearLayout.HORIZONTAL);
         for (final double sp : new double[]{1, 5, 20}) {
@@ -183,9 +198,9 @@ public class MainActivity extends Activity {
             });
             replayRow.addView(rb);
         }
-        col.addView(replayRow, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        recBox.addView(replayRow, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         shareBtn = button("Envoyer le dernier enregistrement", PANEL2, FG);
-        col.addView(shareBtn);
+        recBox.addView(shareBtn);
         shareBtn.setOnClickListener(v -> {
             File f = Recorder.latest(getFilesDir());
             if (f == null) return;
@@ -257,6 +272,7 @@ public class MainActivity extends Activity {
             status.setTextColor(WARN);
         }
 
+        recBox.setVisibility(prefs.getBoolean("dev", false) ? View.VISIBLE : View.GONE);
         File last = Recorder.latest(getFilesDir());
         recInfo.setText(last == null ? "Chaque réception de la PS5 est enregistrée automatiquement (les 10 dernières). Rien pour l'instant."
                 : "Dernier : " + new java.text.SimpleDateFormat("d MMM à HH:mm", java.util.Locale.FRANCE).format(new java.util.Date(last.lastModified()))

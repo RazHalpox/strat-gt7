@@ -26,7 +26,7 @@ Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télé
 
 Le **mode démo** de l'accueil fait tourner une course simulée, pour essayer sans la PS5.
 
-**Enregistrements :** chaque réception de la PS5 est enregistrée automatiquement sur le téléphone (les 10 dernières, environ 1 Mo par heure). Sur l'accueil, **Rejouer ×1 / ×5 / ×20** fait revivre la dernière course sur les écrans comme en direct (pastille « Relecture »), et **Envoyer le dernier enregistrement** permet de la partager (Discord, mail…) pour l'analyser.
+**Dépannage :** chaque réception de la PS5 est enregistrée automatiquement sur le téléphone (les 10 dernières), sans rien afficher. En cas de souci, touche 7 fois la ligne de version sur l'accueil : la section **Dépannage** apparaît, avec **Envoyer le dernier enregistrement** pour transmettre la course à analyser (et **Rejouer ×1 / ×5 / ×20**). 7 appuis de plus la cachent.
 
 ---
 
