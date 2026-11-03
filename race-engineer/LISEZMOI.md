@@ -71,6 +71,8 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 
 Pour le revoir : ⚙ Réglages › Assistant › **Relancer**.
 
+Les cases à virgule (conso, refuel rate, carburant mesuré) acceptent la virgule comme le point : `7,5` ou `7.5`.
+
 ## L'écran Pilote (pendant la course)
 
 Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Il s'adapte à l'iPad et au téléphone, en paysage comme en portrait.

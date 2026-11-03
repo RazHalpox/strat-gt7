@@ -291,7 +291,7 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
           <label>Type de course<select id="mode"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select></label>
           <label id="w-duree">Durée de course<span class="unit"><input type="number" id="duree" min="1" step="1"><span>min</span></span></label>
           <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" id="laps" min="1" step="1"><span>tours</span></span></label>
-          <label>Refuel rate<span class="unit"><input type="number" id="rate" min="0.1" step="0.1"><span>L/s</span></span><span class="hint">vitesse de ravitaillement du salon</span></label>
+          <label>Refuel rate<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="rate"><span>L/s</span></span><span class="hint">vitesse de ravitaillement du salon</span></label>
           <span></span>
           <label>Réservoir<span class="unit"><input type="number" id="tank" min="1" step="1"><span>L</span></span></label>
           <label>Carburant au départ<span class="unit"><input type="number" id="start" min="0" step="1"><span>L</span></span></label>
@@ -301,9 +301,9 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
         <h2>Consommation</h2>
         <div class="fields">
           <label class="full">Ma conso<select id="consMode"><option value="mesure">Je la mesure (carburant au début, à la fin, nombre de tours)</option><option value="avg">Je tape ma conso moyenne par tour</option></select></label>
-          <label id="w-cAvg" hidden>Conso moyenne<span class="unit"><input type="number" id="cAvg" min="0.01" step="0.01" inputmode="decimal"><span>L/tour</span></span><span class="hint">par exemple 7,5</span></label>
-          <label class="w-mes">Carburant au début<span class="unit"><input type="number" id="mDeb" step="0.1"><span>L</span></span></label>
-          <label class="w-mes">Carburant à la fin<span class="unit"><input type="number" id="mFin" step="0.1"><span>L</span></span></label>
+          <label id="w-cAvg" hidden>Conso moyenne<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="cAvg"><span>L/tour</span></span><span class="hint">par exemple 7,5</span></label>
+          <label class="w-mes">Carburant au début<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="mDeb"><span>L</span></span></label>
+          <label class="w-mes">Carburant à la fin<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="mFin"><span>L</span></span></label>
           <label class="w-mes">Tours mesurés<input type="number" id="mTours" min="1" step="1"></label>
         </div>
         <div class="out" id="consoOut"></div>

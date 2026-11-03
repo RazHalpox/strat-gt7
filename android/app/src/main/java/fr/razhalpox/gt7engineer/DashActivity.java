@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -97,7 +98,18 @@ public class DashActivity extends Activity {
                 if (req.isForMainFrame()) handler.postDelayed(view::reload, 700);
             }
         });
-        setContentView(web);
+        // plein écran : Android ne réduit pas la page quand le clavier s'ouvre, le champ tapé finirait caché dessous.
+        // On mesure la place laissée par le clavier et on raccourcit l'écran d'autant.
+        final FrameLayout root = new FrameLayout(this);
+        root.addView(web, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        setContentView(root);
+        root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            android.graphics.Rect vis = new android.graphics.Rect();
+            root.getWindowVisibleDisplayFrame(vis);
+            int full = root.getRootView().getHeight(), kb = full - vis.bottom;
+            int pad = kb > full * 0.15 ? kb : 0;
+            if (root.getPaddingBottom() != pad) root.setPadding(0, 0, 0, pad);
+        });
         String page = getIntent().getStringExtra(EXTRA_PAGE);
         web.loadUrl("http://127.0.0.1:" + WebServer.PORT + "/" + (page != null ? page : "pilote.html"));
     }

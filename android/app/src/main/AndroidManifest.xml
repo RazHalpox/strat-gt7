@@ -34,6 +34,7 @@
             android:name=".DashActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
+            android:windowSoftInputMode="adjustResize"
             android:hardwareAccelerated="true" />
 
         <service

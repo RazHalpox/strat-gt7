@@ -102,6 +102,9 @@ function wizard(){
   draw()}
 
 window.Tuto={open:wizard};
+// clavier ouvert (l'écran rétrécit) : le champ en cours de saisie reste visible
+window.addEventListener("resize",()=>{const el=document.activeElement;
+  if(el&&/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName))setTimeout(()=>{try{el.scrollIntoView({block:"center"})}catch(e){}},80)});
 // les anciens enregistrements de télémétrie des écrans (fonction retirée) : on libère la place une fois
 if(get("gt7-rec-gone")!=="1"){try{if(window.indexedDB)indexedDB.deleteDatabase("gt7-rec")}catch(e){}put("gt7-rec-gone","1")}
 // au premier lancement, sur n'importe quel écran (sauf Réglages et la relecture d'une course)
