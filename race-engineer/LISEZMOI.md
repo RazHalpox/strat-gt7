@@ -65,14 +65,11 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 
 ---
 
-## Premier lancement : l'assistant et le mode Simple
+## Premier lancement : l'assistant
 
-À la première ouverture, un assistant pose 4 questions : comment se termine la course (durée ou nombre de tours), la taille du réservoir et ta conso moyenne (laisse vide si tu ne la connais pas, elle sera mesurée en roulant), les gommes obligatoires, et la quantité d'infos à l'écran. Il ouvre ensuite l'onglet Stratégie avec ton plan.
+À la première ouverture après l'installation, un assistant pose 3 questions : comment se termine la course (durée ou nombre de tours), la taille du réservoir et ta conso moyenne (laisse vide si tu ne la connais pas, elle sera mesurée en roulant), et les gommes obligatoires. Il explique ensuite comment retirer de l'écran Pilote ce qui ne te sert pas (bouton **▦**, voir « Disposition de l'écran Pilote »), puis ouvre l'onglet Stratégie avec ton plan.
 
-- **Simple** : l'essentiel en très gros. Sur Pilote : tours d'essence restants, prochain arrêt, rapport et vitesse, gomme du relais. Sur Stratégie : le résumé, le déroulé et le plan de relais ; les réglages de base dans Paramètres. Tout le reste est derrière **Plus d'options**, en bas de chaque écran. L'écran Complet est caché.
-- **Expert** : tout est affiché, comme avant.
-
-Pour changer : ⚙ Réglages › Affichage. Le bouton **Relancer** y rouvre l'assistant. Le choix est propre à chaque appareil (par exemple le téléphone en Simple et l'iPad en Expert). Si tu avais déjà des réglages avant cette version, tu restes en Expert.
+Pour le revoir : ⚙ Réglages › Assistant › **Relancer**.
 
 ## L'écran Pilote (pendant la course)
 

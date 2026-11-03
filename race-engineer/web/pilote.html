@@ -264,23 +264,10 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 @media (orientation:portrait){.edOv{touch-action:pan-y}body.editing .edOv{touch-action:pan-y}}
 /* en portrait, une fenêtre presque vide doit garder la place pour ses réglages pendant la disposition */
 @media (orientation:portrait){body.editing .card:not([hidden]){min-height:250px}body.editing .grid .card.half{grid-column:1/-1}}
-/* ---- mode Simple : moins d'infos, donc en plus gros ---- */
-html[data-mode=simple]:not(.adv) #cFuel{justify-content:center;gap:clamp(6px,2vh,18px)}
-html[data-mode=simple]:not(.adv) #fuelLaps{font-size:clamp(54px,min(12vw,24vh),200px)}
-html[data-mode=simple]:not(.adv) #cFuel .unit{font-size:clamp(14px,min(2vw,3vh),22px)}
-html[data-mode=simple]:not(.adv) #cFuel .gauge{height:clamp(14px,4vh,36px)}
-html[data-mode=simple]:not(.adv) .stop{font-size:clamp(18px,min(2.8vw,5vh),36px);padding:clamp(8px,2vh,16px) 16px}
-html[data-mode=simple]:not(.adv) .stop small{font-size:clamp(14px,min(2vw,3.6vh),26px)}
-html[data-mode=simple]:not(.adv) #cTyre{justify-content:center;gap:clamp(6px,2vh,16px)}
-html[data-mode=simple]:not(.adv) #cTyre .lbl{font-size:clamp(13px,min(1.8vw,3vh),20px)}
-html[data-mode=simple]:not(.adv) #cTyre .stint{gap:clamp(8px,1.6vw,18px)}
-html[data-mode=simple]:not(.adv) #tyreChip{width:clamp(34px,min(7vw,11vh),80px);height:clamp(34px,min(7vw,11vh),80px);font-size:clamp(16px,min(3.2vw,5vh),36px);border-width:clamp(3px,.7vw,7px)}
-html[data-mode=simple]:not(.adv) #cTyre .wear{height:clamp(10px,2.5vh,22px)}
-html[data-mode=simple]:not(.adv) #stintTxt{font-size:clamp(20px,min(3.4vw,6vh),46px)!important}
 </style>
 <link rel="stylesheet" href="theme-gt3.css">
 <script src="sync.js"></script>
-<script src="mode.js"></script>
+<script src="tuto.js"></script>
 <script src="race.js"></script>
 <script src="learn.js"></script>
 <script src="replan.js"></script>
@@ -292,55 +279,55 @@ html[data-mode=simple]:not(.adv) #stintTxt{font-size:clamp(20px,min(3.4vw,6vh),4
 <header>
   <nav class="tabs3" aria-label="Écrans">
     <a href="pilote.html" aria-current="page">Pilote</a>
-    <a href="./" class="x-exp">Complet</a>
+    <a href="./">Complet</a>
     <a href="strategie.html">Stratégie</a>
     <a href="reglages.html" class="cog" aria-label="Réglages" title="Réglages"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="display:block"><path fill="currentColor" d="M18.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.5 7.5 0 0 0-1.7-1L14 3.3h-4l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.5-1-2 3.5L5.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.5 7.5 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.5 7.5 0 0 0 1.7-1l2.5 1 2-3.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg></a>
   </nav>
   <div class="tools">
     <span class="pill wait" id="status">Connexion…</span>
-    <button class="btn x-adv" id="layoutBtn" type="button" aria-pressed="false" title="Disposition des fenêtres" aria-label="Disposition des fenêtres">▦</button>
+    <button class="btn" id="layoutBtn" type="button" aria-pressed="false" title="Disposition des fenêtres" aria-label="Disposition des fenêtres">▦</button>
     <button class="btn" id="voiceBtn" type="button" aria-pressed="false" aria-label="Ingénieur vocal">🎧 Off</button>
   </div>
 </header>
 
-<div class="rpm x-adv" id="rpm" aria-hidden="true"></div>
+<div class="rpm" id="rpm" aria-hidden="true"></div>
 <div class="editBar" id="editBar"><b>Disposition</b><span id="edHelp" class="hL">Glisse une fenêtre sur une autre : au centre pour les échanger, sur un bord pour la placer à côté.</span><span class="hP">Glisse avec ✥ sur une autre fenêtre : au centre pour les échanger, en haut ou en bas pour la placer avant ou après.</span>
   <span id="edHidden"></span><span class="sp"></span>
   <button class="btn" type="button" id="edReset">Par défaut</button><button class="btn on" type="button" id="edDone">Terminé</button></div>
 <div class="dropInd" id="dropInd"></div>
 <div class="waitbox" id="waitBox" hidden><b>En attente de la PS5</b>Lance une course ou un essai dans GT7.</div>
 
-<section class="card band x-adv" id="cRel" hidden>
+<section class="card band" id="cRel" hidden>
   <div class="lbl"><span>Conso par relais</span><span id="bandAvg"></span></div>
   <div class="relBand" id="relBand"><div class="rb"><span class="rbH"><span class="chip X">–</span><span>Après le 1er tour</span></span><b>–</b></div></div>
 </section>
 <main class="grid" id="grid">
   <section class="card" id="cFuel">
-    <div class="lbl"><span>Carburant</span><span id="fuelPct" class="x-adv">–</span></div>
+    <div class="lbl"><span>Carburant</span><span id="fuelPct">–</span></div>
     <div class="fuelTop">
       <div id="ftLaps"><div class="big" id="fuelLaps">–</div><div class="unit">tours restants</div></div>
-      <div class="liters x-adv"><b id="fuelL">–</b><span class="unit">% réservoir</span></div>
+      <div class="liters"><b id="fuelL">–</b><span class="unit">% réservoir</span></div>
     </div>
     <div class="gauge" id="gauge"><i id="gaugeFill" style="width:0"></i></div>
-    <div class="kv x-adv">
+    <div class="kv">
       <div id="kvCons"><small>Conso moy.</small><b id="cons">–</b></div>
       <div id="kvLast"><small>Dernier tour</small><b id="consLast">–</b></div>
     </div>
     <div class="stop" id="stop"><span id="stopTitle">Pas de plan</span><small id="stopText">Choisis un plan dans Stratégie</small></div>
-    <div class="lbl histLbl x-adv" style="font-size:12px"><span>Conso des derniers tours (%)</span></div>
-    <div class="hist x-adv" id="hist"></div>
-    <div class="lbl relLbl x-adv" style="font-size:12px"><span>Conso par relais</span><span id="raceAvg"></span></div>
-    <div class="relays x-adv" id="relays"><div><span class="chip X">–</span><span class="who">Après le 1er tour</span><b>–</b></div></div>
+    <div class="lbl histLbl" style="font-size:12px"><span>Conso des derniers tours (%)</span></div>
+    <div class="hist" id="hist"></div>
+    <div class="lbl relLbl" style="font-size:12px"><span>Conso par relais</span><span id="raceAvg"></span></div>
+    <div class="relays" id="relays"><div><span class="chip X">–</span><span class="who">Après le 1er tour</span><b>–</b></div></div>
   </section>
 
   <section class="card" id="cCore">
     <div class="pitAlert" id="pitAlert" hidden role="alert"><span id="paTitle"></span><small id="paText"></small></div>
     <div class="gear" id="gear">N</div>
     <div class="speed"><span id="speed">0</span><small>km/h</small></div>
-    <div class="coreRow"><span id="crLap">Tour <b id="lap">–</b></span><span id="crPos" class="x-adv">Pos <b id="pos">–</b></span><span id="crBoost" class="x-adv">Turbo <b id="boost">–</b></span></div>
+    <div class="coreRow"><span id="crLap">Tour <b id="lap">–</b></span><span id="crPos">Pos <b id="pos">–</b></span><span id="crBoost">Turbo <b id="boost">–</b></span></div>
   </section>
 
-  <section class="card x-adv" id="cTime">
+  <section class="card" id="cTime">
     <div class="lbl"><span>Chronos</span></div>
     <div class="chronos">
       <div id="chCur"><small>En cours</small><b id="cur">–</b></div>
@@ -353,11 +340,10 @@ html[data-mode=simple]:not(.adv) #stintTxt{font-size:clamp(20px,min(3.4vw,6vh),4
   <section class="card" id="cTyre">
     <div class="lbl"><span>Pneus</span><span id="tyreRelay">–</span></div>
     <div class="stint"><span class="chip M" id="tyreChip">M</span><div class="wear"><i id="wear" style="width:0"></i></div><span class="mono" id="stintTxt" style="font-size:20px">–</span></div>
-    <div class="car x-adv" id="car"></div>
-    <div class="legend x-adv"><span><i style="background:var(--cold)"></i>froid</span><span><i style="background:var(--ok)"></i>bon</span><span><i style="background:var(--warn)"></i>chaud</span><span><i style="background:var(--accent)"></i>trop chaud</span><span><i style="background:var(--accent)"></i>bloque</span><span><i style="background:var(--spin)"></i>patine</span></div>
+    <div class="car" id="car"></div>
+    <div class="legend"><span><i style="background:var(--cold)"></i>froid</span><span><i style="background:var(--ok)"></i>bon</span><span><i style="background:var(--warn)"></i>chaud</span><span><i style="background:var(--accent)"></i>trop chaud</span><span><i style="background:var(--accent)"></i>bloque</span><span><i style="background:var(--spin)"></i>patine</span></div>
   </section>
 </main>
-<button type="button" class="x-more">Plus d'options</button>
 </div>
 
 <script>

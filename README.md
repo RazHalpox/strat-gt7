@@ -34,11 +34,9 @@ Après la course, l'appli a tout mesuré : ton rythme et l'usure de chaque gomme
 | Stratégie | Le meilleur plan d'arrêts, tes mesures en course, le carnet de courses | Avant et après la course |
 | ⚙ Réglages | Thème, alertes, Plan B automatique, voix, seuils carburant et pneus | Une fois, puis quand tu veux |
 
-## Simple ou Expert
+## Premier lancement
 
-Au premier lancement, un assistant pose 4 questions (durée de la course, réservoir et conso, gommes obligatoires, affichage) et la stratégie est prête.
-
-En **Simple** (conseillé pour débuter), chaque écran ne montre que l'essentiel en très gros : tours d'essence restants, prochain arrêt, gomme du relais. Le reste est rangé derrière **Plus d'options**, et l'écran Complet est caché. En **Expert**, tout est affiché. Le choix se change dans ⚙ Réglages › Affichage, où l'on peut aussi relancer l'assistant ; il est propre à chaque appareil.
+À la première installation, un assistant pose 3 questions (durée de la course, réservoir et conso, gommes obligatoires) et la stratégie est prête. Il montre ensuite comment alléger l'écran Pilote : bouton ▦, puis touche un élément pour le masquer. On le relance dans ⚙ Réglages › Assistant.
 
 ## Deux thèmes
 
@@ -80,5 +78,5 @@ Les valeurs pré-remplies sont des exemples à remplacer par tes mesures. Le cal
 
 - La télémétrie de GT7 ne concerne que ta voiture : ni les pneus ni la position des autres pilotes ne sont disponibles.
 - Un seul programme à la fois peut recevoir la télémétrie (ferme SimHub ou le relais PC si l'appli Android ne reçoit rien).
-- La stratégie, le Plan B et le carnet sont partagés entre tous les écrans branchés sur le même téléphone ou PC (téléphone, iPad…). Les réglages (thème, voix, Simple ou Expert) et la disposition restent sur chaque appareil.
+- La stratégie, le Plan B et le carnet sont partagés entre tous les écrans branchés sur le même téléphone ou PC (téléphone, iPad…). Les réglages (thème, voix) et la disposition restent sur chaque appareil.
 - Projet indépendant, sans lien avec Polyphony Digital ni Sony Interactive Entertainment. Polices sous licence SIL Open Font License (Barlow Condensed, IBM Plex Sans, JetBrains Mono, Saira Condensed), licences dans `race-engineer/web/fonts`.
