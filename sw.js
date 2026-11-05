@@ -25,6 +25,8 @@ self.addEventListener("fetch", e => {
     return;
   }
   if (url.origin !== location.origin) return;
+  // Le vectoriseur (dossier vectoriseur/) est une page à part : on ne le met pas à la place de l'appli hors ligne.
+  if (url.pathname.includes("/vectoriseur/")) return;
   // Page : réseau d'abord (pour avoir la dernière version), sinon la copie hors ligne
   if (req.mode === "navigate") {
     e.respondWith(fetch(req).then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put("./index.html", copy)); return r; })

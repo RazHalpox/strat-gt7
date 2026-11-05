@@ -80,3 +80,9 @@ Les valeurs pré-remplies sont des exemples à remplacer par tes mesures. Le cal
 - Un seul programme à la fois peut recevoir la télémétrie (ferme SimHub ou le relais PC si l'appli Android ne reçoit rien).
 - La stratégie, le Plan B et le carnet sont partagés entre tous les écrans branchés sur le même téléphone ou PC (téléphone, iPad…). Les réglages (thème, voix) et la disposition restent sur chaque appareil.
 - Projet indépendant, sans lien avec Polyphony Digital ni Sony Interactive Entertainment. Polices sous licence SIL Open Font License (Barlow Condensed, IBM Plex Sans, JetBrains Mono, Saira Condensed), licences dans `race-engineer/web/fonts`.
+
+## Vectoriseur GT7
+
+Transforme une image (logo, dessin) en décalcomanies SVG pour l'éditeur de livrées : fichiers de 15 360 octets maximum, découpés et parfaitement alignés. Gratuit, sans compte, l'image ne quitte pas ton appareil.
+
+Ouvrir : https://razhalpox.github.io/strat-gt7/vectoriseur/
