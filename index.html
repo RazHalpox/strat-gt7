@@ -49,6 +49,19 @@ nav.tabs button{background:transparent;border:0;color:var(--muted);font:600 18px
 nav.tabs button[aria-selected=true]{background:var(--fg);color:var(--surface)}
 nav.tabs button:hover:not([aria-selected=true]){color:var(--fg)}
 .stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.step h2{display:flex;align-items:center;gap:10px}
+.step .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font:700 15px var(--f-display);flex:none}
+.pick{display:flex;gap:0;border:1px solid var(--input-line);border-radius:6px;overflow:hidden;background:var(--input)}
+.pick button{flex:1;background:transparent;color:var(--muted);border:0;padding:10px 8px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;min-height:42px}
+.pick button+button{border-left:1px solid var(--input-line)}
+.pick button[aria-pressed=true]{background:var(--accent);color:#fff}
+.pick button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.learn{border-color:var(--accent)}
+.exnote{margin:0}
+#v-par .two{align-items:stretch}
+.tyretbl input[type=text]{min-width:0;width:100%}
+@media (max-width:480px){.tyretbl .tn{display:none}.tyretbl td:not(:first-child){min-width:0}}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
 @media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
@@ -224,57 +237,56 @@ img{max-width:100%}
 
 <!-- ============ PARAMÈTRES ============ -->
 <section id="v-par" class="stack" hidden>
-  <p class="note" style="margin:0"><span class="example">Valeurs d'exemple</span>Les chiffres pré-remplis servent à montrer les calculs. Remplace-les par tes propres mesures.</p>
+  <p class="note exnote" id="exNote"><span class="example">Valeurs d'exemple</span>Remplace-les par tes chiffres.</p>
   <div class="two">
-    <div class="stack">
-      <section class="panel">
-        <h2>Réglages du salon GT7</h2>
-        <div class="fields">
-          <label>Type de course<select id="mode"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select></label>
-          <label id="w-duree">Durée de course<span class="unit"><input type="number" id="duree" min="1" step="1"><span>min</span></span></label>
-          <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" id="laps" min="1" step="1"><span>tours</span></span></label>
-          <label>Refuel rate<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="rate"><span>L/s</span></span><span class="hint">vitesse de ravitaillement du salon</span></label>
-          <span></span>
-          <label>Réservoir<span class="unit"><input type="number" id="tank" min="1" step="1"><span>L</span></span></label>
-          <label>Carburant au départ<span class="unit"><input type="number" id="start" min="0" step="1"><span>L</span></span></label>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>Consommation</h2>
-        <div class="fields">
-          <label class="full">Ma conso<select id="consMode"><option value="mesure">Je la mesure (carburant au début, à la fin, nombre de tours)</option><option value="avg">Je tape ma conso moyenne par tour</option></select></label>
-          <label id="w-cAvg" hidden>Conso moyenne<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="cAvg"><span>L/tour</span></span><span class="hint">par exemple 7,5</span></label>
-          <label class="w-mes">Carburant au début<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="mDeb"><span>L</span></span></label>
-          <label class="w-mes">Carburant à la fin<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="mFin"><span>L</span></span></label>
-          <label class="w-mes">Tours mesurés<input type="number" id="mTours" min="1" step="1"></label>
-        </div>
-        <div class="out" id="consoOut"></div>
-        <p class="note">Mesure sur 3 à 5 tours lancés, sans le tour de départ, avec les réglages du salon de ta course. Avec un réservoir de 100 L, 1 % de jauge = 1 L.</p>
-      </section>
-      <section class="panel">
-        <h2>Stand</h2>
-        <div class="fields">
-          <label class="full">Calcul du temps d'arrêt<select id="pitMode"><option value="rate">Pneus + litres ÷ refuel rate</option><option value="fixed">Temps fixes (arrêt complet ou pneus seuls)</option></select></label>
-          <label>Changement de pneus uniquement<span class="unit"><input type="number" id="pitTyre" min="1" step="1"><span>s</span></span><span class="hint">voie des stands + pneus, sans carburant</span></label>
-          <label id="w-pitFull">Arrêt complet<span class="unit"><input type="number" id="pitFull" min="1" step="1"><span>s</span></span><span class="hint">plein + pneus</span></label>
-        </div>
-        <div class="out" id="pitOut"></div>
-        <p class="note">Mesure le temps perdu par rapport à un tour normal : chronomètre un tour avec l'arrêt, puis retire ton temps au tour habituel.</p>
-      </section>
-    </div>
-    <section class="panel">
-      <h2>Gommes</h2>
-      <div class="tbl"><table class="tyretbl" style="min-width:420px">
-        <thead><tr><th>Gomme</th><th>Temps au tour</th><th>Vie (tours)</th><th class="l">Obligatoire</th></tr></thead>
+    <section class="panel step">
+      <h2><b class="num">1</b>La course</h2>
+      <div class="fields">
+        <div class="full pick" data-for="mode" role="group" aria-label="Type de course"><button type="button" data-v="time">À la durée</button><button type="button" data-v="laps">Au nombre de tours</button></div>
+        <select id="mode" class="sr" tabindex="-1" aria-hidden="true"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select>
+        <label id="w-duree">Durée<span class="unit"><input type="number" inputmode="numeric" id="duree" min="1" step="1"><span>min</span></span></label>
+        <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" inputmode="numeric" id="laps" min="1" step="1"><span>tours</span></span></label>
+        <label>Gommes différentes<select id="nReq"><option value="1">1 suffit</option><option value="2">2 minimum</option><option value="3">3 minimum</option></select></label>
+        <label>Réservoir<span class="unit"><input type="number" inputmode="numeric" id="tank" min="1" step="1"><span>L</span></span></label>
+        <label>Essence au départ<span class="unit"><input type="number" inputmode="numeric" id="start" min="0" step="1"><span>L</span></span></label>
+      </div>
+    </section>
+    <section class="panel step">
+      <h2><b class="num">2</b>Ta conso</h2>
+      <div class="pick" data-for="consMode" role="group" aria-label="Ta conso"><button type="button" data-v="avg">Je la connais</button><button type="button" data-v="mesure">Je la mesure</button></div>
+      <select id="consMode" class="sr" tabindex="-1" aria-hidden="true"><option value="mesure">Je la mesure</option><option value="avg">Je la connais</option></select>
+      <div class="fields" style="margin-top:12px">
+        <label id="w-cAvg" hidden class="full">Conso moyenne par tour<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="cAvg" placeholder="7,5"><span>L/tour</span></span></label>
+        <label class="w-mes">Essence au début<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="mDeb"><span>L</span></span></label>
+        <label class="w-mes">Essence à la fin<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="mFin"><span>L</span></span></label>
+        <label class="w-mes full">Tours roulés entre les deux<input type="number" inputmode="numeric" id="mTours" min="1" step="1"></label>
+      </div>
+      <div class="out" id="consoOut"></div>
+      <p class="note w-mes">Roule 3 à 5 tours lancés et note la jauge avant et après. Réservoir de 100 L : 1 % = 1 L.</p>
+    </section>
+    <section class="panel step">
+      <h2><b class="num">3</b>Tes gommes</h2>
+      <div class="tbl"><table class="tyretbl" style="min-width:0">
+        <thead><tr><th class="l">Gomme</th><th>Temps au tour</th><th>Vie</th><th>Imposée</th></tr></thead>
         <tbody id="tyres"></tbody>
       </table></div>
-      <p class="note">Temps au tour moyen sur un relais (pas ton meilleur tour), en m:ss.sss ou en secondes. Vie = nombre de tours que tu peux faire avec cette gomme dans les conditions de ta course, avant que l'usure te coûte trop de temps.</p>
-      <h2 style="margin-top:20px">Règles de la course</h2>
-      <div class="fields"><label>Gommes différentes requises<select id="nReq"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label></div>
+      <p class="note">Temps au tour <b>moyen</b> (m:ss.sss). Vie = nombre de tours avant que l'usure coûte trop cher.</p>
       <p class="note" id="ruleNote"></p>
     </section>
+    <section class="panel step">
+      <h2><b class="num">4</b>Le stand</h2>
+      <div class="pick" data-for="pitMode" role="group" aria-label="Temps d'arrêt"><button type="button" data-v="rate">Selon l'essence</button><button type="button" data-v="fixed">Temps fixes</button></div>
+      <select id="pitMode" class="sr" tabindex="-1" aria-hidden="true"><option value="rate">Selon l'essence</option><option value="fixed">Temps fixes</option></select>
+      <div class="fields" style="margin-top:12px">
+        <label>Arrêt pneus seuls<span class="unit"><input type="number" inputmode="numeric" id="pitTyre" min="1" step="1"><span>s</span></span><span class="hint">temps perdu, sans essence</span></label>
+        <label id="w-rate">Refuel rate du salon<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="rate"><span>L/s</span></span></label>
+        <label id="w-pitFull">Arrêt complet<span class="unit"><input type="number" inputmode="numeric" id="pitFull" min="1" step="1"><span>s</span></span><span class="hint">plein + pneus</span></label>
+      </div>
+      <div class="out" id="pitOut"></div>
+      <p class="note">Temps perdu = ton tour avec l'arrêt moins un tour normal.</p>
+    </section>
   </div>
-  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button type="button" class="reset" id="reset">Reset</button><span class="hint">Efface tous tes réglages et recharge les valeurs d'exemple.</span></div>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button type="button" class="reset" id="reset">Reset</button><span class="hint">Remet les valeurs d'exemple.</span></div>
 </section>
 </div>
 
@@ -300,7 +312,7 @@ const plural=(n,w)=>`${n} ${w}${n>1?"s":""}`;
 const MAX=999;
 
 /* ---- formulaire ---- */
-$("tyres").innerHTML=COMPS.map(c=>`<tr><td class="lbl">${chip(c.k)} ${c.name}</td>
+$("tyres").innerHTML=COMPS.map(c=>`<tr><td class="lbl">${chip(c.k)} <span class="tn">${c.name}</span></td>
   <td><input type="text" id="${c.k}-lap" inputmode="decimal" aria-label="Temps au tour ${c.name}"></td>
   <td><input type="number" id="${c.k}-life" min="1" step="1" aria-label="Vie ${c.name} en tours"></td>
   <td class="l"><input type="checkbox" id="${c.k}-req" aria-label="${c.name} obligatoire"></td></tr>`).join("");
@@ -312,6 +324,10 @@ document.addEventListener("input",e=>{const el=e.target,id=el.id;if(!id)return;
     if(id==="consMode"&&el.value==="avg"&&!(num(S.cAvg)>0)){const c=(num(S.mDeb)-num(S.mFin))/num(S.mTours);if(c>0){S.cAvg=String(Math.round(c*100)/100);$("cAvg").value=S.cAvg}}}
   else{const m=id.match(/^([SMH])-(lap|life|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
   selN=null;save();render()});
+function syncSeg(){document.querySelectorAll(".pick").forEach(g=>{const v=S[g.dataset.for];
+  g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===String(v))))})}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".pick button");if(!b)return;
+  const sel=$(b.closest(".pick").dataset.for);if(sel.value===b.dataset.v)return;sel.value=b.dataset.v;sel.dispatchEvent(new Event("input",{bubbles:true}))});
 let armed=false;
 $("reset").addEventListener("click",()=>{const b=$("reset");
   if(!armed){armed=true;b.classList.add("armed");b.textContent="Confirmer le reset";setTimeout(()=>{if(armed){armed=false;b.classList.remove("armed");b.textContent="Reset"}},5000);return}
@@ -425,7 +441,9 @@ function solve(k,P){let best=null;for(const seq of sequences(k,P)){const r=bestF
 function render(){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
   $("v-strat").hidden=tab!=="strat";$("v-par").hidden=tab!=="par";
-  $("w-duree").hidden=S.mode!=="time";$("w-laps").hidden=S.mode!=="laps";$("w-pitFull").hidden=S.pitMode!=="fixed";
+  $("w-duree").hidden=S.mode!=="time";$("w-laps").hidden=S.mode!=="laps";$("w-pitFull").hidden=S.pitMode!=="fixed";$("w-rate").hidden=S.pitMode!=="rate";syncSeg();
+  // « Valeurs d'exemple » : seulement tant que les réglages n'ont pas été changés
+  $("exNote").hidden=!(["duree","laps","tank","start","mDeb","mFin","mTours","rate","pitTyre","pitFull","cAvg"].every(k=>String(S[k])===String(DEF[k]))&&COMPS.every(c=>String(S[c.k].lap)===DEF[c.k].lap&&String(S[c.k].life)===String(DEF[c.k].life)));
   $("w-cAvg").hidden=S.consMode!=="avg";document.querySelectorAll(".w-mes").forEach(e=>e.hidden=S.consMode==="avg");
   const P=derive();
   $("meta").innerHTML=`<span>${P.mode==="time"?`Durée <b>${f0(num(S.duree))} min</b>`:`Course <b>${f0(P.L)} tours</b>`}</span><span>Refuel <b>${f1(P.rate)} L/s</b></span><span>Réservoir <b>${f0(P.tank)} L</b></span>`;

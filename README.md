@@ -63,12 +63,11 @@ Racing GT3 : carbone, rouge course, chiffres façon écran de volant.
 Sans télémétrie, le calculateur fonctionne aussi seul dans le navigateur : **https://razhalpox.github.io/strat-gt7/**
 Sur iPhone : ouvre-le dans Safari, **Partager › Sur l'écran d'accueil**. Sur Android : Chrome, **⋮ › Ajouter à l'écran d'accueil**. Il marche ensuite hors connexion.
 
-1. **Paramètres › Réglages du salon** : course à la durée ou aux tours, refuel rate (L/s), réservoir et carburant au départ.
-2. **Consommation** : note ton carburant au début et à la fin de 3 à 5 tours lancés (100 L de réservoir : 1 % de jauge = 1 L), ou choisis « Je tape ma conso moyenne par tour » et entre-la directement (par exemple 7,5 L).
-3. **Gommes** : pour Soft, Medium et Hard, ton temps au tour moyen sur un relais et la vie de la gomme en tours. Coche les gommes obligatoires.
-4. **Stand** : le temps perdu pour un arrêt pneus seuls (tour avec arrêt moins tour normal), et le calcul des arrêts avec essence (pneus + litres ÷ refuel rate, ou temps fixes).
-5. **Règles** : nombre de gommes différentes imposées. L'appli en déduit le nombre d'arrêts minimum.
-6. **Stratégie** : chiffres clés, frise des relais, comparaison des stratégies par nombre d'arrêts, plan de relais avec les litres à remettre, stratégies sauvegardées, tours possibles avec une quantité donnée. En mode **Je choisis**, tu choisis la gomme de chaque relais et, si tu veux, son nombre de tours (case « t » ; vide = réparti automatiquement). Un relais plus long qu'un plein peut être validé quand même en économie d'essence : l'appli donne la conso à viser.
+1. **Paramètres › 1 La course** : à la durée ou au nombre de tours, nombre de gommes différentes imposées (l'appli en déduit le nombre d'arrêts minimum), réservoir et essence au départ.
+2. **2 Ta conso** : **Je la connais** pour taper ta moyenne par tour (par exemple 7,5 L), ou **Je la mesure** : essence au début et à la fin de 3 à 5 tours lancés (100 L de réservoir : 1 % de jauge = 1 L).
+3. **3 Tes gommes** : pour Soft, Medium et Hard, ton temps au tour moyen sur un relais et la vie de la gomme en tours. Coche les gommes imposées.
+4. **4 Le stand** : le temps perdu pour un arrêt pneus seuls (tour avec arrêt moins tour normal), puis **Selon l'essence** (avec le refuel rate du salon) ou **Temps fixes**.
+5. **Stratégie** : chiffres clés, frise des relais, comparaison des stratégies par nombre d'arrêts, plan de relais avec les litres à remettre, stratégies sauvegardées, tours possibles avec une quantité donnée. En mode **Je choisis**, tu choisis la gomme de chaque relais et, si tu veux, son nombre de tours (case « t » ; vide = réparti automatiquement). Un relais plus long qu'un plein peut être validé quand même en économie d'essence : l'appli donne la conso à viser.
 
 Les valeurs pré-remplies sont des exemples à remplacer par tes mesures. Le calcul cherche le temps total le plus court ; il ne tient pas compte du trafic ni de la météo.
 
