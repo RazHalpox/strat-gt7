@@ -38,7 +38,8 @@ Le **mode démo** de l'accueil fait tourner une course simulée, pour essayer sa
 
 ## 2. Préparer le dossier
 
-Dézippe `gt7-race-engineer.zip` où tu veux, par exemple sur le Bureau. Tout doit rester dans le même dossier.
+Télécharge **SimRaceDash-PC.zip** : https://github.com/RazHalpox/strat-gt7/releases/download/v3/SimRaceDash-PC.zip
+Dézippe-le où tu veux, par exemple sur le Bureau : tu obtiens un dossier **SimRaceDash-PC**. Tout doit rester dans ce dossier. Pour mettre à jour, retélécharge le zip et remplace le dossier (garde ton `config.json` si tu veux retrouver l'adresse IP de la PS5).
 
 ## 3. Tester sans la PS5 (mode démo)
 
@@ -92,7 +93,7 @@ Ouvre `http://IP-DU-PC:8777/pilote.html`, ou l'onglet **Pilote**. Il s'adapte à
 - **Au centre** : rapport engagé, vitesse, tour, position, turbo, et tes chronos (tour en cours, dernier, meilleur, arrivée prévue en course à la durée).
 - En haut, la barre de régime clignote au rupteur. Les boutons **Plan B** (arrêt imprévu) et **▦** (disposition des fenêtres) sont à côté du casque.
 
-**Attention :** SimHub et le Race Engineer utilisent le même port. Ferme SimHub avant de lancer le relais.
+**Attention :** SimHub et SimRaceDash utilisent le même port. Ferme SimHub avant de lancer le relais.
 
 ## Le dashboard complet
 

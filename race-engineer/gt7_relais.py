@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-GT7 Race Engineer - programme relais pour PC Windows.
+SimRaceDash V3 - programme relais pour PC Windows.
 
 Recoit la telemetrie de Gran Turismo 7 envoyee par la PS5 sur le reseau local,
 la dechiffre, et l'envoie en direct au dashboard ouvert sur ton telephone.
@@ -604,7 +604,7 @@ def main():
             return
     print()
     print("  ==============================================")
-    print("   GT7 RACE ENGINEER V2 - relais telemetrie")
+    print("   SIMRACEDASH V3 - relais telemetrie PC")
     print("  ==============================================")
     if replay:
         print(f"  RELECTURE x{speed:g} : {os.path.basename(replay)}")

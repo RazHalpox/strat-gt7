@@ -55,7 +55,7 @@ Racing GT3 : carbone, rouge course, chiffres façon écran de volant.
 
 **iPhone ou iPad.** Ils ne peuvent pas recevoir la télémétrie eux-mêmes. Pendant que l'appli Android (ou le PC) tourne, ouvre dans Safari l'adresse affichée sur son accueil, par exemple `http://192.168.1.30:8777/pilote.html`.
 
-**PC Windows.** Bouton vert **Code › Download ZIP** sur cette page, garde le dossier `race-engineer`, installe Python 3 puis double-clic sur `lancer.bat`. `lancer-demo.bat` fait tourner une course simulée sans PS5, `rejouer-course.bat` rejoue la dernière course enregistrée. Pas à pas : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md).
+**PC Windows.** Télécharge **SimRaceDash-PC.zip** (https://github.com/RazHalpox/strat-gt7/releases/download/v3/SimRaceDash-PC.zip), dézippe-le, installe Python 3 puis double-clic sur `lancer.bat`. `lancer-demo.bat` fait tourner une course simulée sans PS5, `rejouer-course.bat` rejoue la dernière course enregistrée. Pas à pas : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md).
 
 ---
 

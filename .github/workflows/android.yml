@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - 'android/**'
-      - 'race-engineer/web/**'
+      - 'race-engineer/**'
       - '.github/workflows/android.yml'
   workflow_dispatch:
 
@@ -65,7 +65,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete v3 --yes --cleanup-tag || true
-          gh release create v3 simracedash.apk version.json \
-            --title "SimRaceDash V3 pour Android" \
-            --notes "SimRaceDash V3 (v3.0.${{ github.run_number }}, compilée depuis ${GITHUB_SHA::7}). Ouvre ce lien sur ton téléphone Android et installe simracedash.apk. Elle remplace l'ancienne appli GT7 Engineer (V2)." \
+          # version PC : le dossier du relais, prêt à dézipper
+          mkdir -p pc/SimRaceDash-PC && cp -r race-engineer/. pc/SimRaceDash-PC/
+          rm -rf pc/SimRaceDash-PC/enregistrements pc/SimRaceDash-PC/config.json
+          find pc -name "__pycache__" -prune -exec rm -rf {} +
+          (cd pc && zip -qr ../SimRaceDash-PC.zip SimRaceDash-PC)
+          gh release create v3 simracedash.apk SimRaceDash-PC.zip version.json \
+            --title "SimRaceDash V3 (Android et PC)" \
+            --notes "SimRaceDash V3 (v3.0.${{ github.run_number }}, compilée depuis ${GITHUB_SHA::7}). Ouvre ce lien sur ton téléphone Android et installe simracedash.apk. Elle remplace l'ancienne appli GT7 Engineer (V2). Version PC Windows : télécharge SimRaceDash-PC.zip." \
             --latest=false
