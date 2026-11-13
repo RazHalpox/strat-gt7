@@ -24,7 +24,7 @@ android {
             if (ks) {
                 storeFile file(ks)
                 storePassword System.getenv('KS_PASS')
-                keyAlias 'gt7'
+                keyAlias System.getenv('KS_ALIAS') ?: 'gt7'
                 keyPassword System.getenv('KS_PASS')
             }
         }
@@ -35,6 +35,10 @@ android {
             minifyEnabled false
             signingConfig System.getenv('KS_FILE') ? signingConfigs.release : signingConfigs.debug
         }
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     compileOptions {

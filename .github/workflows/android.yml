@@ -27,12 +27,20 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      - name: Vérifier le secret de signature
+        env:
+          KS_PASS: ${{ secrets.SRD_KS_PASS }}
+        run: |
+          if [ -z "$KS_PASS" ]; then echo "::error::Le secret SRD_KS_PASS manque (Settings › Secrets and variables › Actions)"; exit 1; fi
+
       - name: Compiler l'appli
         working-directory: android
         env:
-          # clé de signature de l'appli (toujours la même, pour que les mises à jour s'installent par-dessus)
-          KS_FILE: ${{ github.workspace }}/android/gt7-release.jks
-          KS_PASS: ppkKTaw6zlDSmHcOb2-7Uklv
+          # clé de signature de SimRaceDash : le fichier est dans le dépôt, son mot de passe est un secret GitHub
+          # (Settings › Secrets and variables › Actions › SRD_KS_PASS), invisible pour les visiteurs
+          KS_FILE: ${{ github.workspace }}/android/simracedash-release.jks
+          KS_PASS: ${{ secrets.SRD_KS_PASS }}
+          KS_ALIAS: srd
           BUILD_NUMBER: ${{ github.run_number }}
         run: gradle assembleRelease --no-daemon --stacktrace
 

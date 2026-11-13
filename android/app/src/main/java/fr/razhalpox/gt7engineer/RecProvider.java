@@ -13,7 +13,7 @@ import java.io.FileNotFoundException;
 
 /** Donne accès en lecture à un enregistrement de course pour le partager (mail, Discord, Drive…). */
 public class RecProvider extends ContentProvider {
-    public static final String AUTH = "fr.razhalpox.gt7engineer.rec";
+    public static final String AUTH = BuildConfig.APPLICATION_ID + ".rec";
 
     public static Uri uri(File f) { return Uri.parse("content://" + AUTH + "/" + Uri.encode(f.getName())); }
 
