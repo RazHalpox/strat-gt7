@@ -116,6 +116,21 @@ public class MainActivity extends Activity {
             refresh();
         });
 
+        // dernière version de GT7 Engineer : elle est remplacée par SimRaceDash (une autre appli)
+        TextView v3 = text("Nouvelle appli : SimRaceDash remplace GT7 Engineer. Installe-la, puis désinstalle celle-ci.\n"
+                + "Pour garder ta stratégie et ton carnet : démarre SimRaceDash, puis ouvre une fois les écrans sur ton iPad.", 14, FG, false);
+        v3.setPadding(dp(14), dp(12), dp(14), dp(12));
+        v3.setBackground(round(0xFF3A1214, 0));
+        LinearLayout.LayoutParams v3p = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        v3p.topMargin = dp(16);
+        col.addView(v3, v3p);
+        Button v3b = button("Télécharger SimRaceDash", 0xFFE10600, 0xFFFFFFFF);
+        v3b.setOnClickListener(x -> {
+            try { startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/RazHalpox/strat-gt7/releases/download/v3/simracedash.apk"))); }
+            catch (Exception e) { android.widget.Toast.makeText(this, "Ouvre github.com/RazHalpox/strat-gt7 dans ton navigateur", android.widget.Toast.LENGTH_LONG).show(); }
+        });
+        col.addView(v3b);
+
         status = text("", 16, MUTED, true);
         status.setPadding(dp(14), dp(12), dp(14), dp(12));
         status.setBackground(round(PANEL, 0));
