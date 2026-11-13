@@ -103,7 +103,7 @@ public final class Updater {
                                 .setMessage("Version " + name + " (tu as la " + installedName(a) + ")."
                                         + (notes.isEmpty() ? "" : "\n\n" + notes)
                                         + "\n\nTes réglages et ta stratégie sont gardés.")
-                                .setPositiveButton("Télécharger", (d, w) -> download(a))
+                                .setPositiveButton("Installer", (d, w) -> download(a))
                                 .setNegativeButton("Plus tard", null)
                                 .show();
                     } else if (!silent) {
@@ -125,17 +125,53 @@ public final class Updater {
         }, "gt7-update-check").start();
     }
 
-    /** Ouvre le lien de téléchargement dans le navigateur : Android installe le fichier, l'appli n'installe rien elle-même. */
     private static void download(final Activity a) {
-        try {
-            a.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(BASE + "simracedash.apk")));
-            new AlertDialog.Builder(a).setTitle("Téléchargement lancé")
-                    .setMessage("Quand le fichier est téléchargé, touche-le (dans la notification ou dans Téléchargements) pour installer la mise à jour. Tes réglages et ta stratégie sont gardés.")
-                    .setPositiveButton("OK", null).show();
-        } catch (Exception e) {
-            new AlertDialog.Builder(a).setTitle("Navigateur introuvable")
-                    .setMessage("Ouvre ce lien dans ton navigateur :\n" + BASE + "simracedash.apk")
-                    .setPositiveButton("OK", null).show();
+        // Android 8+ : l'appli doit être autorisée à installer des applis
+        if (Build.VERSION.SDK_INT >= 26 && !a.getPackageManager().canRequestPackageInstalls()) {
+            new AlertDialog.Builder(a)
+                    .setTitle("Une autorisation à donner")
+                    .setMessage("Pour s'installer toute seule, l'appli doit avoir le droit d'installer des applis. "
+                            + "Active « Autoriser cette source » sur l'écran suivant, reviens, puis touche à nouveau Installer.")
+                    .setPositiveButton("Ouvrir le réglage", (d, w) -> a.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:" + a.getPackageName()))))
+                    .setNegativeButton("Annuler", null)
+                    .show();
+            return;
+        }
+        final AlertDialog prog = new AlertDialog.Builder(a).setTitle("Téléchargement…").setMessage("0 %").setCancelable(false).show();
+        new Thread(() -> {
+            try {
+                byte[] apk = get(BASE + "simracedash.apk?t=" + System.currentTimeMillis(),
+                        pct -> UI.post(() -> prog.setMessage(pct + " %")));
+                UI.post(() -> prog.setMessage("Installation…"));
+                install(a, apk);
+                UI.post(prog::dismiss);
+            } catch (Exception e) {
+                UI.post(() -> {
+                    prog.dismiss();
+                    if (!a.isFinishing()) new AlertDialog.Builder(a).setTitle("Mise à jour impossible")
+                            .setMessage(e.getMessage() + "\n\nTu peux aussi la télécharger depuis le lien habituel.")
+                            .setPositiveButton("OK", null).show();
+                });
+            }
+        }, "gt7-update-download").start();
+    }
+
+    private static void install(Context c, byte[] apk) throws Exception {
+        PackageInstaller pi = c.getPackageManager().getPackageInstaller();
+        PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+        params.setAppPackageName(c.getPackageName());
+        params.setSize(apk.length);
+        int id = pi.createSession(params);
+        try (PackageInstaller.Session s = pi.openSession(id)) {
+            try (OutputStream out = s.openWrite("simracedash.apk", 0, apk.length)) {
+                out.write(apk);
+                s.fsync(out);
+            }
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
+            PendingIntent pIntent = PendingIntent.getBroadcast(c, id,
+                    new Intent(c, InstallReceiver.class).setAction("fr.razhalpox.gt7engineer.INSTALL"), flags);
+            s.commit(pIntent.getIntentSender());
         }
     }
 }
