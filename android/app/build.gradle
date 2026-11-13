@@ -23,9 +23,11 @@ android {
             def ks = System.getenv('KS_FILE')
             if (ks) {
                 storeFile file(ks)
-                storePassword System.getenv('KS_PASS')
+                // espaces ou retour à la ligne collés par erreur autour du secret : ignorés
+                def pw = (System.getenv('KS_PASS') ?: '').trim()
+                storePassword pw
                 keyAlias System.getenv('KS_ALIAS') ?: 'gt7'
-                keyPassword System.getenv('KS_PASS')
+                keyPassword pw
             }
         }
     }
