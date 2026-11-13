@@ -2,7 +2,7 @@ name: Appli Android
 
 on:
   push:
-    branches: [main]
+    branches: [v2]
     paths:
       - 'android/**'
       - 'race-engineer/web/**'
