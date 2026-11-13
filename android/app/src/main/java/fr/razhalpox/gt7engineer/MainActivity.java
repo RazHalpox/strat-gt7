@@ -31,7 +31,8 @@ import java.util.Collections;
 
 /** Écran d'accueil : adresse de la PS5, démarrage, mode démo, adresse pour un autre écran. */
 public class MainActivity extends Activity {
-    private static final int BG = Color.rgb(12, 15, 19), PANEL = Color.rgb(21, 26, 33), PANEL2 = Color.rgb(28, 35, 44),
+    private static final int BG = Color.rgb(0, 0, 2), // même noir que le fond du logo : pas de cadre autour
+             PANEL = Color.rgb(21, 26, 33), PANEL2 = Color.rgb(28, 35, 44),
             FG = Color.rgb(233, 237, 241), MUTED = Color.rgb(142, 153, 165), ACCENT = Color.rgb(232, 56, 79),
             OK = Color.rgb(61, 220, 132), WARN = Color.rgb(255, 200, 51);
 
