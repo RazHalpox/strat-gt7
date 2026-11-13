@@ -60,7 +60,7 @@ function showPB(kind,X,atLap,title,sub){
   $("pbList").innerHTML="";
   ordered.forEach(r=>{const t=optLine(r,kind),b=document.createElement("button");b.type="button";b.className="pbOpt"+(r===best?" best":"");
     b.innerHTML=`<span class="chip ${r.rows[0].g}">${r.rows[0].g}</span><b></b><em></em><small></small>`;
-    b.querySelector("b").textContent=t.head;b.querySelector("small").textContent=t.tail;b.querySelector("em").textContent=gap(r);
+    b.querySelector("b").textContent=t.head.replace(/ %/g,"\u00a0%");b.querySelector("small").textContent=t.tail;b.querySelector("em").textContent=gap(r);
     b.addEventListener("click",()=>{Replan.apply(r,X,atLap);closePB();
       say(kind==="now"?`Plan B. Box box ce tour-ci. ${t.head.replace(" · ",", ").replace("+","").replace("%"," pour cent")}.`:`Nouveau plan. ${CN[r.rows[0].g]} jusqu'au tour ${r.rows[0].to}.`);
       radio("Plan B appliqué : "+t.head+" · "+t.tail)});

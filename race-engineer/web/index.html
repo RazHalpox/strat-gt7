@@ -401,6 +401,8 @@ function O_radioSync(){const r=$("radio");if(r&&!opts().radio)r.hidden=true;else
 /* ---- affichage ---- */
 const tyreColor=tyreColorOpt;
 let lastLapsLen=-1;
+// n'écrit un texte que s'il change : moins de travail pour le navigateur à chaque image de télémétrie
+function T(id,v){const e=$(id);if(e){v=String(v);if(e.textContent!==v)e.textContent=v}}
 function render(s){
   try{const L0=s.live||{};if(fin(L0.speed)&&window.__S)PlanB.pit(L0,opts())}catch(e){} // voie des stands : d'abord, sans attendre le reste
   try{Learn.update(s)}catch(e){}
@@ -411,30 +413,30 @@ function render(s){
   O_radioSync();
   if(!L||!fin(L.fuel))return;
   // chrono
-  $("lapNo").textContent=L.total_laps>0?`Tour ${L.lap} / ${L.total_laps}`:`Tour ${L.lap}`;
-  $("curLap").textContent=lapShort(L.cur_ms);
-  $("lastLap").textContent=lapFmt(L.last_ms);$("bestLap").textContent=lapFmt(L.best_ms);
-  const dl=L.last_ms>0&&L.best_ms>0?L.last_ms-L.best_ms:NaN;$("delta").textContent=dl===0?"Meilleur tour":sgnS(dl);$("delta").className=dl>0?"neg":"pos";$("delta").style.fontSize=dl===0?"15px":"";
-  $("pos").textContent=L.pos>0?`P${L.pos}${L.cars>0?" / "+L.cars:""}`:"–";
-  $("avg3").textContent=lapFmt(avgLap(laps,3));
-  $("speed").textContent=Math.round(L.speed)+" km/h";
+  T("lapNo",L.total_laps>0?`Tour ${L.lap} / ${L.total_laps}`:`Tour ${L.lap}`);
+  T("curLap",lapShort(L.cur_ms));
+  T("lastLap",lapFmt(L.last_ms));T("bestLap",lapFmt(L.best_ms));
+  const dl=L.last_ms>0&&L.best_ms>0?L.last_ms-L.best_ms:NaN;T("delta",dl===0?"Meilleur tour":sgnS(dl));$("delta").className=dl>0?"neg":"pos";$("delta").style.fontSize=dl===0?"15px":"";
+  T("pos",L.pos>0?`P${L.pos}${L.cars>0?" / "+L.cars:""}`:"–");
+  T("avg3",lapFmt(avgLap(laps,3)));
+  T("speed",Math.round(L.speed)+" km/h");
   // carburant
   const O=opts(),cons=avgFuel(laps,O.consAvg),pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN,left=cons>0?L.fuel/cons:NaN;
-  FK=L.fuel_cap>0?100/L.fuel_cap:1;FDEC=[1,2,3].includes(+O.fuelDec)?+O.fuelDec:1;$("fuelL").textContent=P1(L.fuel);$("fuelPct").textContent=fin(L.fuel)?f1(L.fuel)+" L":"–";
-  $("fuelLaps").textContent=fin(left)?f1(left):"–";$("fuelLaps").className="fuel-laps"+(fin(left)&&left<=O.fuelCrit?" neg":fin(left)&&left<=O.fuelWarn?" wrn":"");
+  FK=L.fuel_cap>0?100/L.fuel_cap:1;FDEC=[1,2,3].includes(+O.fuelDec)?+O.fuelDec:1;T("fuelL",P1(L.fuel));T("fuelPct",fin(L.fuel)?f1(L.fuel)+" L":"–");
+  T("fuelLaps",fin(left)?f1(left):"–");$("fuelLaps").className="fuel-laps"+(fin(left)&&left<=O.fuelCrit?" neg":fin(left)&&left<=O.fuelWarn?" wrn":"");
   $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";$("gauge").className="gauge"+(fin(left)&&left<=O.fuelCrit?" crit":fin(left)&&left<=O.fuelWarn?" low":"");
-  $("cons").textContent=fin(cons)?PC(cons)+" %":"–";
-  const lastClean=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lastClean?PC(lastClean.fuel)+" %":"–";
+  T("cons",fin(cons)?PC(cons)+" %":"–");
+  const lastClean=cleanLaps(laps).slice(-1)[0];T("consLast",lastClean?PC(lastClean.fuel)+" %":"–");
   // carburant manquant : jusqu'à l'arrêt prévu par la stratégie, ou jusqu'à l'arrivée
-  const tgt=fuelTarget(L,laps);$("toFinishLbl").textContent=tgt?tgt.label:"Pour finir";
+  const tgt=fuelTarget(L,laps);T("toFinishLbl",tgt?tgt.label:"Pour finir");
   $("fuelTip").hidden=true;
   const dn=Race.finished(L,laps);
-  if(dn){$("toFinishLbl").textContent="Course";$("toFinish").textContent="Terminée";$("toFinish").className="pos"}
-  else if(tgt&&fin(cons)){const lt=tgt.endLap-L.lap+lapRem(L,laps,cons),need=lt*cons-L.fuel;$("toFinish").textContent=need>0?"+"+P1(need)+" %":"OK";$("toFinish").className=need>0?"wrn":"pos";
+  if(dn){T("toFinishLbl","Course");T("toFinish","Terminée");$("toFinish").className="pos"}
+  else if(tgt&&fin(cons)){const lt=tgt.endLap-L.lap+lapRem(L,laps,cons),need=lt*cons-L.fuel;T("toFinish",need>0?"+"+P1(need)+" %":"OK");$("toFinish").className=need>0?"wrn":"pos";
     // conso à viser pour tenir sans arrêt de plus
     const tg=Race.target(L.fuel,lt);
     if(need>0&&fin(tg)){$("fuelTip").hidden=false;$("fuelTip").textContent=tg>=cons*0.88?`Vise ${PC(tg)} %/t (−${PC(cons-tg)}) pour tenir jusqu'au T${tgt.endLap}`:`Il faudrait ${PC(tg)} %/t pour tenir jusqu'au T${tgt.endLap} : économie trop forte, rentre plus tôt`}}
-  else{$("toFinish").textContent="–";$("toFinish").className=""}
+  else{T("toFinish","–");$("toFinish").className=""}
   // Plan B (bouton, voie des stands, arrêt hors plan)
   window.__S={L,laps,cons,rem:lapRem(L,laps,cons)};PlanB.tick(L,laps,cons,O);
   // pneus
@@ -442,25 +444,25 @@ function render(s){
   // pilotage
   const lo=L.rpm_lo||0,hi=L.rpm_hi||0,on=hi>lo?Math.max(0,Math.min(10,Math.round((L.rpm-(lo-1500))/((hi-(lo-1500))/10)))):0;
   [...$("shift").children].forEach((el,i)=>{el.style.background=i<on?(L.rev_limit?"var(--accent)":i<4?"var(--rpm-a,var(--ok))":i<8?"var(--rpm-b,var(--warn))":"var(--rpm-c,var(--accent))"):"var(--panel-2)"});
-  $("rpmTxt").textContent=Math.round(L.rpm).toLocaleString("fr-FR")+" tr/min";
-  $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;
-  $("speedBig").textContent=Math.round(L.speed)+" km/h";
-  $("sugGear").textContent=L.gear_sug>0&&L.gear_sug<15&&L.gear_sug!==L.gear?"Rapport conseillé : "+L.gear_sug:"";
+  T("rpmTxt",Math.round(L.rpm).toLocaleString("fr-FR")+" tr/min");
+  T("gear",L.gear===0?"R":L.gear>=15?"N":L.gear);
+  T("speedBig",Math.round(L.speed)+" km/h");
+  T("sugGear",L.gear_sug>0&&L.gear_sug<15&&L.gear_sug!==L.gear?"Rapport conseillé : "+L.gear_sug:"");
   $("thr").style.height=Math.round(L.throttle)+"%";$("brk").style.height=Math.round(L.brake)+"%";
   $("flags").innerHTML=[["TCS",L.tcs],["ASM",L.asm],["RUPTEUR",L.rev_limit],["PAUSE",L.paused]].map(([n,v])=>`<span class="flag${v?" on":""}">${n}</span>`).join("");
-  $("water").textContent=fin(L.water)?Math.round(L.water)+" °C":"–";$("oil").textContent=fin(L.oil)?Math.round(L.oil)+" °C":"–";
+  T("water",fin(L.water)?Math.round(L.water)+" °C":"–");T("oil",fin(L.oil)?Math.round(L.oil)+" °C":"–");
   {const pr=Race.predict(L,laps);
     const dn2=Race.finished(L,laps);
-    if(dn2){$("totLbl").textContent="Arrivée";$("totLaps").textContent="T"+dn2.lap+" ✓";$("totLaps").className="pos"}
-    else if(L.total_laps>0){$("totLbl").textContent="Arrivée";$("totLaps").textContent="T"+L.total_laps;$("totLaps").className=""}
-    else if(pr){$("totLbl").textContent=pr.over<10?`Arrivée · +1 t à ${Math.max(0,Math.round(pr.over))} s`:pr.under<10?`Arrivée · −1 t à ${Math.max(0,Math.round(pr.under))} s`:"Arrivée prévue";
-      $("totLaps").textContent="≈ T"+pr.finalLap;$("totLaps").className=pr.over<10||pr.under<10?"wrn":""}
-    else{$("totLbl").textContent="Arrivée";$("totLaps").textContent="Durée";$("totLaps").className=""}}
+    if(dn2){T("totLbl","Arrivée");T("totLaps","T"+dn2.lap+" ✓");$("totLaps").className="pos"}
+    else if(L.total_laps>0){T("totLbl","Arrivée");T("totLaps","T"+L.total_laps);$("totLaps").className=""}
+    else if(pr){T("totLbl",pr.over<10?`Arrivée · +1 t à ${Math.max(0,Math.round(pr.over))} s`:pr.under<10?`Arrivée · −1 t à ${Math.max(0,Math.round(pr.under))} s`:"Arrivée prévue");
+      T("totLaps","≈ T"+pr.finalLap);$("totLaps").className=pr.over<10||pr.under<10?"wrn":""}
+    else{T("totLbl","Arrivée");T("totLaps","Durée");$("totLaps").className=""}}
   // historique (redessiné seulement quand un tour se termine)
   if(laps.length+":"+FDEC!==lastLapsLen){lastLapsLen=laps.length+":"+FDEC;
     const best=Math.min(...laps.filter(l=>l.ms>0).map(l=>l.ms));
     $("hist").innerHTML=laps.slice().reverse().map(l=>`<tr class="${l.pit?"pit":l.ms===best?"best":""}"><td>${l.n}${l.pit?" · stand":""}</td><td>${lapFmt(l.ms)}</td><td>${l.ms===best?"meilleur":sgnS(l.ms-best)}</td><td>${fin(l.fuel)?PC(l.fuel)+" %":"–"}</td><td>${P1(l.fuel_end)} %</td></tr>`).join("");
-    $("lapCount").textContent=laps.length?laps.length+(laps.length>1?" tours":" tour"):"";
+    T("lapCount",laps.length?laps.length+(laps.length>1?" tours":" tour"):"");
     updateSendInfo(laps);
   }
   engineer(laps,L,left);
@@ -472,10 +474,10 @@ const KEY="gt7-endu-v1";
 function readStrat(){try{return JSON.parse(localStorage.getItem(KEY)||"null")||{S:{},tab:"par"}}catch(e){return{S:{},tab:"par"}}}
 function writeStrat(o){try{localStorage.setItem(KEY,JSON.stringify(o));return true}catch(e){return false}}
 function updateSendInfo(laps){const n=+$("nLaps").value,c=avgFuel(laps,n),cl=cleanLaps(laps).slice(-n).length,t=avgLap(laps,n);
-  $("sendFuelInfo").textContent=fin(c)?`${f2(c)} L/tour sur ${cl} tour${cl>1?"s":""}`:"pas encore de tour complet";
+  T("sendFuelInfo",fin(c)?`${f2(c)} L/tour sur ${cl} tour${cl>1?"s":""}`:"pas encore de tour complet");
   $("sendLapInfo").textContent=fin(t)?lapFmt(t):"–"}
 $("nLaps").addEventListener("change",()=>updateSendInfo(window.__laps||[]));
-function flash(t){$("sendMsg").textContent=t;clearTimeout(flash._t);flash._t=setTimeout(()=>$("sendMsg").textContent="",4000)}
+function flash(t){T("sendMsg",t);clearTimeout(flash._t);flash._t=setTimeout(()=>$("sendMsg").textContent="",4000)}
 $("sendFuel").addEventListener("click",()=>{const laps=window.__laps||[],n=+$("nLaps").value,c=cleanLaps(laps).slice(-n);
   if(!c.length)return flash("Il faut au moins un tour complet sans arrêt.");
   const used=c.reduce((s,l)=>s+l.fuel,0),o=readStrat();o.S=o.S||{};
@@ -488,12 +490,20 @@ document.querySelectorAll(".tyreBtn").forEach(b=>b.addEventListener("click",()=>
   if(ok){document.querySelectorAll(".tyreBtn").forEach(x=>x.classList.toggle("done",x===b));clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove("done"),2500)}}));
 
 /* ---- flux en direct depuis le PC ---- */
+// au plus un dessin par image d'écran (les messages en retard sont fusionnés) ;
+// écran caché : on traite tout de suite (voix, Plan B et carnet continuent sans affichage)
+let es=null,pend=null,raf=0,retry=0;
+function flush(){raf=0;const d=pend;pend=null;if(d)try{render(JSON.parse(d))}catch(err){}}
 function connect(){
-  const es=new EventSource("events");
-  es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(err){}};
-  es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};
+  clearTimeout(retry);if(es)es.close();
+  es=new EventSource("events");
+  es.onmessage=e=>{pend=e.data;if(document.hidden)flush();else if(!raf)raf=requestAnimationFrame(flush)};
+  es.onerror=()=>{$("status").className="pill wait";$("status").textContent="Reconnexion…";es.close();es=null;retry=setTimeout(connect,1500)};
 }
 connect();
+// retour sur l'écran (téléphone rallumé, appli rouverte) : on se reconnecte sans attendre
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&(!es||es.readyState===2))connect()});
+window.addEventListener("online",()=>{if(!es||es.readyState===2)connect()});
 </script>
 </body>
 </html>

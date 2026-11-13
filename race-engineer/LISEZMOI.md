@@ -11,7 +11,7 @@ Ton ingénieur de course pour Gran Turismo 7 : télémétrie en direct sur ton t
 Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télémétrie de la PS5. Pas besoin du PC ni de Python.
 
 **Installer (une seule fois)**
-1. Sur le téléphone Android, ouvre ce lien : https://github.com/RazHalpox/strat-gt7/releases/download/android/gt7-race-engineer.apk
+1. Sur le téléphone Android, ouvre ce lien : https://github.com/RazHalpox/strat-gt7/releases/download/v3/simracedash.apk (SimRaceDash V3 ; l'ancienne V2 « GT7 Engineer » reste installable à part avec https://github.com/RazHalpox/strat-gt7/releases/download/android/gt7-race-engineer.apk)
 2. Ouvre le fichier téléchargé. Android demande d'autoriser l'installation depuis Chrome (ou « Fichiers ») : accepte, puis **Installer**.
 3. Si Play Protect affiche un avertissement (appli inconnue), touche **Plus de détails → Installer quand même**.
 
@@ -64,6 +64,12 @@ Conseil : dans les réglages de ta box, attribue une IP fixe à la PS5 pour ne p
 **Sur Android :** dans Chrome, ⋮ → Ajouter à l'écran d'accueil.
 
 ---
+
+## SimRaceDash V3 et l'ancienne V2
+
+La V3 (**SimRaceDash**, icône compte-tours) est une appli séparée : elle s'installe à côté de la V2 (**GT7 Engineer**), qui reste là en secours. Les deux utilisent la même adresse pour l'iPad (`http://IP-du-téléphone:8777/...`) : **n'en démarre qu'une à la fois**.
+
+Tes réglages, ta stratégie et ton carnet ne passent pas tout seuls de la V2 à la V3 (ce sont deux applis). Le plus simple : démarre la V3, puis ouvre les écrans sur l'iPad qui avait déjà tes données ; l'iPad les envoie à la V3.
 
 ## Premier lancement : l'assistant
 

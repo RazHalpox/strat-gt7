@@ -205,6 +205,18 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
   .tyre .t{font-size:42px}
 }
 
+/* ---- tablette en portrait : la place ne manque pas, les chiffres clés grandissent ---- */
+@media (orientation:portrait) and (min-width:700px){
+  .big{font-size:clamp(90px,13vw,170px)}
+  .liters b{font-size:clamp(44px,7vw,64px)}
+  #cFuel .kv b{font-size:30px}
+  .stop{font-size:22px;padding:8px 14px}.stop small{font-size:16px}
+  .gear{font-size:clamp(130px,17vw,240px)}
+  .speed{font-size:46px}
+  .coreRow{font-size:20px}
+  .chronos b{font-size:32px}
+  .tyre .t{font-size:clamp(40px,5.6vw,64px)}
+}
 /* ---- taille automatique : en paysage, chaque fenêtre adapte ses chiffres à sa propre taille ---- */
 @media (orientation:landscape){
   .card{container-type:size}
@@ -244,19 +256,22 @@ body.editing .editBar{display:flex}
 .hP{display:none}@media (orientation:portrait){.hL{display:none}.hP{display:inline}}
 body.editing .rpm{display:none}
 .edOv{display:none}
-body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direction:column;align-items:center;justify-content:safe center;gap:10px;padding:46px 8px 8px;overflow:auto;
   background:rgba(7,9,12,.72);border:2px dashed var(--accent);border-radius:inherit;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
-.edOv .nm{font:700 22px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--fg);text-align:center}
+.edOv .nm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 22px var(--f-display);text-transform:uppercase;letter-spacing:.08em;color:var(--fg);text-align:center}
 .edOv .grip{font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:#fff;background:var(--accent);border-radius:5px;padding:8px 14px;touch-action:none}
 .edOv .hideBtn{position:absolute;top:6px;right:6px}
 /* éléments masqués un par un (Disposition) */
 .offEl{display:none!important}
-.edOv .els{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:94%;max-height:55%;overflow:auto;touch-action:pan-y;cursor:default}
+.edOv .els{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:94%;flex:none;touch-action:pan-y;cursor:default}
 .edOv .els button{font:600 13px var(--f-display);letter-spacing:.02em;border-radius:999px;padding:5px 10px;border:1px solid var(--ok);background:rgba(61,220,132,.16);color:var(--fg);cursor:pointer}
 .edOv .els button{touch-action:none}
 .edOv .els button.elDrag{outline:2px solid var(--accent);transform:scale(1.08);z-index:2}
 .edOv .els button[aria-pressed=false]{border-color:var(--line);background:transparent;color:var(--muted);text-decoration:line-through}
-.edOv .elsT{font:600 12px var(--f-display);color:var(--muted);letter-spacing:.04em}
+.edOv .elsT{font:600 12px var(--f-display);color:var(--muted);letter-spacing:.04em;text-align:center;max-width:94%}
+.mvI{width:1.1em;height:1.1em;vertical-align:-.18em}
+.edOv.tight .elsT{display:none}.edOv.tight{gap:6px}
+.edOv.tiny .nm{display:none}.edOv.tiny{padding-top:42px}
 @media (max-height:520px){.edOv .nm{font-size:16px}.edOv .grip{padding:5px 10px;font-size:13px}.edOv .els button{font-size:12px;padding:3px 8px}body.editing .edOv{gap:5px}}
 .card.dragSrc{opacity:.35}
 .dropInd{position:fixed;z-index:40;pointer-events:none;background:rgba(255,59,78,.35);border:2px solid var(--accent);border-radius:6px;display:none}
@@ -291,7 +306,7 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 </header>
 
 <div class="rpm" id="rpm" aria-hidden="true"></div>
-<div class="editBar" id="editBar"><b>Disposition</b><span id="edHelp" class="hL">Glisse une fenêtre sur une autre : au centre pour les échanger, sur un bord pour la placer à côté.</span><span class="hP">Glisse avec ✥ sur une autre fenêtre : au centre pour les échanger, en haut ou en bas pour la placer avant ou après.</span>
+<div class="editBar" id="editBar"><b>Disposition</b><span id="edHelp" class="hL">Glisse une fenêtre sur une autre : au centre pour les échanger, sur un bord pour la placer à côté.</span><span class="hP">Glisse avec <svg class="mvI" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 3h-2v4h-2V5H9zm0 20l-3-3h2v-4h2v4h2zM2 12l3-3v2h4v2H5v2zm20 0l-3 3v-2h-4v-2h4V9z" fill="currentColor"/></svg> sur une autre fenêtre : au centre pour les échanger, en haut ou en bas pour la placer avant ou après.</span>
   <span id="edHidden"></span><span class="sp"></span>
   <button class="btn" type="button" id="edReset">Par défaut</button><button class="btn on" type="button" id="edDone">Terminé</button></div>
 <div class="dropInd" id="dropInd"></div>
@@ -492,6 +507,8 @@ function renderBand(st,cur,rows,all){
   const tiles=done.slice(-3).concat(plan).slice(0,6);
   $("relBand").innerHTML=tiles.map(t=>`<div class="rb${t.now?" now":""}${t.plan?" plan":""}"><span class="rbH"><span class="chip ${t.g||"X"}">${t.g||"?"}</span><span><em>R${t.n}</em> · T${t.from}–${t.to}</span></span>`+
     (t.plan?`<b>–</b><i>prévu · ${t.to-t.from+1} t</i>`:`<b>${fin(t.avg)?PC(t.avg):"–"}<small>%/t</small></b><i>${t.now?"en cours":t.to-t.from+1+" t"}</i>`)+`</div>`).join("")}
+// n'écrit un texte que s'il change : moins de travail pour le navigateur à chaque image de télémétrie
+function T(id,v){const e=$(id);if(e){v=String(v);if(e.textContent!==v)e.textContent=v}}
 function render(s){
   try{const L0=s.live||{};if(fin(L0.speed)&&window.__S)PlanB.pit(L0,opts())}catch(e){} // voie des stands : d'abord, sans attendre le reste
   try{Learn.update(s)}catch(e){}
@@ -509,13 +526,13 @@ function render(s){
   // carburant
   FK=L.fuel_cap>0?100/L.fuel_cap:1;FDEC=[1,2,3].includes(+O.fuelDec)?+O.fuelDec:1;
   const cons=avgFuel(laps,O.consAvg),left=cons>0?L.fuel/cons:NaN,pct=L.fuel_cap>0?L.fuel/L.fuel_cap*100:NaN;
-  $("fuelLaps").textContent=fin(left)?f1(left):"–";
+  T("fuelLaps",fin(left)?f1(left):"–");
   $("fuelLaps").className="big"+(fin(left)&&left<=O.fuelCrit?" bad":fin(left)&&left<=O.fuelWarn?" wrn":"");
-  $("fuelL").textContent=P1(L.fuel);$("fuelPct").textContent=fin(L.fuel)?f1(L.fuel)+" L":"–";
+  T("fuelL",P1(L.fuel));T("fuelPct",fin(L.fuel)?f1(L.fuel)+" L":"–");
   $("gaugeFill").style.width=(fin(pct)?Math.max(0,Math.min(100,pct)):0)+"%";
   $("gaugeFill").style.background=fin(left)&&left<=O.fuelCrit?"var(--accent)":fin(left)&&left<=O.fuelWarn?"var(--warn)":"var(--ok)";
-  $("cons").textContent=fin(cons)?PC(cons)+" %":"–";
-  const lc=cleanLaps(laps).slice(-1)[0];$("consLast").textContent=lc?PC(lc.fuel)+" %":"–";
+  T("cons",fin(cons)?PC(cons)+" %":"–");
+  const lc=cleanLaps(laps).slice(-1)[0];T("consLast",lc?PC(lc.fuel)+" %":"–");
   // prochain arrêt prévu
   // arrivée : nombre de tours de la course, ou tour d'arrivée prévu d'après ton rythme (course à la durée)
   const finishLap=Race.finishLap(L,laps),pred=Race.predict(L,laps);
@@ -528,17 +545,17 @@ function render(s){
   const tgtTxt=fuelShort&&fin(fuelShort.tgt)?(fuelShort.tgt>=cons*0.88?`Vise ${PC(fuelShort.tgt)} %/t (−${PC(cons-fuelShort.tgt)}) jusqu'au T${fuelShort.endLap}`:`Économie trop forte (${PC(fuelShort.tgt)} %/t) : rentre plus tôt`):"";
   // course terminée (drapeau à damier) : plus d'alerte carburant ni d'arrêt
   const done=Race.finished(L,laps);if(done)fuelShort=null;
-  if(done){stop.className="stop done";$("stopTitle").textContent=`Course terminée · T${done.lap}`;$("stopText").textContent="Drapeau à damier"+(L.pos>0?` · P${L.pos}${L.cars>0?"/"+L.cars:""}`:"")}
-  else if(O.fuelSafety&&fin(left)&&left<1.5&&(fuelShort||!nx)&&!(nx&&!nx.done&&nx.inLaps===0)){stop.className="stop crit";$("stopTitle").textContent="Box box · carburant critique";$("stopText").textContent="Rentre au stand ce tour-ci"}
+  if(done){stop.className="stop done";T("stopTitle",`Course terminée · T${done.lap}`);$("stopText").textContent="Drapeau à damier"+(L.pos>0?` · P${L.pos}${L.cars>0?"/"+L.cars:""}`:"")}
+  else if(O.fuelSafety&&fin(left)&&left<1.5&&(fuelShort||!nx)&&!(nx&&!nx.done&&nx.inLaps===0)){stop.className="stop crit";T("stopTitle","Box box · carburant critique");$("stopText").textContent="Rentre au stand ce tour-ci"}
   else if(nx&&!nx.done){const txt=stopTxt(nx);
-    if(nx.inLaps===0){stop.className=O.stratAlerts?"stop crit":"stop";$("stopTitle").textContent=O.stratAlerts?"Box box · ce tour-ci":`Arrêt prévu ce tour-ci · T${nx.endLap}`;$("stopText").textContent=txt}
-    else if(fuelShort){stop.className="stop crit";$("stopTitle").textContent=`Essence courte · ${f1(left)} tours`;$("stopText").textContent=`${tgtTxt} · ${txt}`}
-    else{stop.className="stop"+(O.stratAlerts&&O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");$("stopTitle").textContent=`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`;$("stopText").textContent=txt}}
-  else if(fuelShort){stop.className="stop warn";$("stopTitle").textContent=`Essence courte pour finir · ${f1(left)} tours`;$("stopText").textContent=fuelShort.tgt>=cons*0.88?`${tgtTxt} · il manque ${Math.round(fuelShort.miss*FK)} %`:`Il manque ${Math.round(fuelShort.miss*FK)} % : ravitaille`}
-  else{stop.className="stop";$("stopTitle").textContent=nx&&nx.done?"Dernier relais":"Pas de plan";$("stopText").textContent=nx&&nx.done?"Plus d'arrêt prévu":"Choisis un plan dans Stratégie"}
+    if(nx.inLaps===0){stop.className=O.stratAlerts?"stop crit":"stop";T("stopTitle",O.stratAlerts?"Box box · ce tour-ci":`Arrêt prévu ce tour-ci · T${nx.endLap}`);$("stopText").textContent=txt}
+    else if(fuelShort){stop.className="stop crit";T("stopTitle",`Essence courte · ${f1(left)} tours`);$("stopText").textContent=`${tgtTxt} · ${txt}`}
+    else{stop.className="stop"+(O.stratAlerts&&O.warnLaps>0&&nx.inLaps<=O.warnLaps?" warn":"");T("stopTitle",`Arrêt dans ${nx.inLaps} tour${nx.inLaps>1?"s":""} · T${nx.endLap}`);$("stopText").textContent=txt}}
+  else if(fuelShort){stop.className="stop warn";T("stopTitle",`Essence courte pour finir · ${f1(left)} tours`);$("stopText").textContent=fuelShort.tgt>=cons*0.88?`${tgtTxt} · il manque ${Math.round(fuelShort.miss*FK)} %`:`Il manque ${Math.round(fuelShort.miss*FK)} % : ravitaille`}
+  else{stop.className="stop";T("stopTitle",nx&&nx.done?"Dernier relais":"Pas de plan");$("stopText").textContent=nx&&nx.done?"Plus d'arrêt prévu":"Choisis un plan dans Stratégie"}
   // la même alerte, en gros et clignotante au-dessus du rapport engagé
   {const lvl=stop.classList.contains("crit")?"crit":stop.classList.contains("warn")?"warn":"",pa=$("pitAlert");
-   if(lvl){pa.hidden=false;pa.className="pitAlert "+lvl;$("paTitle").textContent=$("stopTitle").textContent;$("paText").textContent=$("stopText").textContent}
+   if(lvl){pa.hidden=false;pa.className="pitAlert "+lvl;T("paTitle",$("stopTitle").textContent);$("paText").textContent=$("stopText").textContent}
    else pa.hidden=true}
   // conso des derniers tours
   const hl=laps.filter(l=>fin(l.fuel)&&!l.pit).slice(-10);
@@ -553,26 +570,26 @@ function render(s){
     laps.forEach(l=>{if(!cur){cur={from:l.n,to:l.n,f:[]};st.push(cur)}cur.to=l.n;
       if(!l.pit&&fin(l.fuel)&&l.fuel>0.05)cur.f.push(l.fuel);if(l.pit)cur=null});
     const plan=readPlan(),rows=plan&&plan.rows||[];
-    const all=st.flatMap(r=>r.f);$("raceAvg").textContent=all.length?"course "+PC(all.reduce((a,b)=>a+b,0)/all.length)+" %":"";
+    const all=st.flatMap(r=>r.f);T("raceAvg",all.length?"course "+PC(all.reduce((a,b)=>a+b,0)/all.length)+" %":"");
     renderBand(st,cur,rows,all);
     if(st.length){$("relays").innerHTML=st.map((r,i)=>{const pr=rows.find(x=>r.from>=x.from&&r.from<=x.to),g=pr?pr.g:"",avg=r.f.length?r.f.reduce((a,b)=>a+b,0)/r.f.length:NaN,live=i===st.length-1&&cur;
       return`<div class="${live?"now":""}"><span class="chip ${g||"X"}">${g||"?"}</span><span class="who"><em>Relais ${i+1}</em> · T${r.from}–${r.to}${live?" · en cours":""}</span><b>${fin(avg)?PC(avg):"–"}<small>%/t</small></b></div>`}).slice(-4).join("")}}
 
   // centre
-  $("gear").textContent=L.gear===0?"R":L.gear>=15?"N":L.gear;
-  $("speed").textContent=Math.round(L.speed);
-  $("lap").textContent=L.total_laps>0?`${L.lap}/${L.total_laps}`:L.lap;
-  $("pos").textContent=L.pos>0?`${L.pos}/${L.cars}`:"–";
-  $("boost").textContent=fin(L.boost)&&L.boost>-0.95?(L.boost>=0?"+":"")+f1(L.boost):"–";
+  T("gear",L.gear===0?"R":L.gear>=15?"N":L.gear);
+  T("speed",Math.round(L.speed));
+  T("lap",L.total_laps>0?`${L.lap}/${L.total_laps}`:L.lap);
+  T("pos",L.pos>0?`${L.pos}/${L.cars}`:"–");
+  T("boost",fin(L.boost)&&L.boost>-0.95?(L.boost>=0?"+":"")+f1(L.boost):"–");
 
   // chronos
-  {const fr=$("finRow"),dn=Race.finished(L,laps);if(dn){fr.hidden=false;$("finLbl").textContent="Arrivée";$("finLap").textContent="T"+dn.lap+" ✓";$("finLap").className="ok"}
-    else if(pred){fr.hidden=false;$("finLap").textContent="T"+pred.finalLap;
-      $("finLbl").textContent=pred.over<10?`Arrivée · +1 tour à ${Math.max(0,Math.round(pred.over))} s`:pred.under<10?`Arrivée · −1 tour à ${Math.max(0,Math.round(pred.under))} s`:"Arrivée prévue";
+  {const fr=$("finRow"),dn=Race.finished(L,laps);if(dn){fr.hidden=false;T("finLbl","Arrivée");T("finLap","T"+dn.lap+" ✓");$("finLap").className="ok"}
+    else if(pred){fr.hidden=false;T("finLap","T"+pred.finalLap);
+      T("finLbl",pred.over<10?`Arrivée · +1 tour à ${Math.max(0,Math.round(pred.over))} s`:pred.under<10?`Arrivée · −1 tour à ${Math.max(0,Math.round(pred.under))} s`:"Arrivée prévue");
       $("finLap").className=pred.over<10||pred.under<10?"wrn":""}
-    else if(L.total_laps>0){fr.hidden=false;$("finLbl").textContent="Arrivée";$("finLap").textContent="T"+L.total_laps;$("finLap").className=""}
+    else if(L.total_laps>0){fr.hidden=false;T("finLbl","Arrivée");T("finLap","T"+L.total_laps);$("finLap").className=""}
     else fr.hidden=true}
-  $("cur").textContent=lapShort(L.cur_ms);$("last").textContent=lapFmt(L.last_ms);$("best").textContent=lapFmt(L.best_ms);
+  T("cur",lapShort(L.cur_ms));T("last",lapFmt(L.last_ms));T("best",lapFmt(L.best_ms));
 
   // pneus : températures, blocage et patinage, usure du relais
   (L.tyres||[]).forEach((t,i)=>{const el=$("t"+i);el.style.background=tyreColorOpt(t);el.querySelector(".t").textContent=fin(t)?Math.round(t):"–"});
@@ -583,21 +600,29 @@ function render(s){
     else{b.className="slip";b.textContent=""}}
   const cr=currentRelay(L.lap);
   if(cr){const g=cr.row.g,life=readStratLife(g),done=L.lap-cr.row.from+1,ratio=fin(life)?done/life:NaN;
-    $("tyreChip").className="chip "+g;$("tyreChip").textContent=g;$("tyreRelay").textContent=`Relais ${cr.i+1}/${cr.n} · ${CN[g]}`;
-    $("stintTxt").textContent=fin(life)?`${done}/${life} t`:`${done} t`;
+    $("tyreChip").className="chip "+g;T("tyreChip",g);T("tyreRelay",`Relais ${cr.i+1}/${cr.n} · ${CN[g]}`);
+    T("stintTxt",fin(life)?`${done}/${life} t`:`${done} t`);
     $("wear").style.width=(fin(ratio)?Math.min(100,ratio*100):0)+"%";$("wear").style.background=ratio>=1?"var(--accent)":ratio>=.8?"var(--warn)":"var(--ok)"}
-  else{$("tyreRelay").textContent="sans plan";$("stintTxt").textContent="–";$("wear").style.width="0"}
+  else{T("tyreRelay","sans plan");T("stintTxt","–");$("wear").style.width="0"}
 
   engineer(laps,L,left,nx);
   window.__S={L,laps,cons,rem};PlanB.tick(L,laps,cons,O);
 }
 
+// au plus un dessin par image d'écran (les messages en retard sont fusionnés) ;
+// écran caché : on traite tout de suite (voix, Plan B et carnet continuent sans affichage)
+let es=null,pend=null,raf=0,retry=0;
+function flush(){raf=0;const d=pend;pend=null;if(d)try{render(JSON.parse(d))}catch(err){}}
 function connect(){
-  const es=new EventSource("events");
-  es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(err){}};
-  es.onerror=()=>{$("status").className="pill wait";$("status").textContent="PC injoignable";es.close();setTimeout(connect,2000)};
+  clearTimeout(retry);if(es)es.close();
+  es=new EventSource("events");
+  es.onmessage=e=>{pend=e.data;if(document.hidden)flush();else if(!raf)raf=requestAnimationFrame(flush)};
+  es.onerror=()=>{$("status").className="pill wait";$("status").textContent="Reconnexion…";es.close();es=null;retry=setTimeout(connect,1500)};
 }
 connect();
+// retour sur l'écran (téléphone rallumé, appli rouverte) : on se reconnecte sans attendre
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&(!es||es.readyState===2))connect()});
+window.addEventListener("online",()=>{if(!es||es.readyState===2)connect()});
 </script>
 <script>
 // ---- Disposition des fenêtres : colonnes de fenêtres, enregistrées sur cet appareil ----
@@ -689,8 +714,13 @@ function hidePane(id){
   if(LAY.cols.flat().length<=1)return;
   const[a,b]=posOf(id);LAY.cols[a].splice(b,1);LAY.cols=LAY.cols.filter(x=>x.length);LAY.hidden.push(id);saveLayout();renderLayout();
 }
+// petites fenêtres : on retire l'aide puis le titre pour que tout tienne
+function fitOv(){document.querySelectorAll(".edOv").forEach(o=>{const h=o.parentElement.clientHeight,w=o.parentElement.clientWidth;
+  o.classList.toggle("tight",h<330||w<300);o.classList.toggle("tiny",h<200||w<230)})}
+window.addEventListener("resize",()=>{if(window.editing)requestAnimationFrame(fitOv)});
+{const f=renderLayout;renderLayout=function(){f.apply(this,arguments);if(window.editing)requestAnimationFrame(fitOv)}}
 function setEditing(on){
-  window.editing=on;document.body.classList.toggle("editing",on);
+  window.editing=on;document.body.classList.toggle("editing",on);if(on)requestAnimationFrame(()=>requestAnimationFrame(fitOv));
   $("layoutBtn").classList.toggle("on",on);$("layoutBtn").setAttribute("aria-pressed",on);
   if(on){$("grid").hidden=false;$("waitBox").hidden=true}
 }
@@ -698,7 +728,7 @@ function setEditing(on){
 const portrait=()=>matchMedia("(orientation:portrait)").matches;
 Object.keys(PANES).forEach(id=>{
   const ov=document.createElement("div");ov.className="edOv";
-  ov.innerHTML='<span class="nm"></span><span class="grip">✥ Glisser</span><span class="elsT">Touche un élément pour l\'afficher ou le masquer, fais-le glisser pour changer sa place</span><div class="els"></div><button type="button" class="btn hideBtn">✕ Masquer</button>';
+  ov.innerHTML='<span class="nm"></span><span class="grip"><svg class="mvI" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 3h-2v4h-2V5H9zm0 20l-3-3h2v-4h2v4h2zM2 12l3-3v2h4v2H5v2zm20 0l-3 3v-2h-4v-2h4V9z" fill="currentColor"/></svg> Glisser</span><span class="elsT">Touche un élément pour l\'afficher ou le masquer, fais-le glisser pour changer sa place</span><div class="els"></div><button type="button" class="btn hideBtn">✕ Masquer</button>';
   ov.querySelector(".nm").textContent=PANES[id].n;
   ELS[id].forEach(([k,n])=>{const b=document.createElement("button");b.type="button";b.dataset.k=k;b.textContent=n;b.setAttribute("aria-pressed","true");
     b.addEventListener("click",e=>{e.stopPropagation();if(b.dataset.dragged){delete b.dataset.dragged;return}
