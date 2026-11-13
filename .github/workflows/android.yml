@@ -67,5 +67,5 @@ jobs:
           gh release delete v3 --yes --cleanup-tag || true
           gh release create v3 simracedash.apk version.json \
             --title "SimRaceDash V3 pour Android" \
-            --notes "SimRaceDash V3 (v3.0.${{ github.run_number }}, compilée depuis ${GITHUB_SHA::7}). Ouvre ce lien sur ton téléphone Android et installe simracedash.apk. Elle s'installe à côté de la V2." \
+            --notes "SimRaceDash V3 (v3.0.${{ github.run_number }}, compilée depuis ${GITHUB_SHA::7}). Ouvre ce lien sur ton téléphone Android et installe simracedash.apk. Elle remplace l'ancienne appli GT7 Engineer (V2)." \
             --latest=false

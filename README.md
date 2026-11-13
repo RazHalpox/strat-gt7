@@ -5,7 +5,7 @@ Un ingénieur de course pour les courses d'endurance de Gran Turismo 7. L'appli 
 ![Écran Pilote pendant une course](docs/pilote.jpg)
 
 **Installer SimRaceDash V3 sur Android (sans PC) :** ouvre ce lien sur ton téléphone et installe le fichier : https://github.com/RazHalpox/strat-gt7/releases/download/v3/simracedash.apk
-Elle s'installe à côté de l'ancienne appli « GT7 Engineer » (V2), qui reste disponible : https://github.com/RazHalpox/strat-gt7/releases/download/android/gt7-race-engineer.apk
+Elle remplace l'ancienne appli « GT7 Engineer » (V2) : installe SimRaceDash, puis désinstalle GT7 Engineer.
 L'appli se met ensuite à jour toute seule. Guide complet : [race-engineer/LISEZMOI.md](race-engineer/LISEZMOI.md).
 
 ---

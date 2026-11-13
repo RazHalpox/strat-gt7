@@ -102,8 +102,14 @@ public class MainActivity extends Activity {
         col.setPadding(dp(20), dp(28), dp(20), dp(28));
         outer.addView(col, new LinearLayout.LayoutParams(Math.min(dp(520), getResources().getDisplayMetrics().widthPixels), LinearLayout.LayoutParams.WRAP_CONTENT));
 
-        TextView title = text("SimRaceDash", 28, FG, true);
-        col.addView(title);
+        // logo SimRaceDash en haut de l'accueil
+        android.widget.ImageView logo = new android.widget.ImageView(this);
+        logo.setImageResource(R.drawable.home_logo);
+        logo.setAdjustViewBounds(true);
+        logo.setContentDescription("SimRaceDash");
+        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        llp.bottomMargin = dp(10);
+        col.addView(logo, llp);
         TextView ver = text("v" + Updater.installedName(this) + " · appli Android, sans PC", 14, MUTED, false);
         col.addView(ver);
         // outils de dépannage (enregistrements des courses) : cachés, 7 appuis sur la version pour les afficher ou les masquer
