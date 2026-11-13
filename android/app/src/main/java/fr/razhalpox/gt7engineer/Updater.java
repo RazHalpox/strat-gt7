@@ -125,53 +125,35 @@ public final class Updater {
         }, "gt7-update-check").start();
     }
 
+    /**
+     * Télécharge la mise à jour avec le gestionnaire de téléchargements d'Android (notification de progression).
+     * Une fois fini, toucher la notification « SimRaceDash » ouvre l'installation.
+     * L'appli n'installe rien elle-même : pas d'autorisation « installer des applis », que Google Play Protect signale.
+     */
     private static void download(final Activity a) {
-        // Android 8+ : l'appli doit être autorisée à installer des applis
-        if (Build.VERSION.SDK_INT >= 26 && !a.getPackageManager().canRequestPackageInstalls()) {
-            new AlertDialog.Builder(a)
-                    .setTitle("Une autorisation à donner")
-                    .setMessage("Pour s'installer toute seule, l'appli doit avoir le droit d'installer des applis. "
-                            + "Active « Autoriser cette source » sur l'écran suivant, reviens, puis touche à nouveau Installer.")
-                    .setPositiveButton("Ouvrir le réglage", (d, w) -> a.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                            Uri.parse("package:" + a.getPackageName()))))
-                    .setNegativeButton("Annuler", null)
-                    .show();
-            return;
-        }
-        final AlertDialog prog = new AlertDialog.Builder(a).setTitle("Téléchargement…").setMessage("0 %").setCancelable(false).show();
-        new Thread(() -> {
-            try {
-                byte[] apk = get(BASE + "simracedash.apk?t=" + System.currentTimeMillis(),
-                        pct -> UI.post(() -> prog.setMessage(pct + " %")));
-                UI.post(() -> prog.setMessage("Installation…"));
-                install(a, apk);
-                UI.post(prog::dismiss);
-            } catch (Exception e) {
-                UI.post(() -> {
-                    prog.dismiss();
-                    if (!a.isFinishing()) new AlertDialog.Builder(a).setTitle("Mise à jour impossible")
-                            .setMessage(e.getMessage() + "\n\nTu peux aussi la télécharger depuis le lien habituel.")
-                            .setPositiveButton("OK", null).show();
-                });
+        try {
+            android.app.DownloadManager dm = (android.app.DownloadManager) a.getSystemService(Context.DOWNLOAD_SERVICE);
+            java.io.File dir = a.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS);
+            if (dir != null) for (java.io.File f : dir.listFiles() != null ? dir.listFiles() : new java.io.File[0])
+                if (f.getName().startsWith("simracedash")) f.delete(); // anciennes mises à jour
+            android.app.DownloadManager.Request r = new android.app.DownloadManager.Request(Uri.parse(BASE + "simracedash.apk"))
+                    .setTitle("SimRaceDash · mise à jour")
+                    .setDescription("Touche ici quand c'est fini pour installer")
+                    .setMimeType("application/vnd.android.package-archive")
+                    .setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationInExternalFilesDir(a, android.os.Environment.DIRECTORY_DOWNLOADS, "simracedash-" + System.currentTimeMillis() + ".apk");
+            dm.enqueue(r);
+            new AlertDialog.Builder(a).setTitle("Téléchargement lancé")
+                    .setMessage("La mise à jour se télécharge (regarde les notifications).\n\nQuand c'est fini, touche la notification « SimRaceDash · mise à jour » pour l'installer. Tes réglages et ta stratégie sont gardés.")
+                    .setPositiveButton("OK", null).show();
+        } catch (Exception e) {
+            // secours : le navigateur
+            try { a.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(BASE + "simracedash.apk"))); }
+            catch (Exception e2) {
+                new AlertDialog.Builder(a).setTitle("Mise à jour impossible")
+                        .setMessage("Ouvre ce lien dans ton navigateur :\n" + BASE + "simracedash.apk")
+                        .setPositiveButton("OK", null).show();
             }
-        }, "gt7-update-download").start();
-    }
-
-    private static void install(Context c, byte[] apk) throws Exception {
-        PackageInstaller pi = c.getPackageManager().getPackageInstaller();
-        PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-        params.setAppPackageName(c.getPackageName());
-        params.setSize(apk.length);
-        int id = pi.createSession(params);
-        try (PackageInstaller.Session s = pi.openSession(id)) {
-            try (OutputStream out = s.openWrite("simracedash.apk", 0, apk.length)) {
-                out.write(apk);
-                s.fsync(out);
-            }
-            int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
-            PendingIntent pIntent = PendingIntent.getBroadcast(c, id,
-                    new Intent(c, InstallReceiver.class).setAction("fr.razhalpox.gt7engineer.INSTALL"), flags);
-            s.commit(pIntent.getIntentSender());
         }
     }
 }
