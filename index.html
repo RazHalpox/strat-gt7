@@ -52,11 +52,11 @@ nav.tabs button:hover:not([aria-selected=true]){color:var(--fg)}
 .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .step h2{display:flex;align-items:center;gap:10px}
 .step .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font:700 15px var(--f-display);flex:none}
-.pick{display:flex;gap:0;border:1px solid var(--input-line);border-radius:6px;overflow:hidden;background:var(--input)}
-.pick button{flex:1;background:transparent;color:var(--muted);border:0;padding:10px 8px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;min-height:42px}
-.pick button+button{border-left:1px solid var(--input-line)}
-.pick button[aria-pressed=true]{background:var(--accent);color:#fff}
-.pick button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.choix{display:flex;gap:0;border:1px solid var(--input-line);border-radius:6px;overflow:hidden;background:var(--input)}
+.choix button{flex:1;background:transparent;color:var(--muted);border:0;padding:10px 8px;font:600 14px var(--f-display);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;min-height:42px}
+.choix button+button{border-left:1px solid var(--input-line)}
+.choix button[aria-pressed=true]{background:var(--accent);color:#fff}
+.choix button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .learn{border-color:var(--accent)}
 .exnote{margin:0}
 #v-par .two{align-items:stretch}
@@ -243,7 +243,7 @@ img{max-width:100%}
     <section class="panel step">
       <h2><b class="num">1</b>La course</h2>
       <div class="fields">
-        <div class="full pick" data-for="mode" role="group" aria-label="Type de course"><button type="button" data-v="time">À la durée</button><button type="button" data-v="laps">Au nombre de tours</button></div>
+        <div class="full choix" data-for="mode" role="group" aria-label="Type de course"><button type="button" data-v="time">À la durée</button><button type="button" data-v="laps">Au nombre de tours</button></div>
         <select id="mode" class="sr" tabindex="-1" aria-hidden="true"><option value="time">À la durée</option><option value="laps">Au nombre de tours</option></select>
         <label id="w-duree">Durée<span class="unit"><input type="number" inputmode="numeric" id="duree" min="1" step="1"><span>min</span></span></label>
         <label id="w-laps" hidden>Nombre de tours<span class="unit"><input type="number" inputmode="numeric" id="laps" min="1" step="1"><span>tours</span></span></label>
@@ -254,7 +254,7 @@ img{max-width:100%}
     </section>
     <section class="panel step">
       <h2><b class="num">2</b>Ta conso</h2>
-      <div class="pick" data-for="consMode" role="group" aria-label="Ta conso"><button type="button" data-v="avg">Je la connais</button><button type="button" data-v="mesure">Je la mesure</button></div>
+      <div class="choix" data-for="consMode" role="group" aria-label="Ta conso"><button type="button" data-v="avg">Je la connais</button><button type="button" data-v="mesure">Je la mesure</button></div>
       <select id="consMode" class="sr" tabindex="-1" aria-hidden="true"><option value="mesure">Je la mesure</option><option value="avg">Je la connais</option></select>
       <div class="fields" style="margin-top:12px">
         <label id="w-cAvg" hidden class="full">Conso moyenne par tour<span class="unit"><input type="text" inputmode="decimal" autocomplete="off" id="cAvg" placeholder="7,5"><span>L/tour</span></span></label>
@@ -276,7 +276,7 @@ img{max-width:100%}
     </section>
     <section class="panel step">
       <h2><b class="num">4</b>Le stand</h2>
-      <div class="pick" data-for="pitMode" role="group" aria-label="Temps d'arrêt"><button type="button" data-v="rate">Selon l'essence</button><button type="button" data-v="fixed">Temps fixes</button></div>
+      <div class="choix" data-for="pitMode" role="group" aria-label="Temps d'arrêt"><button type="button" data-v="rate">Selon l'essence</button><button type="button" data-v="fixed">Temps fixes</button></div>
       <select id="pitMode" class="sr" tabindex="-1" aria-hidden="true"><option value="rate">Selon l'essence</option><option value="fixed">Temps fixes</option></select>
       <div class="fields" style="margin-top:12px">
         <label>Arrêt pneus seuls<span class="unit"><input type="number" inputmode="numeric" id="pitTyre" min="1" step="1"><span>s</span></span><span class="hint">temps perdu, sans essence</span></label>
@@ -325,10 +325,10 @@ document.addEventListener("input",e=>{const el=e.target,id=el.id;if(!id)return;
     if(id==="consMode"&&el.value==="avg"&&!(num(S.cAvg)>0)){const c=(num(S.mDeb)-num(S.mFin))/num(S.mTours);if(c>0){S.cAvg=String(Math.round(c*100)/100);$("cAvg").value=S.cAvg}}}
   else{const m=id.match(/^([SMH])-(lap|life|req)$/);if(!m)return;S[m[1]][m[2]]=el.type==="checkbox"?el.checked:el.value}
   selN=null;save();render()});
-function syncSeg(){document.querySelectorAll(".pick").forEach(g=>{const v=S[g.dataset.for];
+function syncSeg(){document.querySelectorAll(".choix").forEach(g=>{const v=S[g.dataset.for];
   g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===String(v))))})}
-document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".pick button");if(!b)return;
-  const sel=$(b.closest(".pick").dataset.for);if(sel.value===b.dataset.v)return;sel.value=b.dataset.v;sel.dispatchEvent(new Event("input",{bubbles:true}))});
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".choix button");if(!b)return;
+  const sel=$(b.closest(".choix").dataset.for);if(sel.value===b.dataset.v)return;sel.value=b.dataset.v;sel.dispatchEvent(new Event("input",{bubbles:true}))});
 let armed=false;
 $("reset").addEventListener("click",()=>{const b=$("reset");
   if(!armed){armed=true;b.classList.add("armed");b.textContent="Confirmer le reset";setTimeout(()=>{if(armed){armed=false;b.classList.remove("armed");b.textContent="Reset"}},5000);return}
