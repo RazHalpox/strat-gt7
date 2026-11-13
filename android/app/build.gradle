@@ -4,13 +4,13 @@ plugins {
 
 android {
     namespace 'fr.razhalpox.gt7engineer'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         // V3 : appli séparée (s'installe à côté de la V2 « GT7 Engineer »)
         applicationId 'fr.razhalpox.simracedash'
         minSdk 24
-        targetSdk 34
+        targetSdk 36
         // numéro de compilation GitHub : chaque nouvelle version est plus haute que la précédente (mise à jour intégrée)
         def build = (System.getenv('BUILD_NUMBER') ?: '0').toInteger()
         versionCode 3000 + build

@@ -231,6 +231,9 @@ public class MainActivity extends Activity {
         foot.setPadding(0, dp(14), 0, 0);
         col.addView(foot);
 
+        // Android 15+ : l'écran s'étend sous les barres du système ; le contenu reste dans la zone visible
+        scroll.setFitsSystemWindows(true);
+        getWindow().getDecorView().setBackgroundColor(BG);
         setContentView(scroll);
         TelemetryService.ensureWeb(this);
         Updater.autoCheck(this);

@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
+import android.os.Build;
+import android.view.DisplayCutout;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -101,14 +103,25 @@ public class DashActivity extends Activity {
         // plein écran : Android ne réduit pas la page quand le clavier s'ouvre, le champ tapé finirait caché dessous.
         // On mesure la place laissée par le clavier et on raccourcit l'écran d'autant.
         final FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK); // bandes sous l'encoche ou le clavier : noires
         root.addView(web, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        // encoche de la caméra : Android 15+ laisse le contenu passer dessous, on le décale
+        root.setOnApplyWindowInsetsListener((v, ins) -> {
+            if (Build.VERSION.SDK_INT >= 28) {
+                DisplayCutout c = ins.getDisplayCutout();
+                cutL = c != null ? c.getSafeInsetLeft() : 0; cutT = c != null ? c.getSafeInsetTop() : 0;
+                cutR = c != null ? c.getSafeInsetRight() : 0; cutB = c != null ? c.getSafeInsetBottom() : 0;
+                applyPad(root);
+            }
+            return ins;
+        });
         root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             android.graphics.Rect vis = new android.graphics.Rect();
             root.getWindowVisibleDisplayFrame(vis);
             int full = root.getRootView().getHeight(), kb = full - vis.bottom;
             int pad = kb > full * 0.15 ? kb : 0;
-            if (root.getPaddingBottom() != pad) root.setPadding(0, 0, 0, pad);
+            if (pad != kbPad) { kbPad = pad; applyPad(root); }
         });
         String page = getIntent().getStringExtra(EXTRA_PAGE);
         web.loadUrl("http://127.0.0.1:" + WebServer.PORT + "/" + (page != null ? page : "pilote.html"));
@@ -118,6 +131,13 @@ public class DashActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) immersive();
+    }
+
+    private int cutL, cutT, cutR, cutB, kbPad;
+    private void applyPad(View v) {
+        int b = Math.max(kbPad, cutB);
+        if (v.getPaddingLeft() != cutL || v.getPaddingTop() != cutT || v.getPaddingRight() != cutR || v.getPaddingBottom() != b)
+            v.setPadding(cutL, cutT, cutR, b);
     }
 
     @SuppressWarnings("deprecation")
