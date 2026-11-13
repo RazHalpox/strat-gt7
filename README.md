@@ -1,4 +1,4 @@
-# Strat GT7 · GT7 Race Engineer V2
+# Strat GT7 · SimRaceDash V3
 
 Un ingénieur de course pour les courses d'endurance de Gran Turismo 7. L'appli lit la télémétrie de ta PS5 en direct et te dit quand rentrer, quelle gomme monter, combien d'essence remettre, et quoi faire si la course ne se passe pas comme prévu. La stratégie se prépare avant, l'écran Pilote te guide pendant.
 

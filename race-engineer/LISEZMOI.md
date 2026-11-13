@@ -1,4 +1,4 @@
-# GT7 Race Engineer · V2
+# SimRaceDash · V3
 
 Ton ingénieur de course pour Gran Turismo 7 : télémétrie en direct sur ton téléphone, ingénieur vocal en français, et ton calculateur de stratégie d'endurance rempli automatiquement avec ta vraie conso et tes vrais temps.
 
@@ -18,7 +18,7 @@ Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télé
 **Mises à jour :** l'appli vérifie toute seule au démarrage s'il existe une nouvelle version et propose de l'installer (bouton **Rechercher une mise à jour** sur l'accueil, ou ⚙ Réglages › Appli Android). La première fois, Android demande d'autoriser l'appli à installer des applis. La nouvelle version s'installe par-dessus et garde tes réglages et ta stratégie.
 
 **En course**
-1. Ouvre **GT7 Engineer**, tape l'adresse IP de la PS5 (ou laisse vide pour la recherche automatique), puis **Démarrer**.
+1. Ouvre **SimRaceDash**, tape l'adresse IP de la PS5 (ou laisse vide pour la recherche automatique), puis **Démarrer**.
 2. Lance une course ou un essai dans GT7 : les écrans Pilote, Complet, Stratégie et ⚙ sont les mêmes que sur le PC, avec l'ingénieur vocal.
 3. Le bouton retour ramène à l'accueil ; la réception continue. Arrête-la avec **Arrêter la réception** ou depuis la notification.
 
