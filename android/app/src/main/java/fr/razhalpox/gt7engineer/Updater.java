@@ -29,7 +29,7 @@ import java.net.URL;
 public final class Updater {
     private Updater() {}
 
-    static final String BASE = "https://github.com/RazHalpox/strat-gt7/releases/download/android/";
+    static final String BASE = "https://github.com/RazHalpox/strat-gt7/releases/download/v3/";
     private static final Handler UI = new Handler(Looper.getMainLooper());
     private static volatile boolean busy;
 
@@ -141,7 +141,7 @@ public final class Updater {
         final AlertDialog prog = new AlertDialog.Builder(a).setTitle("Téléchargement…").setMessage("0 %").setCancelable(false).show();
         new Thread(() -> {
             try {
-                byte[] apk = get(BASE + "gt7-race-engineer.apk?t=" + System.currentTimeMillis(),
+                byte[] apk = get(BASE + "simracedash.apk?t=" + System.currentTimeMillis(),
                         pct -> UI.post(() -> prog.setMessage(pct + " %")));
                 UI.post(() -> prog.setMessage("Installation…"));
                 install(a, apk);
@@ -164,7 +164,7 @@ public final class Updater {
         params.setSize(apk.length);
         int id = pi.createSession(params);
         try (PackageInstaller.Session s = pi.openSession(id)) {
-            try (OutputStream out = s.openWrite("gt7-race-engineer.apk", 0, apk.length)) {
+            try (OutputStream out = s.openWrite("simracedash.apk", 0, apk.length)) {
                 out.write(apk);
                 s.fsync(out);
             }

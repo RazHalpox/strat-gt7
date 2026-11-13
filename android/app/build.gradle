@@ -7,13 +7,14 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId 'fr.razhalpox.gt7engineer'
+        // V3 : appli séparée (s'installe à côté de la V2 « GT7 Engineer »)
+        applicationId 'fr.razhalpox.simracedash'
         minSdk 24
         targetSdk 34
         // numéro de compilation GitHub : chaque nouvelle version est plus haute que la précédente (mise à jour intégrée)
         def build = (System.getenv('BUILD_NUMBER') ?: '0').toInteger()
-        versionCode 100 + build
-        versionName build > 0 ? "2.0.${build}" : "2.0"
+        versionCode 3000 + build
+        versionName build > 0 ? "3.0.${build}" : "3.0"
     }
 
     signingConfigs {

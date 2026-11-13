@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
         col.setPadding(dp(20), dp(28), dp(20), dp(28));
         outer.addView(col, new LinearLayout.LayoutParams(Math.min(dp(520), getResources().getDisplayMetrics().widthPixels), LinearLayout.LayoutParams.WRAP_CONTENT));
 
-        TextView title = text("GT7 Race Engineer", 28, FG, true);
+        TextView title = text("SimRaceDash", 28, FG, true);
         col.addView(title);
         TextView ver = text("v" + Updater.installedName(this) + " · appli Android, sans PC", 14, MUTED, false);
         col.addView(ver);

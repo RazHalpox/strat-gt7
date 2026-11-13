@@ -110,7 +110,7 @@ public class TelemetryService extends Service {
                 new Intent(this, TelemetryService.class).setAction(ACTION_STOP), piFlags);
         Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
         b.setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setContentTitle("GT7 Race Engineer")
+                .setContentTitle("SimRaceDash")
                 .setContentText(demo ? "Mode démo en cours" : replay ? "Relecture d'une course enregistrée" : "Réception de la télémétrie de la PS5")
                 .setContentIntent(open)
                 .setOngoing(true)
