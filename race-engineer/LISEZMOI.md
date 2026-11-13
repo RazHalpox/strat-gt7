@@ -24,9 +24,9 @@ Sur un téléphone ou une tablette Android, l'appli reçoit elle-même la télé
 
 **Avec un iPad en plus :** pendant que l'appli tourne, l'iPad peut ouvrir l'adresse affichée sur l'accueil de l'appli (`http://IP-DU-TÉLÉPHONE:8777/pilote.html`). Le téléphone remplace alors le PC. La stratégie est partagée : celle que tu prépares sur le téléphone apparaît sur l'iPad (et inversement), et un Plan B choisi sur un écran s'applique sur tous. Le carnet de courses et les mesures en course sont aussi partagés : peu importe l'écran qui affichait Pilote, tu retrouves la course partout.
 
-Le **mode démo** de l'accueil fait tourner une course simulée, pour essayer sans la PS5.
+Le **mode démo** (course simulée, pour essayer sans la PS5) est rangé dans les **outils de dépannage** : touche 7 fois la ligne de version sur l'accueil pour les afficher.
 
-**Dépannage :** chaque réception de la PS5 est enregistrée automatiquement sur le téléphone (les 10 dernières), sans rien afficher. En cas de souci, touche 7 fois la ligne de version sur l'accueil : la section **Dépannage** apparaît, avec **Envoyer le dernier enregistrement** pour transmettre la course à analyser (et **Rejouer ×1 / ×5 / ×20**). 7 appuis de plus la cachent.
+**Dépannage :** chaque réception de la PS5 est enregistrée automatiquement sur le téléphone (les 10 dernières), sans rien afficher. En cas de souci, touche 7 fois la ligne de version sur l'accueil : la section **Outils de dépannage** apparaît, avec le **Mode démo**, avec **Envoyer le dernier enregistrement** pour transmettre la course à analyser (et **Rejouer ×1 / ×5 / ×20**). 7 appuis de plus la cachent.
 
 ---
 

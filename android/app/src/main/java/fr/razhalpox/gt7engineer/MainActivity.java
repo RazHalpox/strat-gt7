@@ -29,7 +29,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Collections;
 
-/** Écran d'accueil : adresse de la PS5, démarrage, mode démo, adresse pour un autre écran. */
+/** Écran d'accueil : adresse de la PS5, démarrage, adresse pour un autre écran ; mode démo et enregistrements dans les outils de dépannage (cachés). */
 public class MainActivity extends Activity {
     private static final int BG = Color.rgb(0, 0, 2), // même noir que le fond du logo : pas de cadre autour
              PANEL = Color.rgb(21, 26, 33), PANEL2 = Color.rgb(28, 35, 44),
@@ -155,7 +155,6 @@ public class MainActivity extends Activity {
         openBtn = button("Ouvrir le dashboard", ACCENT, Color.WHITE);
         stopBtn = button("Arrêter la réception", PANEL2, FG);
         col.addView(startBtn);
-        col.addView(demoBtn);
         col.addView(openBtn);
         col.addView(stopBtn);
 
@@ -184,9 +183,11 @@ public class MainActivity extends Activity {
         recBox = new LinearLayout(this);
         recBox.setOrientation(LinearLayout.VERTICAL);
         col.addView(recBox, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        TextView recLbl = text("Dépannage · enregistrements", 15, FG, true);
+        TextView recLbl = text("Outils de dépannage", 15, FG, true);
         recLbl.setPadding(0, dp(22), 0, dp(4));
         recBox.addView(recLbl);
+        // mode démo : course simulée, sans PS5 (pour tester les écrans)
+        recBox.addView(demoBtn);
         recInfo = text("", 13, MUTED, false);
         recBox.addView(recInfo);
         replayRow = new LinearLayout(this);
