@@ -158,6 +158,13 @@ nav.tabs3 a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .waitbox{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:18px;gap:6px}
 .waitbox b{font:700 28px var(--f-display);text-transform:uppercase;color:var(--fg)}
 
+/* ---- paysage : l'écran est collé aux bords de l'écran du téléphone, sans défilement.
+   iPhone : après une rotation, iOS garde parfois la marge du haut prévue pour le portrait (encoche)
+   et compte mal la hauteur ; en paysage il n'y a pas d'encoche en haut, on l'ignore. ---- */
+@media (orientation:landscape){
+  html,body{overflow:hidden;overscroll-behavior:none}
+  .wrap{position:fixed;inset:0;height:auto;padding-top:10px}
+}
 /* ---- téléphone en paysage (écran bas) : tout tient sur un écran ---- */
 @media (orientation:landscape) and (max-height:540px){
   .wrap{gap:5px;padding-bottom:calc(5px + env(safe-area-inset-bottom,0px))}
@@ -272,6 +279,8 @@ body.editing .edOv{display:flex;position:absolute;inset:0;z-index:20;flex-direct
 .mvI{width:1.1em;height:1.1em;vertical-align:-.18em}
 .edOv.tight .elsT{display:none}.edOv.tight{gap:6px}
 .edOv.tiny .nm{display:none}.edOv.tiny{padding-top:42px}
+/* écran bas (téléphone en paysage) : la barre Disposition tient sur une ligne, les fenêtres gardent la place */
+@media (orientation:landscape) and (max-height:520px){#editBar .hL,#editBar .hP{display:none}#editBar{padding:5px 8px;gap:6px}#editBar button{padding:5px 10px;font-size:12px}}
 @media (max-height:520px){.edOv .nm{font-size:16px}.edOv .grip{padding:5px 10px;font-size:13px}.edOv .els button{font-size:12px;padding:3px 8px}body.editing .edOv{gap:5px}}
 .card.dragSrc{opacity:.35}
 .dropInd{position:fixed;z-index:40;pointer-events:none;background:rgba(255,59,78,.35);border:2px solid var(--accent);border-radius:6px;display:none}
@@ -508,6 +517,10 @@ function renderBand(st,cur,rows,all){
   $("relBand").innerHTML=tiles.map(t=>`<div class="rb${t.now?" now":""}${t.plan?" plan":""}"><span class="rbH"><span class="chip ${t.g||"X"}">${t.g||"?"}</span><span><em>R${t.n}</em> · T${t.from}–${t.to}</span></span>`+
     (t.plan?`<b>–</b><i>prévu · ${t.to-t.from+1} t</i>`:`<b>${fin(t.avg)?PC(t.avg):"–"}<small>%/t</small></b><i>${t.now?"en cours":t.to-t.from+1+" t"}</i>`)+`</div>`).join("")}
 // n'écrit un texte que s'il change : moins de travail pour le navigateur à chaque image de télémétrie
+// iPhone : après une rotation, on revient tout en haut (iOS peut laisser la page décalée)
+const backTop=()=>{if(window.scrollY||document.documentElement.scrollTop)window.scrollTo(0,0)};
+window.addEventListener("orientationchange",()=>{setTimeout(backTop,250);setTimeout(backTop,700)});
+window.addEventListener("resize",backTop);
 function T(id,v){const e=$(id);if(e){v=String(v);if(e.textContent!==v)e.textContent=v}}
 function render(s){
   try{const L0=s.live||{};if(fin(L0.speed)&&window.__S)PlanB.pit(L0,opts())}catch(e){} // voie des stands : d'abord, sans attendre le reste
