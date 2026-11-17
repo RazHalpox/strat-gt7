@@ -366,14 +366,15 @@ def replay_loop(path, speed):
 # --------------------------------------------------------------------------
 # Reception PS5
 # --------------------------------------------------------------------------
-def ps5_loop(ps5_ip):
+def ps5_loop(ps5_ip, stop=None):
+    """stop : threading.Event pour arreter la reception (appli PC : bouton Arreter)."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(("0.0.0.0", LOCAL_RECV_PORT))
     sock.settimeout(1.0)
     last_hb = 0.0
     warned = False
-    while True:
+    while not (stop and stop.is_set()):
         now = time.time()
         if now - last_hb > 5:      # la PS5 arrete d'envoyer sans heartbeat regulier
             try:
@@ -400,14 +401,15 @@ def ps5_loop(ps5_ip):
         now = time.time()
         STATE.update(d, now)
         REC.write(d, now)
+    sock.close()
 
 
-def demo_loop():
+def demo_loop(stop=None):
     """Course simulee : tours de 25 s, conso 2,8 L/tour, arret toutes les 9 tours."""
     STATE.mode = "demo"
     fuel, lap, t_lap, best, pkt, last_ms = 100.0, 1, time.time(), 0, 0, 0
     lap_len = 25.0
-    while True:
+    while not (stop and stop.is_set()):
         now = time.time()
         ph = (now - t_lap) / lap_len
         if ph >= 1:

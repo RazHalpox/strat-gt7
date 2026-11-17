@@ -30,16 +30,13 @@ Le **mode démo** (course simulée, pour essayer sans la PS5) est rangé dans le
 
 ---
 
-## 1. Installer Python sur le PC (une seule fois)
+## 1. Installer SimRaceDash sur le PC
 
-1. Va sur **python.org → Downloads** et télécharge la dernière version pour Windows.
-2. Lance l'installation et **coche « Add python.exe to PATH »** en bas de la première fenêtre.
-3. Clique sur **Install Now**.
-
-## 2. Préparer le dossier
-
-Télécharge **SimRaceDash-PC.zip** : https://github.com/RazHalpox/strat-gt7/releases/download/v3/SimRaceDash-PC.zip
-Dézippe-le où tu veux, par exemple sur le Bureau : tu obtiens un dossier **SimRaceDash-PC**. Tout doit rester dans ce dossier. Pour mettre à jour, retélécharge le zip et remplace le dossier (garde ton `config.json` si tu veux retrouver l'adresse IP de la PS5).
+**L'appli PC (conseillé)** : télécharge et lance **SimRaceDash-Setup.exe** : https://github.com/RazHalpox/strat-gt7/releases/download/v3/SimRaceDash-Setup.exe
+Windows peut afficher « Windows a protégé votre ordinateur » (l'appli n'est pas encore signée par un éditeur reconnu) : clique **Informations complémentaires › Exécuter quand même**. L'installation crée un raccourci SimRaceDash sur le Bureau et dans le menu Démarrer, et autorise l'appli dans le pare-feu (pour le téléphone, l'iPad et la PS5). Pas besoin de Python.
+Dans la fenêtre SimRaceDash : entre l'adresse IP de la PS5, **Démarrer**, puis ouvre **Pilote**, **Complet** ou **Stratégie** (case « plein écran » au besoin). L'adresse à ouvrir sur le téléphone ou l'iPad y est affichée. Le **mode démo** et le **dossier des enregistrements** sont en bas. Quand une nouvelle version sort, un bandeau propose de la télécharger.
+Sans installation : https://github.com/RazHalpox/strat-gt7/releases/download/v3/SimRaceDash-PC.zip (dézippe, puis double-clic sur SimRaceDash.exe).
+Pour les curieux, l'ancien relais en Python reste dans le dossier race-engineer du dépôt : il faut alors installer Python (python.org, cocher « Add python.exe to PATH ») puis double-cliquer sur lancer.bat.
 
 ## 3. Tester sans la PS5 (mode démo)
 

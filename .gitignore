@@ -4,3 +4,6 @@ __pycache__/
 
 # courses enregistrees par le relais PC
 race-engineer/enregistrements/
+
+race-engineer/config.json
+race-engineer/selftest.log
