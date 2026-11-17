@@ -40,10 +40,11 @@ Pour les curieux, l'ancien relais en Python reste dans le dossier race-engineer 
 
 ## 3. Tester sans la PS5 (mode démo)
 
-1. Double-clique sur **lancer-demo.bat**.
-2. Si Windows affiche une alerte du **pare-feu**, coche **Réseaux privés** et clique sur **Autoriser**. Sans ça, le téléphone ne pourra pas se connecter.
-3. La fenêtre affiche une adresse, par exemple `http://192.168.1.15:8777`.
-4. Ouvre cette adresse sur ton téléphone : tu vois une course simulée.
+1. Dans la fenêtre SimRaceDash, clique **Mode démo (sans PS5)** en bas.
+2. Ouvre **Pilote** : tu vois une course simulée.
+3. Sur ton téléphone ou ton iPad, ouvre l'adresse affichée dans « Téléphone ou iPad », par exemple `http://192.168.1.15:8777/pilote.html`.
+
+(Ancien relais Python : double-clic sur **lancer-demo.bat**.)
 
 ## 4. Trouver l'adresse IP de la PS5
 
