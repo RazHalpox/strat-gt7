@@ -216,6 +216,25 @@ def selftest():
     print("SELFTEST OK", APP_VERSION)
 
 
+def home_geometry():
+    """Taille de la fenêtre d'accueil : assez haute pour tout voir sans défiler, sans dépasser l'écran (barre des tâches comprise)."""
+    w, h = 580, 1075
+    try:
+        import ctypes
+        from ctypes import wintypes
+        r = wintypes.RECT()
+        ctypes.windll.user32.SystemParametersInfoW(0x30, 0, ctypes.byref(r), 0)   # zone de travail (sans la barre des tâches)
+        try:
+            scale = ctypes.windll.user32.GetDpiForSystem() / 96.0                 # zoom de Windows (125 %, 150 %…)
+        except Exception:
+            scale = 1.0
+        aw, ah = (r.right - r.left) / scale, (r.bottom - r.top) / scale
+        h = int(min(h, ah - 16))
+        return w, h, int(r.left / scale + (aw - w) / 2), int(r.top / scale + (ah - h) / 2)
+    except Exception:
+        return w, 900, None, None
+
+
 def main():
     if "--selftest" in sys.argv:
         # pas de fenêtre d'erreur (elle bloquerait la compilation automatique) : un code de sortie et un journal
@@ -240,7 +259,8 @@ def main():
     url = f"http://127.0.0.1:{R.HTTP_PORT}/accueil.html"
     if WEBVIEW:
         try:
-            WEBVIEW.create_window("SimRaceDash", url, width=580, height=900, min_size=(420, 560), background_color="#000002")
+            w, h, x, y = home_geometry()
+            WEBVIEW.create_window("SimRaceDash", url, width=w, height=h, x=x, y=y, min_size=(420, 560), background_color="#000002")
             WEBVIEW.start(gui="edgechromium")   # quand la dernière fenêtre est fermée, l'appli s'arrête
         except Exception:
             # moteur d'affichage Edge (WebView2) absent : on passe par le navigateur
