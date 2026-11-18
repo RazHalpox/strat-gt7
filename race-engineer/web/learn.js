@@ -17,7 +17,10 @@ function trackStop(L,cur,now=Date.now(),T=LIVE){
   const v=L.speed;
   if(!fin(v)||!fin(L.fuel)||L.paused||L.loading){T.prevFuel=L.fuel;return}
   if(!(L.lap>=1))T.moved=false;else if(v>30)T.moved=true; // l'attente sur la grille de départ n'est pas un arrêt
-  if(v<1.5&&L.on_track&&T.moved){
+  // rediffusion (replay) GT7 : « voiture sur la piste » reste à faux ; 2 s de roulage dans cet état suffisent à la reconnaître
+  if(L.on_track){T.rp=false;T.off=null}else if(L.gt7_replay)T.rp=true;
+  else if(v>20){if(T.off==null)T.off=now;else if(now-T.off>=2000)T.rp=true}else if(!T.rp)T.off=null;
+  if(v<1.5&&(L.on_track||T.rp)&&T.moved){
     if(!T.stopCur)T.stopCur={t0:now,f0:L.fuel,fmax:L.fuel,lap:L.lap,r0:null,r1:null};
     else{T.stopCur.fmax=Math.max(T.stopCur.fmax,L.fuel);if(fin(T.prevFuel)&&L.fuel>T.prevFuel+0.02){T.stopCur.r0=T.stopCur.r0||now;T.stopCur.r1=now}}}
   else if(v>5&&T.stopCur){const s=T.stopCur;T.stopCur=null;const still=(now-s.t0)/1000,added=s.fmax-s.f0;
@@ -33,6 +36,7 @@ function update(s){
   // nouvelle course : le compteur de tours recule, ou la liste des tours repart de zéro (départ de la course suivante)
   const fresh=!cur||!cur.id||(laps.length&&last<cur.lastN)||laps.length<(cur.count||0)-1||(now-(cur.lastSeen||0)>2*3600e3);
   if(fresh){if(!laps.length&&!(L.lap>=1))return;cur={id:now,lastN:last,count:laps.length,lastSeen:now,stops:[]}}
+  if(L.gt7_replay)cur.replay=true; // course regardée en rediffusion : marquée « Replay » dans le carnet
   const done=window.Race&&Race.finished?Race.finished(L,laps):null;
   if(done)cur.finish=done.lap;else trackStop(L,cur); // après l'arrivée : ni arrêt, ni tour de décélération
   const changed=last!==cur.lastN||laps.length!==cur.count||fresh||(cur.stops||[]).length!==(cur.nStops||0);
@@ -43,7 +47,7 @@ function update(s){
       races.unshift({id:cur.id,date:cur.id,updated:now,fuelCap:L.fuel_cap||100,total:L.total_laps||0,
         mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,circuit:old&&old.circuit!==undefined?old.circuit:(st&&st.S&&st.S.circuit||""), // circuit noté au départ (ou corrigé dans le Carnet)
         laps:laps.map(l=>({n:l.n,ms:l.ms,fuel:l.fuel,pit:!!l.pit,fuel_end:l.fuel_end})),
-        plan:p&&p.rows?p.rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops||[],finish:cur.finish||null});
+        plan:p&&p.rows?p.rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops||[],finish:cur.finish||null,replay:!!cur.replay||!!(old&&old.replay)});
       races.sort((a,b)=>b.id-a.id);while(races.length>MAXR)races.pop();
       if(!wr(RKEY,races)){races.length=Math.max(1,races.length-5);wr(RKEY,races)}}}
 }
@@ -61,7 +65,7 @@ function fromRecording(text,start){
   const race={id:first||start,date:first||start,updated:Date.now(),fuelCap:L&&L.fuel_cap||100,total:L&&L.total_laps||0,
     mode:st&&st.S?st.S.mode:null,duree:st&&st.S?+st.S.duree:null,circuit:st&&st.S&&st.S.circuit||"",
     laps:laps.map(l=>({n:l.n,ms:l.ms,fuel:l.fuel,pit:!!l.pit,fuel_end:l.fuel_end})),
-    plan:rows?rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops,finish:done?done.lap:null,fromRec:true};
+    plan:rows?rows.map(r=>({g:r.g,from:r.from,to:r.to})):[],stops:cur.stops,finish:done?done.lap:null,fromRec:true,replay:!!T.rp};
   // remplace une version incomplète de la même course (même premier tour)
   const k=x=>x.laps&&x.laps.length?x.laps[0].n+":"+x.laps[0].ms:"",races=rd(RKEY,[]).filter(r=>!(k(r)===k(race)&&Math.abs(r.id-race.id)<3*3600e3));
   races.unshift(race);races.sort((a,b)=>b.id-a.id);while(races.length>MAXR)races.pop();wr(RKEY,races);return race}

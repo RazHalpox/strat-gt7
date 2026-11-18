@@ -167,19 +167,23 @@ class RaceState:
         self._pit_buf = []       # entree dans la voie des stands : (t, vitesse, gaz, rupteur)
         self._prev = None        # (t, vitesse, tour) de l'image precedente
         self._drop = None        # (t, x, z) : voiture figee d'un coup (transition vers la voie des stands)
+        self.gt7_replay = False  # rediffusion GT7 : la voiture roule mais GT7 dit "pas sur la piste"
+        self._off_since = None
 
     def _teleport(self, d, now):
         """Entree aux stands dans GT7 : la voiture passe d'un coup de ~200 km/h a 0 et reste figee quelques secondes
         (transition vers la voie des stands), ce qu'aucun freinage ne peut faire. Signature immediate."""
         v = d.get("speed") or 0
         ok = d.get("on_track") and not d.get("paused") and not d.get("loading") and (d.get("lap") or 0) >= 1
-        p = self._prev
-        if ok and p and p[1] > 40 and v < 3 and now - p[0] <= 0.25 and d.get("lap") == p[2]:
+        p = self._prev   # derniere image a plus de 40 km/h : (t, vitesse, tour)
+        # de >40 km/h a l'arret en moins de 0,4 s (en rediffusion, GT7 lisse la chute sur 2-3 images)
+        if ok and p and v < 3 and now - p[0] <= 0.4 and now >= p[0] and d.get("lap") == p[2] and not self._drop:
             self._drop = (now, d.get("x"), d.get("z"))
         elif self._drop and (not ok or v > 3 or abs((d.get("x") or 0) - (self._drop[1] or 0)) > 0.5
                              or abs((d.get("z") or 0) - (self._drop[2] or 0)) > 0.5 or now - self._drop[0] > 15):
             self._drop = None
-        self._prev = (now, v, d.get("lap"))
+        if v > 40:
+            self._prev = (now, v, d.get("lap"))
         return bool(self._drop) and now - self._drop[0] >= 0.3   # figee depuis 0,3 s : pas un choc contre un mur
 
     def _pit_lane(self, d, now):
@@ -211,6 +215,19 @@ class RaceState:
         now = now or time.time()
         with self.lock:
             self.last_rx = time.time()   # horloge reelle (en relecture, "now" est l'heure de la course enregistree)
+            # rediffusion (replay) de GT7 : la telemetrie arrive avec "voiture sur la piste" a faux tout du long.
+            # Reconnue apres 2 s de roulage dans cet etat ; on la traite alors comme une course (arrets compris).
+            if d.get("on_track"):
+                self.gt7_replay, self._off_since = False, None
+            elif not d.get("paused") and not d.get("loading") and (d.get("speed") or 0) > 20:
+                if self._off_since is None:
+                    self._off_since = now
+                elif now - self._off_since >= 2:
+                    self.gt7_replay = True
+            elif not self.gt7_replay:
+                self._off_since = None
+            if self.gt7_replay:
+                d = dict(d, on_track=True)
             lap = d["lap"]
             fuel = d["fuel"]
             # ravitaillement : le carburant remonte (GT7 remplit petit a petit : on compare au plus bas du tour)
@@ -258,7 +275,7 @@ class RaceState:
             pl = self._pit_lane(d, now) or tp
             if pl:
                 self._pit_lane_t = now
-            self.live = dict(d, cur_ms=cur, pit_lane=pl)
+            self.live = dict(d, cur_ms=cur, pit_lane=pl, gt7_replay=self.gt7_replay)
 
     def snapshot(self):
         with self.lock:

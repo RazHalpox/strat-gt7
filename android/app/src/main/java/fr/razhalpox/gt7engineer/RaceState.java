@@ -29,14 +29,19 @@ public final class RaceState {
     private long pitLaneT = -1;        // dernière fois que la voiture était dans la voie des stands
     // entrée aux stands dans GT7 : la voiture passe d'un coup de ~200 km/h à 0 et reste figée quelques secondes
     // (transition vers la voie des stands), alors qu'aucun freinage ne peut faire ça. Signature immédiate.
-    private double prevV = -1; private long prevT; private int prevLap = -1;
+    private long prevT = -1; private int prevLap = -1; // dernière image à plus de 40 km/h
+    // rediffusion (replay) de GT7 : la télémétrie arrive avec « voiture sur la piste » à faux tout du long.
+    // Reconnue après 2 s de roulage dans cet état ; on la traite alors comme une course (arrêts compris).
+    private boolean gt7Replay; private long offSince = -1;
+    private boolean onTrack(Gt7.Frame d) { return d.onTrack || gt7Replay; }
     private long dropT = -1; private double dropX, dropZ;
 
     private boolean teleport(Gt7.Frame d, long now) {
-        boolean ok = d.onTrack && !d.paused && !d.loading && d.lap >= 1;
-        if (ok && prevV > 40 && d.speed < 3 && now - prevT <= 250 && d.lap == prevLap) { dropT = now; dropX = d.x; dropZ = d.z; }
+        boolean ok = onTrack(d) && !d.paused && !d.loading && d.lap >= 1;
+        // de >40 km/h à l'arrêt en moins de 0,4 s (en rediffusion, GT7 lisse la chute sur 2-3 images)
+        if (ok && prevT >= 0 && d.speed < 3 && now - prevT <= 400 && now >= prevT && d.lap == prevLap && dropT < 0) { dropT = now; dropX = d.x; dropZ = d.z; }
         else if (dropT >= 0 && (!ok || d.speed > 3 || Math.abs(d.x - dropX) > 0.5 || Math.abs(d.z - dropZ) > 0.5 || now - dropT > 15000)) dropT = -1;
-        prevV = d.speed; prevT = now; prevLap = d.lap;
+        if (d.speed > 40) { prevT = now; prevLap = d.lap; }
         return dropT >= 0 && now - dropT >= 300; // figée depuis 0,3 s : ce n'est pas un choc contre un mur
     }
 
@@ -44,7 +49,7 @@ public final class RaceState {
      *  depuis 1,2 s, gaz à 0 (GT7 conduit seul dans la voie ; avec du gaz, c'est une courbe en piste).
      *  Même règle que planb.js. */
     private boolean pitLaneCheck(Gt7.Frame d, long now) {
-        if (!d.onTrack || d.paused || d.loading || d.speed < 30 || d.speed > 110 || d.brake > 5) { pitBuf.clear(); return false; }
+        if (!onTrack(d) || d.paused || d.loading || d.speed < 30 || d.speed > 110 || d.brake > 5) { pitBuf.clear(); return false; }
         if (!pitBuf.isEmpty() && now < pitBuf.peekLast()[0]) pitBuf.clear();
         boolean spin = false;
         for (double x : d.slip) if (Math.abs(x) >= 15) spin = true;
@@ -70,12 +75,17 @@ public final class RaceState {
 
     public synchronized void reset(String newMode) {
         live = null; curMs = null; laps.clear(); lastRx = 0; lap = null; prevFuel = null; pit = false;
-        moved = false; stillSince = -1; minFuel = Double.NaN; fuelPit = stillPit = false; pitLaneT = -1; pitBuf.clear(); pitLane = false; prevV = -1; dropT = -1;
+        moved = false; stillSince = -1; minFuel = Double.NaN; fuelPit = stillPit = false; pitLaneT = -1; pitBuf.clear(); pitLane = false; prevT = -1; dropT = -1; gt7Replay = false; offSince = -1;
         mode = newMode;
     }
 
     public synchronized void update(Gt7.Frame d, long now) {
         lastRx = System.currentTimeMillis(); // horloge réelle (en relecture, « now » est l'heure de la course enregistrée)
+        if (d.onTrack) { gt7Replay = false; offSince = -1; }
+        else if (!d.paused && !d.loading && d.speed > 20) {
+            if (offSince < 0) offSince = now;
+            else if (now - offSince >= 2000) gt7Replay = true;
+        } else if (!gt7Replay) offSince = -1;
         // ravitaillement : le carburant remonte (GT7 remplit petit à petit : on compare au plus bas du tour)
         if (prevFuel != null && d.fuel > prevFuel + 0.5) fuelPit = true;
         if (!Double.isNaN(minFuel) && d.fuel > minFuel + 0.5) fuelPit = true;
@@ -83,7 +93,7 @@ public final class RaceState {
         prevFuel = d.fuel;
         // arrêt au stand sans essence (pneus seuls) : voiture immobile plus de 3 s après avoir roulé
         if (d.speed > 30) moved = true;
-        if (moved && d.speed < 1 && d.onTrack && !d.paused && !d.loading) {
+        if (moved && d.speed < 1 && onTrack(d) && !d.paused && !d.loading) {
             if (stillSince < 0) stillSince = now;
             else if (now - stillSince >= 3000) stillPit = true;
         } else stillSince = -1;
@@ -188,6 +198,7 @@ public final class RaceState {
             frameFields(b, d);
             b.append(",\"cur_ms\":").append(curMs == null ? "null" : curMs.toString());
             b.append(",\"pit_lane\":").append(pitLane);
+            b.append(",\"gt7_replay\":").append(gt7Replay);
             b.append('}');
         }
         b.append(",\"laps\":[");

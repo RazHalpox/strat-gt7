@@ -434,7 +434,7 @@ function radio(text){const r=document.getElementById("radio");if(!r)return;
   clearTimeout(radioT);radioT=setTimeout(()=>r.classList.add("old"),20000)}
 /* ---- ingénieur vocal ---- */
 let voiceOn=false,lastSpokenLap=null,fuelWarned=0;
-function say(text){if(!voiceOn||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=+opts().voiceRate||1.05;
+function say(text){if(!voiceOn||window.gt7Replay||!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang="fr-FR";u.rate=+opts().voiceRate||1.05;
   const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith("fr"));if(v)u.voice=v;speechSynthesis.speak(u)}
 function sayLap(ms){const m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),d=Math.floor(ms%1000/100);return`${m} minute${m>1?"s":""} ${s} ${d?"et "+d:""}`.trim()}
 $("voiceBtn").addEventListener("click",()=>{voiceOn=!voiceOn;$("voiceBtn").classList.toggle("on",voiceOn);$("voiceBtn").setAttribute("aria-pressed",voiceOn);
@@ -527,7 +527,8 @@ function render(s){
   try{Learn.update(s)}catch(e){}
   const O=opts(),L=s.live||{},laps=s.laps||[],mode=s.mode;
   const st=$("status");st.className="pill "+(mode==="live"?"live":mode==="demo"||mode==="replay"?"demo":"wait");
-  st.textContent=mode==="live"?"En direct":mode==="demo"?"Démo":mode==="replay"?"Relecture"+(new URLSearchParams(location.search).get("speed")>1?" ×"+new URLSearchParams(location.search).get("speed"):""):"En attente";
+  window.gt7Replay=mode==="live"&&!!L.gt7_replay; // rediffusion GT7 : course enregistrée, voix coupée
+  st.textContent=window.gt7Replay?"Replay GT7":mode==="live"?"En direct":mode==="demo"?"Démo":mode==="replay"?"Relecture"+(new URLSearchParams(location.search).get("speed")>1?" ×"+new URLSearchParams(location.search).get("speed"):""):"En attente";
   $("waitBox").hidden=mode!=="attente"||window.editing;$("grid").hidden=mode==="attente"&&!window.editing;
   if(!fin(L.fuel))return;
 

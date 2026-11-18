@@ -82,13 +82,13 @@ function pitLaneCheck(L){
   // horloge : le chrono du tour (suit aussi une relecture accélérée), sinon l'heure de l'appareil
   const now=fin(L.cur_ms)?L.cur_ms:performance.now(),v=L.speed;
   // entrée aux stands dans GT7 : de ~200 km/h à 0 d'un coup, voiture figée (transition vers la voie des stands)
-  {const ok=L.on_track&&!L.paused&&!L.loading&&L.lap>=1,p=tpPrev;
-   if(ok&&p&&p.v>40&&v<3&&Math.abs(now-p.t)<=250&&L.lap===p.lap)tpDrop={t:now,x:L.x,z:L.z};
+  {const ok=(L.on_track||L.gt7_replay)&&!L.paused&&!L.loading&&L.lap>=1,p=tpPrev;
+   if(ok&&p&&!tpDrop&&v<3&&now-p.t<=400&&now>=p.t&&L.lap===p.lap)tpDrop={t:now,x:L.x,z:L.z}; // >40 km/h à l'arrêt en moins de 0,4 s
    else if(tpDrop&&(!ok||v>3||Math.abs(L.x-tpDrop.x)>0.5||Math.abs(L.z-tpDrop.z)>0.5||now-tpDrop.t>15000||now<tpDrop.t))tpDrop=null;
-   tpPrev={t:now,v,lap:L.lap};
+   if(v>40)tpPrev={t:now,v,lap:L.lap};
    if(tpDrop&&now-tpDrop.t>=300){pitLaneHit(L);return}}
   if(pitBuf.length&&now<pitBuf[pitBuf.length-1].t)pitBuf=[];
-  if(!fin(v)||!L.on_track||L.paused||L.loading||v<30||v>110||(L.brake||0)>5){pitBuf=[];return}
+  if(!fin(v)||!(L.on_track||L.gt7_replay)||L.paused||L.loading||v<30||v>110||(L.brake||0)>5){pitBuf=[];return}
   if(pitBuf.length&&now===pitBuf[pitBuf.length-1].t)return;
   const rev=!!L.rev_limit||(L.rpm_hi>1000&&L.rpm>=L.rpm_hi*0.95)||(L.slip||[]).some(x=>Math.abs(x)>=15); // rupteur ou roues qui patinent : vitesse figée aussi, mais en piste
   pitBuf.push({t:now,v,th:L.throttle||0,rev});pitBuf=pitBuf.filter(x=>now-x.t<=2500);
@@ -101,6 +101,7 @@ function pitLaneCheck(L){
   pitLaneHit(L)}
 function pitLaneHit(L){
   window.inPitLane=fin(L.cur_ms)?L.cur_ms:performance.now();
+  if(L.gt7_replay)return; // rediffusion : on enregistre l'arrêt, sans Plan B ni voix
   if(pbOpen||window.editing||pitAutoLap===L.lap||!fin(L.lap)||L.lap<1||!window.__S)return;
   const p=Replan.readPlan();if(!p||!p.rows||!p.rows.length)return;
   const ends=p.rows.slice(0,-1).map(r=>r.to),r=p.replan,lap=L.lap;
@@ -130,6 +131,7 @@ function newRaceCheck(L,laps){
   if(pbOpen&&pbOpen.auto)closePB()}
 // arrêt hors plan détecté (accident, crevaison…) : on demande la gomme montée et on recalcule la suite
 function planBCheck(L,laps,cons){
+  if(L.gt7_replay)return; // rediffusion : pas de Plan B
   if(pbOpen||window.editing)return;const p=Replan.readPlan();if(!p||!p.rows||p.rows.length<1)return;
   let pl=null;laps.forEach(l=>{if(l.pit&&l.n>1)pl=l.n});if(pl===null||!(L.lap<=pl+3))return;
   const ends=p.rows.slice(0,-1).map(r=>r.to),r=p.replan;
