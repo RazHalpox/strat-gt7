@@ -630,6 +630,13 @@ function raceCSV(r){const A=Learn.analyze(r),lines=["tour;temps;conso_L;carburan
   return lines.join("\n")}
 function exportRace(r){const name=`course-gt7-${new Date(r.date).toISOString().slice(0,16).replace(/[:T]/g,"-")}.csv`,csv=raceCSV(r);
   if(window.AndroidApp&&AndroidApp.shareText){try{AndroidApp.shareText(name,csv);return}catch(e){}}
+  // appli PC : le fichier est enregistré dans Téléchargements et l'explorateur s'ouvre dessus
+  fetch("/api/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,text:"\ufeff"+csv})})
+    .then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{if(j&&j.ok){alertSaved(j.path);return}dl(name,csv)})}
+function alertSaved(p){const t=document.createElement("div");t.setAttribute("role","status");t.textContent="Fichier enregistré : "+p;
+  t.style.cssText="position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 16px;border-radius:8px;z-index:99;font-weight:600;max-width:92vw";
+  document.body.appendChild(t);setTimeout(()=>t.remove(),5000)}
+function dl(name,csv){
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 document.getElementById("logFilter").addEventListener("click",e=>{const b=e.target.closest("button[data-c]");if(!b)return;logCircuit=b.dataset.c;renderLog()});
 function renderLog(){

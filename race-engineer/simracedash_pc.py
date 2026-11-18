@@ -114,6 +114,10 @@ WEBVIEW = None
 try:
     import webview  # pywebview : fenêtres natives (Edge WebView2 sous Windows)
     WEBVIEW = webview
+    try:
+        webview.settings["ALLOW_DOWNLOADS"] = True   # téléchargements depuis les écrans (secours)
+    except Exception:
+        pass
 except Exception:
     WEBVIEW = None
 
@@ -185,6 +189,23 @@ class Handler(R.Handler):
                 pass
         elif u.path == "/api/update":
             webbrowser.open(SETUP_URL)
+        elif u.path == "/api/save":
+            # export d'un fichier (carnet en CSV) : enregistré dans Téléchargements, l'explorateur s'ouvre dessus
+            name = os.path.basename(str(d.get("name") or "export.csv")).replace("..", "") or "export.csv"
+            folder = os.path.join(os.path.expanduser("~"), "Downloads")
+            try:
+                os.makedirs(folder, exist_ok=True)
+                path = os.path.join(folder, name)
+                with open(path, "w", encoding="utf-8", newline="") as f:
+                    f.write(str(d.get("text", "")))
+                try:
+                    import subprocess
+                    subprocess.Popen(["explorer", "/select,", path])
+                except OSError:
+                    pass
+            except OSError as e:
+                return self._json({"ok": False, "msg": str(e)})
+            return self._json({"ok": True, "path": path})
         elif u.path == "/api/quit":
             threading.Timer(0.5, lambda: os._exit(0)).start()   # sans fenêtre (mode navigateur) : bouton Quitter
         else:
